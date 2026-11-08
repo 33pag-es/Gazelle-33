@@ -52,7 +52,9 @@
                 <td>
                     <select id="categories" name="type" onchange="Categories()"{{ disabled(is_uploaded) }}>
 {%  for name in constant('CATEGORY') %}
+{%      if name in constant('CATEGORY_ENABLED') %}
                         <option value="{{ loop.index0 }}"{{ selected(name == info.CategoryName) }}>{{ name }}</option>
+{%      endif %}
 {%  endfor %}
                     </select>
                 </td>

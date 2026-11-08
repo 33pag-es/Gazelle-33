@@ -6,10 +6,10 @@ class Torrent extends AbstractAPI {
     public function run(): array {
         switch ($_GET['req']) {
             case 'group':
-                return $this->tgroup((int)($_GET['group_id'] ?? 0));
+                return $this->tgroup((int)($_GET['group_id'] ?? $_GET['id'] ?? 0));
             default:
             case 'torrent':
-                return $this->torrent((int)($_GET['torrent_id'] ?? 0));
+                return $this->torrent((int)($_GET['torrent_id'] ?? $_GET['id'] ?? 0));
         }
     }
 

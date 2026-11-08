@@ -87,6 +87,10 @@ if (!isset($Properties)) {
 $Properties ??= false;
 $Err        ??= false;
 $categoryId ??= CATEGORY_COMIC;
+if (!in_array(CATEGORY[(int)$categoryId - 1] ?? '', CATEGORY_ENABLED, true)) {
+    $categoryId = CATEGORY_COMIC;
+    $Properties = false;
+}
 $uploadForm = new Upload($Viewer, $Properties, $Err);
 
 // COMIC-ONLY: the music lookup assets are only needed for music uploads.

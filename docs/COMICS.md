@@ -418,12 +418,14 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `lib/config.php` | add `SITE_FLAVOR`, `CATEGORY_ENABLED`, `CATEGORY_COMIC`, `COMIC_*`; add Comics to `CATEGORY_GROUPED` | `// COMIC-ONLY` |
 | `misc/example.local.config.php` | comic profile for the Docker bootstrap | `// COMIC-ONLY` |
 | `Makefile` | Docker-only commands | `# COMIC-ONLY` |
+| `misc/docker/web/entrypoint.sh` | cache ownership fallback for Docker Desktop | `# COMIC-ONLY` |
 | `README.md` | host policy | `<!-- COMIC-ONLY -->` |
 | `sections/upload/upload.php` | default category, load music JS only for Music | `// COMIC-ONLY` |
 | `sections/ajax/upload.php` | category map/default | `// COMIC-ONLY` |
 | `sections/upload/upload_handle.php` | comic branch | `// COMIC-ONLY` |
 | `app/Upload.php` | comic form context | `// COMIC-ONLY` |
 | `templates/upload/comic.twig` | comic fields | `{# COMIC-ONLY #}` |
+| `templates/upload/header.twig` | show only enabled categories | `{# COMIC-ONLY #}` |
 | `templates/upload/alert.twig` | comic upload notice | `{# COMIC-ONLY #}` |
 | `app/Util/FileChecker.php` | allow `.cb7` comic files | `// COMIC-ONLY` |
 | `sections/torrents/details.php` | comic page branch | `// COMIC-ONLY` |

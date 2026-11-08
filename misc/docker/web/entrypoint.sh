@@ -56,7 +56,9 @@ openssl req -x509 -newkey ed25519 \
 nginx -t
 
 mkdir -p /var/www/cache/twig
-chown -R gazelle:gazelle /var/log/xdebug.log /var/www/cache/twig
+# Docker Desktop may reject chown on bind-mounted files; make the cache writable instead.
+chown -R gazelle:gazelle /var/log/xdebug.log /var/www/cache/twig 2>/dev/null \
+    || chmod -R a+rwX /var/www/cache/twig || true
 
 echo "Start services..."
 

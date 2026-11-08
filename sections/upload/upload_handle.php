@@ -39,6 +39,10 @@ $ArtistNameList = [];
 $ArtistRoleList = [];
 $categoryId     = (int)$_POST['type'] + 1;
 $categoryName   = CATEGORY[$categoryId - 1];
+$isEnabledCategory = static fn (string $name): bool => in_array($name, CATEGORY_ENABLED, true);
+if (!$isEnabledCategory($categoryName)) {
+    json_error('That upload category is not available.');
+}
 $isMusicUpload  = ($categoryName === 'Music');
 $isComicUpload  = ($categoryName === 'Comics'); // COMIC-ONLY
 
