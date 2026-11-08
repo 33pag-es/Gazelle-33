@@ -464,8 +464,8 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `misc/docker/sphinxsearch/sphinx.conf` | comic index fields | `# COMIC-ONLY` |
 | `app/Json/TGroup.php` | comic response fields | `// COMIC-ONLY` |
 | `app/Json/Torrent.php` | comic response fields | `// COMIC-ONLY` |
-| `app/Api/Torrent.php` | comic API fields | `// COMIC-ONLY` |
-| `app/Api/Request.php` | guard non-music artist role | `// COMIC-ONLY` |
+| `app/API/Torrent.php` | comic API fields | `// COMIC-ONLY` |
+| `app/API/Request.php` | guard non-music artist role | `// COMIC-ONLY` |
 | `docs/07-API.md` | comic API fields | `<!-- COMIC-ONLY -->` |
 | `templates/index/page-header.twig` | hide music nav/search | `{# COMIC-ONLY #}` |
 | `templates/index/private-header.twig` | hide music RSS | `{# COMIC-ONLY #}` |
@@ -643,11 +643,11 @@ merge/split UI is hidden.
 ### Phase 7 — API, docs, and final verification
 
 Files: `app/Json/TGroup.php`, `app/Json/Torrent.php`,
-`app/Api/Torrent.php`, `app/Api/Request.php`,
+`app/API/Torrent.php`, `app/API/Request.php`,
 `docs/07-API.md`, `tests/phpunit/Comic/ApiTest.php`.
 
 Behavior: comic fields appear in JSON/API responses; music keys remain
-for compatibility; `Api\Request` guards `artistRole()` for non-Music so
+for compatibility; `API\Request` guards `artistRole()` for non-Music so
 it cannot fatal.
 
 Add tests under `tests/phpunit/Comic/`. The existing suite still runs

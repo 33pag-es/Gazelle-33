@@ -9,6 +9,8 @@ class Request extends AbstractAPI {
             json_error('Missing request id');
         }
 
+        $artistRole = $request->artistRole();
+
         return [
             'ID'              => $request->id,
             'UserID'          => $request->userId(),
@@ -32,8 +34,8 @@ class Request extends AbstractAPI {
             'TimeFilled'      => (string)$request->fillDate(),
             'GroupID'         => (string)$request->tgroupId(),
             'Tags'            => $request->tagNameList(),
-            'Artists'         => $request->artistRole()->idList(),
-            'DisplayArtists'  => $request->artistRole()->text(),
+            'Artists'         => $artistRole?->idList() ?? [],
+            'DisplayArtists'  => $artistRole?->text() ?? '',
             'Category'        => $request->categoryName(),
         ];
     }
