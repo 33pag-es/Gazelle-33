@@ -357,6 +357,15 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
     }
 
     public function text(): string {
+        // COMIC-ONLY: series title, start year, and publisher.
+        if ($this->categoryName() === 'Comics') {
+            $text = $this->name();
+            if ($this->year()) {
+                $text .= " ({$this->year()})";
+            }
+            $publisher = Comic\Series::publisher($this);
+            return $publisher ? "$text – $publisher" : $text;
+        }
         return match ($this->categoryName()) {
             'Music'  => "{$this->artistRole()->text()} – {$this->name()} [{$this->year()} {$this->releaseTypeName()}]"
                 . ($this->isShowcase() ? '[Showcase]' : ''),

@@ -431,6 +431,9 @@ abstract class TorrentAbstract extends BaseAttrObject {
      * - FLAC from any other media
      */
     public function isPerfectFlac(): bool {
+        if ($this->group()->categoryName() === 'Comics') {
+            return false;
+        }
         return $this->format() === 'FLAC'
         && (
             ($this->media() === 'CD' && $this->logScore() === 100)
@@ -445,6 +448,9 @@ abstract class TorrentAbstract extends BaseAttrObject {
      * - 24bit FLAC from any other media
      */
     public function isPerfecterFlac(): bool {
+        if ($this->group()->categoryName() === 'Comics') {
+            return false;
+        }
         return $this->format() === 'FLAC'
         && (
             ($this->media() === 'CD' && $this->logScore() === 100)
@@ -713,6 +719,15 @@ abstract class TorrentAbstract extends BaseAttrObject {
 
     public function shortLabelList(): array {
         $info = $this->info();
+        if ($this->group()->categoryName() === 'Comics') {
+            // COMIC-ONLY: issue (scanner) [format] plus the pack marker.
+            return array_values(array_filter([
+                Comic\Torrent::issueLabel($this),
+                $this->scanner(),
+                $this->format(),
+                $this->isPack() ? 'Pack' : null,
+            ], fn ($value) => $value !== null && $value !== ''));
+        }
         $label = [];
         if (!empty($info['Media'])) {
             $label[] = $info['Media'];
@@ -766,6 +781,12 @@ abstract class TorrentAbstract extends BaseAttrObject {
     public function labelList(User|null $viewer = null): array {
         $info = $this->info();
         $extra = [];
+        if ($this->group()->categoryName() === 'Comics') {
+            $extra[] = $this->labelElement(
+                $this->isChecked() ? 'tl_checked' : 'tl_unchecked',
+                $this->isChecked() ? 'CHECKED' : 'UNCHECKED',
+            );
+        }
         if ($viewer?->snatch()?->isSnatched($this)) {
             $extra[] = $this->labelElement('tl_snatched', 'Snatched!');
         }

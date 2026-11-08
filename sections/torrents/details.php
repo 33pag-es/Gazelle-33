@@ -39,6 +39,60 @@ $urlStem      = new User\Stylesheet($Viewer)->imagePath();
 $torrentList  = $tgroup->torrentIdList();
 $roleList     = $tgroup->artistRole()?->roleList();
 
+if ($tgroup->categoryName() === 'Comics') {
+    $tagUndo     = $Cache->get_value("deleted_tags_{$tgroup->id}_{$Viewer->id}");
+    $collageList = $collageMan->addToCollageDefault($tgroup, $Viewer);
+    $description = \Text::full_format(
+        $tgroup->description(),
+        cache: Enum\ImageCacheMode::cache,
+        bucket: CacheBucket::tgroup,
+    );
+    echo $Twig->render('torrent/detail-header.twig', [
+        'is_bookmarked' => new User\Bookmark($Viewer)->isBookmarked($tgroup),
+        'is_subscribed' => $isSubscribed,
+        'revision_id'   => (int)($_GET['revisionid'] ?? 0),
+        'tgroup'        => $tgroup,
+        'viewer'        => $Viewer,
+    ]);
+    echo $Twig->render('comic/series-header.twig', [
+        'collage_list' => $collageList,
+        'creator_list' => Comic\Series::creatorList($tgroup),
+        'publisher'    => Comic\Series::publisher($tgroup),
+        'tag_undo'     => $tagUndo,
+        'tgroup'       => $tgroup,
+        'viewer'       => $Viewer,
+    ]);
+    ?>
+    </div>
+    <div class="main_column">
+    <?php
+    echo $Twig->render('comic/series-torrents.twig', [
+        'flash'        => isset($_GET['checked'])
+            ? ((int)$_GET['checked'] ? 'Torrent marked checked.' : 'Torrent marked unchecked.')
+            : null,
+        'tgroup'       => $tgroup,
+        'torrent_list' => object_generator($torMan, $torrentList),
+        'url_stem'     => $urlStem,
+        'viewer'       => $Viewer,
+    ]);
+    echo $Twig->render('comic/series-description.twig', [
+        'description_html' => $description,
+    ]);
+    echo $Twig->render('comment/thread.twig', [
+        'object'    => $tgroup,
+        'comment'   => $commentPage,
+        'paginator' => $paginator,
+        'subbed'    => $isSubscribed,
+        'textarea'  => new Util\Textarea('quickpost', '')->setPreviewManual(true),
+        'url'       => $_SERVER['REQUEST_URI'],
+        'url_stem'  => 'comments.php?page=torrents',
+        'userMan'   => new Manager\User(),
+        'viewer'    => $Viewer,
+    ]);
+    View::show_footer();
+    return;
+}
+
 $section = [
     ['id' => ARTIST_COMPOSER,  'name' => 'composer',  'class' => 'artists_composers',  'role' => 'Composer',      'title' => 'Composers:'],
     ['id' => ARTIST_DJ,        'name' => 'dj',        'class' => 'artists_dj',         'role' => 'DJ / Compiler', 'title' => 'DJ / Compiler:'],

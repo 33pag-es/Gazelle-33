@@ -89,6 +89,23 @@ class Torrent extends TorrentAbstract {
      */
     public function torrentFilename(bool $asText, int $maxLength): string {
         $tgroup = $this->group();
+        // COMIC-ONLY: series - issue (scanner) [format]-<torrentId>.
+        if ($tgroup->categoryName() === 'Comics') {
+            $filename = $tgroup->name();
+            $issue    = Comic\Torrent::issueLabel($this);
+            if ($issue !== '') {
+                $filename .= " - $issue";
+            }
+            if ($this->scanner()) {
+                $filename .= " ({$this->scanner()})";
+            }
+            if ($this->format()) {
+                $filename .= " [{$this->format()}]";
+            }
+            $maxLength -= strlen((string)$this->id) + 1 + ($asText ? 4 : 8);
+            return safeFilename(shortenString($filename, $maxLength, true, false))
+                . "-" . $this->id . ($asText ? '.txt' : '.torrent');
+        }
         $filename = implode('.',
             match ($tgroup->categoryName()) {
                 'Music'  => [

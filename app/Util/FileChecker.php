@@ -3,8 +3,9 @@
 namespace Gazelle\Util;
 
 class FileChecker {
+    // COMIC-ONLY: .cb7 joins the Comics allowlist.
     protected array $comicsExtensions = [
-        'cbr', 'cbz', 'gif', 'jpeg', 'jpg', 'pdf', 'png'
+        'cbr', 'cbz', 'cb7', 'gif', 'jpeg', 'jpg', 'pdf', 'png'
     ];
 
     protected array $musicExtensions = [

@@ -96,32 +96,36 @@ final class Upload {
         if (!is_array($value)) {
             $value = [$value];
         }
-        $nameList = [];
-        $seen     = [];
+        $rawList = [];
         foreach ($value as $name) {
             if (!is_scalar($name)) {
                 throw new InvalidArgumentException('A creator name must be a string.');
             }
-            $name = trim((string)$name);
-            if ($name === '') {
-                continue;
-            }
+            $rawList = array_merge(
+                $rawList,
+                array_map(trim(...), explode(',', (string)$name)),
+            );
+        }
+        $nameList = array_values(array_filter($rawList, fn ($name) => $name !== ''));
+        $dedupe   = [];
+        $result   = [];
+        foreach ($nameList as $name) {
             if (mb_strlen($name) > 255) {
                 throw new InvalidArgumentException('A creator name must be 255 characters or fewer.');
             }
             $key = mb_strtolower($name);
-            if (!isset($seen[$key])) {
-                $seen[$key] = true;
-                $nameList[] = $name;
+            if (!isset($dedupe[$key])) {
+                $dedupe[$key] = true;
+                $result[] = $name;
             }
         }
-        if ($nameList === []) {
+        if ($result === []) {
             throw new InvalidArgumentException('Enter at least one creator.');
         }
-        if (count($nameList) > 20) {
+        if (count($result) > 20) {
             throw new InvalidArgumentException('Enter no more than 20 creators.');
         }
-        return $nameList;
+        return $result;
     }
 
     /**

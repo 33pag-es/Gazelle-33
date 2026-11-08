@@ -1,0 +1,11 @@
+{# COMIC-ONLY: series description. #}
+<div class="box torrent_description">
+    <div class="head"><strong>Series info</strong></div>
+    <div class="body">
+{% if description_html %}
+        {{ description_html|raw }}
+{% else %}
+        There is no information on this series.
+{% endif %}
+    </div>
+</div>

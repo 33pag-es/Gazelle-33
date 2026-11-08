@@ -40,6 +40,7 @@ $ArtistRoleList = [];
 $categoryId     = (int)$_POST['type'] + 1;
 $categoryName   = CATEGORY[$categoryId - 1];
 $isMusicUpload  = ($categoryName === 'Music');
+$isComicUpload  = ($categoryName === 'Comics'); // COMIC-ONLY
 
 $Properties = [];
 $Properties['Artists'] = $ArtistForm;
@@ -239,6 +240,30 @@ if (!$Validate->validate($_POST)) {
 $image = Image::fromUntrusted(trim($_POST['image'] ?? ''));
 if ($image->errorMessage()) {
     json_error($image->errorMessage());
+}
+
+$comic = null;
+if ($isComicUpload) {
+    try {
+        $comic = Comic\Upload::properties($_POST);
+    } catch (\InvalidArgumentException $e) {
+        json_error($e->getMessage());
+    }
+    $Properties['Title']                   = $comic['title'];
+    $Properties['GroupDescription']        = $comic['description'];
+    $Properties['Description']             = $comic['release_description'] ?? '';
+    $Properties['Year']                    = $comic['year'];
+    $Properties['Format']                  = $comic['format'];
+    $Properties['TagList']                 = $comic['tags'];
+    $Properties['GroupID']                 = $comic['groupid'] ?? 0;
+    $Properties['Media']                   = '';
+    $Properties['Encoding']                = '';
+    $Properties['Scene']                   = false;
+    $Properties['ReleaseType']             = null;
+    $Properties['RemasterYear']            = null;
+    $Properties['RemasterTitle']           = '';
+    $Properties['RemasterRecordLabel']     = '';
+    $Properties['RemasterCatalogueNumber'] = '';
 }
 
 $File = $_FILES['file_input']; // This is our torrent file
@@ -452,6 +477,21 @@ if ($isMusicUpload) {
     }
 }
 
+if ($isComicUpload) {
+    if ($Properties['GroupID']) {
+        $tgroup = $tgMan->findById($Properties['GroupID']);
+        if ($tgroup && $tgroup->categoryName() !== 'Comics') {
+            $tgroup = null;
+        }
+    }
+    if (is_null($tgroup)) {
+        $publisher = Comic\Publisher::softCreate($comic['publisher']);
+        $tgroup = Comic\Series::findByTitlePublisherYear(
+            $comic['title'], $comic['year'], $publisher->id
+        );
+    }
+}
+
 //For notifications--take note now whether it's a new group
 $IsNewGroup = is_null($tgroup);
 
@@ -487,6 +527,10 @@ if ($tgroup) {
     }
     $Viewer->stats()->incrementTGroup(Enum\UserSummaryTGroup::uniqueGroup);
 }
+if ($isComicUpload) {
+    Comic\Series::setPublisher($tgroup, $comic['publisher']);
+    Comic\Series::setCreators($tgroup, $comic['creators']);
+}
 $GroupID = $tgroup->id;
 $logName = $tgroup->text();
 
@@ -513,6 +557,16 @@ $torrent = $torMan->create(
     hasLogInDB:              false,
     logScore:                0,
 );
+if ($isComicUpload) {
+    Comic\Torrent::setIssue(
+        $torrent,
+        $comic['issue_start'],
+        $comic['issue_end'],
+        $comic['issue_label'],
+        $comic['scanner'],
+        $comic['pack'],
+    );
+}
 $TorrentID       = $torrent->id;
 $upload['new'][] = $torrent;
 

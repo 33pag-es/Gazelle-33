@@ -10,8 +10,10 @@ namespace Gazelle;
 
 $uploadForm = new Upload($Viewer);
 $emitJS = isset($_GET['js']);
+// COMIC-ONLY: default to the comic category.
+$categoryIndex = (int)($_GET['categoryid'] ?? CATEGORY_COMIC - 1);
 
-switch (CATEGORY[(int)$_GET['categoryid']]) {
+switch (CATEGORY[$categoryIndex] ?? '') {
     case 'Applications':
         echo $emitJS ? $uploadForm->descriptionJS() : $uploadForm->application();
         break;

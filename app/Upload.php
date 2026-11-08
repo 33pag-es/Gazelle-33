@@ -110,10 +110,15 @@ class Upload extends Base {
     }
 
     public function comic(): string {
+        // COMIC-ONLY: the group description and the torrent description are separate textareas.
+        $description = new Textarea('desc', $this->Torrent['GroupDescription'] ?? '', 60, 5);
         return self::$twig->render('upload/comic.twig', [
-            'description' => $this->releaseDescription(),
-            'is_uploaded' => $this->isUploaded,
-            'user'        => $this->user,
+            'description'         => $description,
+            'release_description' => $this->releaseDescription(),
+            'image'               => $this->Torrent['Image'] ?? new Image(null),
+            'is_uploaded'         => $this->isUploaded,
+            'torrent'             => $this->Torrent ?: [],
+            'user'                => $this->user,
         ]);
     }
 

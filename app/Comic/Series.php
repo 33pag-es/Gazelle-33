@@ -43,7 +43,6 @@ final class Series extends \Gazelle\Base {
         }
         $ids = array_keys($creatorIdList);
 
-        self::$db->begin_transaction();
         self::$db->prepared_query("
             DELETE FROM series_creator WHERE GroupID = ?
         ", $tgroup->id);
@@ -54,7 +53,6 @@ final class Series extends \Gazelle\Base {
                 VALUES (?,       ?,         ?)
             ", $tgroup->id, $creatorId, $sequence);
         }
-        self::$db->commit();
         $tgroup->flush();
         return count($ids);
     }

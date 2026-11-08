@@ -86,10 +86,20 @@ if (!isset($Properties)) {
 
 $Properties ??= false;
 $Err        ??= false;
-$categoryId ??= CATEGORY_MUSIC;
+$categoryId ??= CATEGORY_COMIC;
 $uploadForm = new Upload($Viewer, $Properties, $Err);
 
-View::show_header('Upload', ['js' => 'upload,validate_upload,musicbrainz,bbcode', 'css' => 'musicbrainz']);
+// COMIC-ONLY: the music lookup assets are only needed for music uploads.
+$isMusicCategory = CATEGORY[(int)$categoryId - 1] === 'Music';
+$headerOption = [
+    'js' => $isMusicCategory
+        ? 'upload,validate_upload,musicbrainz,bbcode'
+        : 'upload,validate_upload,bbcode',
+];
+if ($isMusicCategory) {
+    $headerOption['css'] = 'musicbrainz';
+}
+View::show_header('Upload', $headerOption);
 echo $uploadForm->head($categoryId, true);
 echo match (CATEGORY[(int)$categoryId - 1]) {
     'Audiobooks',       => $uploadForm->audiobook(),

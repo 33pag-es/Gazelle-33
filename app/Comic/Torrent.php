@@ -27,7 +27,7 @@ final class Torrent extends \Gazelle\Base {
         $torrent->flush();
     }
 
-    public static function issueLabel(BaseTorrent $torrent): string {
+    public static function issueLabel(\Gazelle\TorrentAbstract $torrent): string {
         $label = $torrent->issueLabel();
         if ($label !== null && $label !== '') {
             return $label;

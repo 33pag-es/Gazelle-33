@@ -19,6 +19,7 @@ if (is_null($torrent)) {
     Error404::error();
 }
 $uploaderId = $torrent->uploaderId();
+$isComic    = $torrent->group()->categoryName() === 'Comics'; // COMIC-ONLY
 
 if ($Viewer->id != $uploaderId && !$Viewer->permitted('torrents_edit')) {
     Error403::error("You are not allowed to edit this torrent");
@@ -50,6 +51,19 @@ $Properties['RemasterRecordLabel']     = trim($_POST['remaster_record_label'] ??
 $Properties['RemasterCatalogueNumber'] = trim($_POST['remaster_catalogue_number'] ?? '');
 foreach (Enum\TorrentFlag::cases() as $flag) {
     $Properties[$flag->value] = isset($_POST[$flag->value]);
+}
+
+$comic = null;
+if ($isComic) {
+    try {
+        $comic = Comic\Upload::properties($_POST);
+    } catch (\InvalidArgumentException $e) {
+        Error400::error($e->getMessage());
+    }
+    $Properties['Name']             = $comic['title'];
+    $Properties['GroupDescription'] = $comic['description'];
+    $Properties['Description']      = $comic['release_description'] ?? '';
+    $Properties['Format']           = $comic['format'];
 }
 
 //******************************************************************************//
@@ -132,6 +146,9 @@ switch ($torrent->group()->categoryName()) {
         }
         break;
 
+    case 'Comics':
+        break;
+
     default:
         break;
 }
@@ -142,17 +159,22 @@ if ($Err) {
     Error400::error($Err);
 }
 
-$propertyMap = [
-    'Media'                   => 'media',
-    'Format'                  => 'format',
-    'Encoding'                => 'encoding',
-    'Scene'                   => 'isScene',
-    'Description'             => 'description',
-    'RemasterYear'            => 'remasterYear',
-    'RemasterTitle'           => 'remasterTitle',
-    'RemasterRecordLabel'     => 'remasterRecordLabel',
-    'RemasterCatalogueNumber' => 'remasterCatalogueNumber',
-];
+$propertyMap = $isComic
+    ? [
+        'Format'      => 'format',
+        'Description' => 'description',
+    ]
+    : [
+        'Media'                   => 'media',
+        'Format'                  => 'format',
+        'Encoding'                => 'encoding',
+        'Scene'                   => 'isScene',
+        'Description'             => 'description',
+        'RemasterYear'            => 'remasterYear',
+        'RemasterTitle'           => 'remasterTitle',
+        'RemasterRecordLabel'     => 'remasterRecordLabel',
+        'RemasterCatalogueNumber' => 'remasterCatalogueNumber',
+    ];
 
 $change = [];
 foreach ($propertyMap as $field => $method) {
@@ -286,9 +308,44 @@ if ($Viewer->permitted('torrents_freeleech')) {
 }
 
 $torrent->modify();
+if ($isComic) {
+    $tgroup = $torrent->group();
+    $tgroup->setField('Name', $comic['title']);
+    $tgroup->setField('Year', $comic['year']);
+    $tgroup->setField('WikiBody', $comic['description']);
+    $tgroup->modify();
+    Comic\Series::setPublisher($tgroup, $comic['publisher']);
+    Comic\Series::setCreators($tgroup, $comic['creators']);
+    Comic\Torrent::setIssue(
+        $torrent,
+        $comic['issue_start'],
+        $comic['issue_end'],
+        $comic['issue_label'],
+        $comic['scanner'],
+        $comic['pack'],
+    );
+    $change[] = 'comic metadata updated';
+}
 $torrent->group()->refresh();
 
 $db->commit();
+
+if ($isComic) {
+    // Tag edits manage their own transactions, so run them after the metadata commit.
+    $tgroup  = $torrent->group();
+    $tagMan  = new Manager\Tag();
+    $current = $tgroup->tagNameList();
+    foreach ($current as $name) {
+        if (!in_array($name, $comic['tags'], true)) {
+            $tagMan->findByName($name)?->removeTGroup($tgroup);
+        }
+    }
+    foreach ($comic['tags'] as $name) {
+        if (!in_array($name, $current, true)) {
+            $tagMan->softCreate($name, $Viewer)?->addTGroup($tgroup, $Viewer, 10);
+        }
+    }
+}
 
 $changeLog = shortenString(implode(', ', $change), 300);
 $torrent->logger()->torrent($torrent, $Viewer, $changeLog)

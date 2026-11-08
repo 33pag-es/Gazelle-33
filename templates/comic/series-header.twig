@@ -1,0 +1,32 @@
+{# COMIC-ONLY: comic series sidebar. #}
+<div class="box">
+    <div class="head"><strong>{{ tgroup.name }}</strong></div>
+    <ul class="stats nobullet">
+        <li>Year: {{ tgroup.year }}</li>
+{% if publisher %}
+        <li>Publisher: <a href="torrents.php?publishername={{ publisher|url_encode }}">{{ publisher }}</a></li>
+{% endif %}
+{% if creator_list %}
+        <li>Creators:
+{%  for creator in creator_list %}
+            <a href="torrents.php?creatorname={{ creator|url_encode }}">{{ creator }}</a>{% if not loop.last %}, {% endif %}
+{%  endfor %}
+        </li>
+{% endif %}
+    </ul>
+</div>
+{% include 'torrent/collage-add.twig' with {
+    'collage_list' : collage_list,
+    'tgroup_id'    : tgroup.id,
+    'viewer'       : viewer,
+} only %}
+{% include 'tgroup/tag.twig' with {'tag_undo': tag_undo, 'tgroup': tgroup, 'viewer': viewer} only %}
+<div class="box">
+    <div class="head"><strong>Statistics</strong></div>
+    <ul class="nobullet">
+        <li>Downloads: {{ tgroup.stats.downloadTotal|number_format }}</li>
+        <li>Leechers: {{ tgroup.stats.leechTotal|number_format }}</li>
+        <li>Snatches: {{ tgroup.stats.snatchTotal|number_format }}</li>
+        <li>Seeders: {{ tgroup.stats.seedingTotal|number_format }}</li>
+    </ul>
+</div>

@@ -1,22 +1,64 @@
-{% from 'macro/form.twig' import autocomplete %}
+{% from 'macro/form.twig' import autocomplete, selected %}
 <table id="form-comic-upload" cellpadding="3" cellspacing="1" border="0" class="layout border slice" width="100%">
 {% include 'upload/alert.twig' %}
     <tr id="name">
-{% if not is_uploaded %}
-        <td class="label">Title:</td>
-        <td><input type="text" id="title" name="title" size="60" value=""></td>
+        <td class="label">Series title:</td>
+        <td><input type="text" id="title" name="title" size="60" value="{{ torrent.Title }}"></td>
+    </tr>
+    <tr>
+        <td class="label">Publisher:</td>
+        <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"></td>
+    </tr>
+    <tr>
+        <td class="label">Creators:</td>
+        <td>
+            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}">
+            <span class="small">Separate multiple creators with commas.</span>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">Year:</td>
+        <td><input type="number" id="year" name="year" size="5" max="{{ 'now'|date('Y') + 1 }}" value="{{ torrent.Year }}"></td>
+    </tr>
+    <tr>
+        <td class="label">Issue start:</td>
+        <td><input type="number" id="issue_start" name="issue_start" size="8" min="0" max="100000" value="{{ torrent.IssueStart }}"></td>
+    </tr>
+    <tr>
+        <td class="label">Issue end:</td>
+        <td><input type="number" id="issue_end" name="issue_end" size="8" min="0" max="100000" value="{{ torrent.IssueEnd }}">
+            <span class="small">Leave empty for a single issue.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Issue label:</td>
+        <td><input type="text" id="issue_label" name="issue_label" size="32" value="{{ torrent.IssueLabel }}">
+            <span class="small">Use for specials, annuals, or any issue without a number.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Scanner:</td>
+        <td><input type="text" id="scanner" name="scanner" size="40" value="{{ torrent.Scanner }}"></td>
+    </tr>
+    <tr>
+        <td class="label">Format:</td>
+        <td>
+            <select id="format" name="format">
+{%  for comicFormat in constant('COMIC_FORMAT') %}
+                <option value="{{ comicFormat }}"{{ selected(comicFormat == torrent.Format) }}>{{ comicFormat }}</option>
+{%  endfor %}
+            </select>
+        </td>
     </tr>
     <tr>
         <td class="label">Tags:</td>
-        <td><input type="text" id="tags" name="tags" size="60" value=""{{
-            autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}></td>
+        <td><input type="text" id="tags" name="tags" size="60" value="{{ torrent.TagList }}"{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}></td>
     </tr>
-{%  include 'upload/cover.twig' with {'is_uploaded': is_uploaded, 'image': torrent.Image} only %}
-{% endif %}
+{% include 'upload/cover.twig' with {'is_uploaded': false, 'image': image} only %}
     <tr>
         <td class="label">Description:</td>
-        <td>
-            {{ description.emit|raw }}
-        </td>
+        <td>{{ description.emit|raw }}</td>
+    </tr>
+    <tr>
+        <td class="label">Release description:</td>
+        <td>{{ release_description.emit|raw }}</td>
     </tr>
 </table>

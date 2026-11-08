@@ -1,6 +1,17 @@
+{# COMIC-ONLY: profile-aware upload notice. #}
+{% if constant('SITE_FLAVOR') == 'comics' %}
     <tr>
         <td class="label"></td>
+        <td>
+            <strong class="important_text">PLEASE NOTE:</strong>
+            <b>{{ constant('SITE_NAME') }} is dedicated to comic books.
+            <br>Upload a single issue or an issue pack as a .cbz, .cbr, .cb7, or .pdf file.
+            <br>When in doubt, <a href="staffpm.php">send a Staff PM</a> beforehand for guidance.</b>
         </td>
+    </tr>
+{% else %}
+    <tr>
+        <td class="label"></td>
         <td>
             <strong class="important_text">PLEASE NOTE:</strong>
             <b>{{ constant('SITE_NAME') }} is dedicated to music.
@@ -10,3 +21,4 @@
             guidance.</b>
         </td>
     </tr>
+{% endif %}

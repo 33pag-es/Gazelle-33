@@ -10,6 +10,7 @@ $includeFile = match ($_REQUEST['action'] ?? '') {
     'add_tag'            => '../ajax/torrent_tag_add.php',
     'autocomplete_tags'  => 'autocomplete_tags.php',
     'changecategory'     => 'edit_category_handle.php',
+    'check'              => 'check.php',
     'collector'          => 'collector.php',  // NB: called from better.php
     'delete_alias'       => 'delete_alias.php',
     'delete'             => 'delete.php',

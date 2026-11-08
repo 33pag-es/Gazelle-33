@@ -1,0 +1,38 @@
+{# COMIC-ONLY: one comic issue row. #}
+{% set issue = torrent.issueLabel ?: (
+    torrent.issueStart is not null
+        ? (torrent.issueEnd is not null and torrent.issueEnd > torrent.issueStart
+            ? torrent.issueStart ~ '–' ~ torrent.issueEnd
+            : torrent.issueStart)
+        : '–'
+) %}
+    <tr class="torrent_row groupid_{{ tgroup.id }}" id="torrent{{ torrent.id }}">
+        <td class="td_info">
+{% include 'torrent/action-v2.twig' with {
+    'edit':    true,
+    'pl':      true,
+    'js':      true,
+    'remove':  true,
+    'torrent': torrent,
+    'viewer':  viewer,
+} only %}
+            <a href="{{ torrent.location }}">{{ tgroup.name }}</a>
+{% if viewer.permitted('torrents_edit') %}
+            <form method="post" action="torrents.php?action=check" style="display: inline;">
+                <input type="hidden" name="auth" value="{{ viewer.auth }}">
+                <input type="hidden" name="torrentid" value="{{ torrent.id }}">
+                <input type="hidden" name="checked" value="{{ torrent.isChecked ? 0 : 1 }}">
+                <button class="brackets" type="submit">{{ torrent.isChecked ? 'Uncheck' : 'Check' }}</button>
+            </form>
+{% endif %}
+        </td>
+        <td>{{ issue }}</td>
+        <td>{{ torrent.scanner ?: '–' }}</td>
+        <td>{{ torrent.format ?: '–' }}</td>
+        <td>{% if torrent.isChecked %}<strong class="important_text">CHECKED</strong>{% else %}<span class="min_padding">UNCHECKED</span>{% endif %}</td>
+{% include 'torrent/stats.twig' with {
+    'prev_primary': null,
+    'torrent':      torrent,
+    'viewer':       viewer,
+} only %}
+    </tr>

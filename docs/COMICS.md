@@ -424,10 +424,13 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `sections/upload/upload_handle.php` | comic branch | `// COMIC-ONLY` |
 | `app/Upload.php` | comic form context | `// COMIC-ONLY` |
 | `templates/upload/comic.twig` | comic fields | `{# COMIC-ONLY #}` |
+| `templates/upload/alert.twig` | comic upload notice | `{# COMIC-ONLY #}` |
+| `app/Util/FileChecker.php` | allow `.cb7` comic files | `// COMIC-ONLY` |
 | `sections/torrents/details.php` | comic page branch | `// COMIC-ONLY` |
 | `sections/torrents/browse.php` | comic search defaults | `// COMIC-ONLY` |
 | `sections/torrents/edit.php` | comic edit form | `// COMIC-ONLY` |
 | `sections/torrents/edit_handle.php` | comic edit branch | `// COMIC-ONLY` |
+| `sections/torrents/index.php` | checked-state route | `// COMIC-ONLY` |
 | `templates/torrent/browse-header.twig` | comic filters | `{# COMIC-ONLY #}` |
 | `templates/torrent/detail-torrent.twig` | comic row include | `{# COMIC-ONLY #}` |
 | `app/TGroup.php` | comic text/link/grouping, freeleech selection | `// COMIC-ONLY` |
