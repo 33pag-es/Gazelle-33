@@ -577,7 +577,9 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 (ID, GroupID, GroupName, Year, CategoryID, Time, ReleaseType,
                 VanityHouse, Size, Snatched, Seeders, Leechers, LogScore, Scene, HasLog,
                 HasCue, FreeTorrent, Media, Format, Encoding, Description, RemasterYear, RemasterTitle,
-                RemasterRecordLabel, RemasterCatalogueNumber, FileList, TagList, VoteScore, ArtistName)
+                RemasterRecordLabel, RemasterCatalogueNumber, FileList, TagList,
+                Publisher, Creators, issue_start, issue_end, scanner, pack, checked,
+                VoteScore, ArtistName)
             SELECT
                 t.ID, g.ID, g.Name, g.Year, g.CategoryID, t.created, g.ReleaseType,
                 g.VanityHouse, t.Size, tls.Snatched, tls.Seeders, tls.Leechers, t.LogScore,
@@ -585,10 +587,18 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 cast(t.FreeTorrent AS CHAR), t.Media, t.Format, t.Encoding, t.Description,
                 t.RemasterYear, t.RemasterTitle, t.RemasterRecordLabel, t.RemasterCatalogueNumber,
                 replace(replace(t.FileList, '_', ' '), '/', ' ') AS FileList,
-                replace(group_concat(coalesce(t2.Name, '') SEPARATOR ' '), '.', '_'), ?, ?
+                replace(group_concat(coalesce(t2.Name, '') SEPARATOR ' '), '.', '_'),
+                coalesce(p.Name, ''),
+                coalesce((SELECT group_concat(c.Name SEPARATOR ' ')
+                    FROM series_creator sc
+                    INNER JOIN creator c ON (c.CreatorID = sc.CreatorID)
+                    WHERE sc.GroupID = g.ID), ''),
+                t.IssueStart, t.IssueEnd, coalesce(t.Scanner, ''),
+                cast(t.Pack AS CHAR), cast(t.Checked AS CHAR), ?, ?
             FROM torrents t
             INNER JOIN torrents_leech_stats tls ON (tls.TorrentID = t.ID)
             INNER JOIN torrents_group g ON (g.ID = t.GroupID)
+            LEFT JOIN publisher p ON (p.PublisherID = g.PublisherID)
             LEFT JOIN torrents_tags tt ON (tt.GroupID = g.ID)
             LEFT JOIN tags t2 ON (t2.ID = tt.TagID)
             WHERE g.ID = ?

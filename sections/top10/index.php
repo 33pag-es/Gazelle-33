@@ -13,6 +13,10 @@ if (!$Viewer->permitted('site_top10')) {
     Error403::error('Your class does not have permission to view the top 10 lists.');
 }
 
+if (preg_match('/^comics$/', SITE_FLAVOR) && ($_GET['type'] ?? '') === 'lastfm') {
+    Error404::error();
+}
+
 require __DIR__ . match ($_GET['type'] ?? '') {
     'donors'  => '/donors.php',
     'history' => '/history.php',

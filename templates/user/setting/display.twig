@@ -47,7 +47,7 @@
         <td>
             <div class="option_group">
                 <ul class="options_list nobullet">
-                    <p class="min_padding">In torrent search results and on artist pages, “open” will expand torrent groups by default, and “closed” will collapse torrent groups by default.</p>
+                    <p class="min_padding">In torrent search results and on {{ constant('SITE_FLAVOR') == 'comics' ? 'series' : 'artist' }} pages, “open” will expand torrent groups by default, and “closed” will collapse torrent groups by default.</p>
                     <li>
                         <input type="radio" name="torrentgrouping" id="torrent_grouping_open" value="0"{{ checked(user.option('TorrentGrouping') == 0) }}>
                         <label for="torrent_grouping_open">Open</label>
@@ -60,6 +60,7 @@
             </div>
         </td>
     </tr>
+{% if constant('SITE_FLAVOR') != 'comics' %}
     <tr id="tor_reltype_tr">
         <td style="vertical-align: top;" class="label"><a name="order-reltype"></a><strong>Order of release types<br>(artist pages)</strong></td>
         <td>
@@ -77,6 +78,7 @@
             <input type="hidden" id="sorthide" name="sorthide" value="">
         </td>
     </tr>
+{% endif %}
     <tr id="tor_cover_tor_tr">
         <td class="label tooltip" title="Enabling cover artwork for torrents will show cover artwork next to torrent information. Enabling additional cover artwork will display all additional cover artwork as well.">
             <strong>Cover art (torrents)</strong>

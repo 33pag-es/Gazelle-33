@@ -1,4 +1,24 @@
 {{ header('Collages Rules') }}
+{% if constant('SITE_FLAVOR') == 'comics' %}
+<div class="thin">
+{% include 'rules/toc.twig' %}
+<div class="header">
+    <h2 class="general">Collages</h2>
+</div>
+<div class="box pad rule_summary" style="padding: 10px 10px 10px 20px;">
+    <ul>
+        <li>Collages in the Series, Staff Picks, Charts, and Awards categories must be based on fact, not opinion.</li>
+        <li>Collages in the Personal, Theme, and Genre Introduction categories may be based on opinion. Respect other users' opinions.</li>
+        <li>Vandalizing a collage will result in collage editing privileges being removed, at a minimum.</li>
+        <li>There may only be one collage per Genre Introduction or Theme. Duplicate collages will be deleted.</li>
+        <li>Collages are not an alternative to tags. Use tags for attributes that apply to many series.</li>
+        <li>Check whether a similar collage already exists before creating a new one.</li>
+        <li>Give every collage an appropriate title and a description explaining its purpose.</li>
+    </ul>
+</div>
+</div>
+{{ footer() }}
+{% else %}
 <div class="thin">
 {% include 'rules/toc.twig' %}
 <div class="header">
@@ -66,3 +86,4 @@
 </div>
 </div>
 {{ footer() }}
+{% endif %}

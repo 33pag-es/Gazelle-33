@@ -1,3 +1,11 @@
+{% if constant('SITE_FLAVOR') == 'comics' %}
+<ul>
+<li>Separate tags with commas. Use dots or dashes inside a tag instead of spaces.</li>
+<li>Use the official tags offered by the upload form. Avoid abbreviations and duplicate synonyms.</li>
+<li>Tag the series and its content, not the individual upload or scanner. Tags such as <strong class="important_text">cbz</strong>, <strong class="important_text">scan</strong> and <strong class="important_text">retail</strong> are not useful.</li>
+<li>Do not add subjective tags such as <strong class="important_text">awesome</strong> or <strong class="important_text">best</strong>.</li>
+</ul>
+{% else %}
 <ul>
 
 <li>Multiple tags must be separated by commas, and you can use a dot (".") or
@@ -49,3 +57,4 @@ on <a href="upload.php">the torrent upload page</a>'
 do not add it (it can always be added afterwards).</strong></li>
 
 </ul>
+{% endif %}

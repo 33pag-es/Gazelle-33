@@ -6,6 +6,10 @@ declare(strict_types=1);
 
 namespace Gazelle;
 
+if (preg_match('/^comics$/', SITE_FLAVOR)) {
+    Error404::error();
+}
+
 if ($Viewer->disableRequests()) {
     Error403::error('Your request privileges have been removed.');
 }

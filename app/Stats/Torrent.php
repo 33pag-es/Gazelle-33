@@ -19,6 +19,9 @@ class Torrent extends \Gazelle\Base {
             'stats_album_count',
             'stats_artist_count',
             'stats_perfect_total',
+            'stats_series_count',
+            'stats_issue_count',
+            'stats_checked_count',
         ]);
         unset($this->info);
         return $this;
@@ -250,6 +253,55 @@ class Torrent extends \Gazelle\Base {
             ];
         }
         return $list;
+    }
+
+    /**
+     * Total number of comic series (category 7 == Comics)
+     */
+    public function seriesTotal(): int {
+        $total = self::$cache->get_value('stats_series_count');
+        if ($total === false) {
+            $total = (int)self::$db->scalar("
+                SELECT count(*) FROM torrents_group WHERE CategoryID = ?
+            ", CATEGORY_COMIC);
+            self::$cache->cache_value('stats_series_count', $total, 7200 + random_int(0, 300));
+        }
+        return $total;
+    }
+
+    /**
+     * Total number of comic issues
+     */
+    public function issueTotal(): int {
+        $total = self::$cache->get_value('stats_issue_count');
+        if ($total === false) {
+            $total = (int)self::$db->scalar("
+                SELECT count(*)
+                FROM torrents t
+                INNER JOIN torrents_group g ON (g.ID = t.GroupID)
+                WHERE g.CategoryID = ?
+            ", CATEGORY_COMIC);
+            self::$cache->cache_value('stats_issue_count', $total, 7200 + random_int(0, 300));
+        }
+        return $total;
+    }
+
+    /**
+     * Total number of checked comic issues
+     */
+    public function checkedTotal(): int {
+        $total = self::$cache->get_value('stats_checked_count');
+        if ($total === false) {
+            $total = (int)self::$db->scalar("
+                SELECT count(*)
+                FROM torrents t
+                INNER JOIN torrents_group g ON (g.ID = t.GroupID)
+                WHERE g.CategoryID = ?
+                    AND t.Checked = 1
+            ", CATEGORY_COMIC);
+            self::$cache->cache_value('stats_checked_count', $total, 7200 + random_int(0, 300));
+        }
+        return $total;
     }
 
     /**

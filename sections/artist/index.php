@@ -6,6 +6,10 @@ declare(strict_types=1);
 
 namespace Gazelle;
 
+if (preg_match('/^comics$/', SITE_FLAVOR)) {
+    Error404::error();
+}
+
 if (isset($_POST['action'])) {
     require __DIR__ . match ($_POST['action']) {
         'add_similar'     => '/add_similar.php',

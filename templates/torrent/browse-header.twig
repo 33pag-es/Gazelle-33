@@ -30,6 +30,82 @@
 
     <div id="ft_container" class="pad{{ hidden(not show_search) }}">
     <table class="layout">
+{% if constant('SITE_FLAVOR') == 'comics' %}
+        <tr id="comic_series">
+            <td class="label">Series name:</td>
+            <td colspan="3" class="ft_groupname">
+                <input type="search" spellcheck="false" size="40" name="series" class="inputtext smaller" value="{{ input.series }}">
+            </td>
+        </tr>
+        <tr id="comic_creator">
+            <td class="label">Creator:</td>
+            <td colspan="3" class="ft_creatorname">
+                <input type="search" spellcheck="false" size="40" name="creatorname" class="inputtext smaller" value="{{ input.creatorname }}">
+            </td>
+        </tr>
+        <tr id="comic_publisher">
+            <td class="label">Publisher:</td>
+            <td colspan="3" class="ft_publishername">
+                <input type="search" spellcheck="false" size="40" name="publishername" class="inputtext smaller" value="{{ input.publishername }}">
+            </td>
+        </tr>
+        <tr id="comic_issue">
+            <td class="label">Issue:</td>
+            <td class="ft_issue">
+                <input type="search" size="10" name="issue" class="inputtext smallest" value="{{ input.issue }}">
+            </td>
+            <td class="label">Scanner:</td>
+            <td class="ft_scanner">
+                <input type="search" size="30" name="scanner" class="inputtext smallest" value="{{ input.scanner }}">
+            </td>
+        </tr>
+        <tr id="comic_format">
+            <td class="label">Format:</td>
+            <td class="ft_format">
+                <select name="format">
+                    <option value="">Format</option>
+{%  for format in constant('COMIC_FORMAT') %}
+                    <option value="{{ format }}"{{ selected(format == input.format) }}>{{ format }}</option>
+{%  endfor %}
+                </select>
+            </td>
+            <td class="label">Year:</td>
+            <td class="ft_year">
+                <input type="search" name="year" class="inputtext smallest" value="{{ input.year }}" size="4">
+            </td>
+        </tr>
+        <tr id="comic_checked">
+            <td class="label">Checked:</td>
+            <td class="ft_checked">
+                <select name="checked">
+                    <option value="">Checked state</option>
+                    <option value="1"{{ selected(input.checked == 1) }}>Checked</option>
+                    <option value="0"{{ selected(input.checked|default('-') == '0') }}>Unchecked</option>
+                </select>
+            </td>
+            <td class="label">Pack:</td>
+            <td class="ft_pack">
+                <select name="pack">
+                    <option value="">Pack state</option>
+                    <option value="1"{{ selected(input.pack == 1) }}>Pack</option>
+                    <option value="0"{{ selected(input.pack|default('-') == '0') }}>Single issue</option>
+                </select>
+            </td>
+        </tr>
+        <tr id="comic_freetorrent">
+            <td class="label">Leech status:</td>
+            <td colspan="3" class="ft_freetorrent">
+                <select name="freetorrent">
+                    <option value="">Leech Status</option>
+                    <option value="1"{{ selected(input.freetorrent == 1) }}>Freeleech</option>
+                    <option value="2"{{ selected(input.freetorrent == 2) }}>Neutral Leech</option>
+                    <option value="3"{{ selected(input.freetorrent == 3) }}>Either</option>
+                    <option value="0"{{ selected(input.freetorrent|default('-') == '0') }}>Normal</option>
+                </select>
+            </td>
+        </tr>
+{% endif %}
+{% if constant('SITE_FLAVOR') != 'comics' %}
         <tr id="artist_name" class="ftr_advanced{{ hidden(show_basic)  }}">
             <td class="label">Artist name:</td>
             <td colspan="3" class="ft_artistname">
@@ -58,6 +134,8 @@
                 <input type="search" name="year" class="inputtext smallest fti_advanced" value="{{ input.year }}" size="4">
             </td>
         </tr>
+{% endif %}
+{% if constant('SITE_FLAVOR') != 'comics' %}
         <tr id="edition_expand" class="ftr_advanced{{ hidden(show_basic and (not show_remaster))  }}">
             <td colspan="4" class="center ft_edition_expand">
                 <a href="#" class="brackets" onclick="ToggleEditionRows(); return false;">Click here to toggle searching for specific remaster information</a>
@@ -73,6 +151,7 @@
                 <input type="search" name="remasteryear" class="inputtext smallest fti_advanced" value="{{ input.remasteryear }}" size="4">
             </td>
         </tr>
+{% endif %}
         <tr id="file_list" class="ftr_advanced{{ hidden(show_basic) }}">
             <td class="label">File list:</td>
             <td colspan="3" class="ft_filelist">
@@ -85,6 +164,7 @@
                 <input type="search" spellcheck="false" size="40" name="description" class="inputtext fti_advanced" value="{{ input.description }}">
             </td>
         </tr>
+{% if constant('SITE_FLAVOR') != 'comics' %}
         <tr id="rip_specifics" class="ftr_advanced{{ hidden(show_basic) }}">
             <td class="label">Rip specifics:</td>
             <td class="nobr ft_ripspecifics" colspan="3">
@@ -149,6 +229,7 @@
                 </select>
             </td>
         </tr>
+{% endif %}
         <tr id="search_terms" class="ftr_basic{{ hidden(not show_basic) }}">
             <td class="label">Search terms:</td>
             <td colspan="3" class="ftb_searchstr">
@@ -185,7 +266,7 @@
         </tr>
         <tr id="search_group_results">
             <td class="label">
-                <label for="group_results">Group by release:</label>
+                <label for="group_results">Group by {{ constant('SITE_FLAVOR') == 'comics' ? 'series' : 'release' }}:</label>
             </td>
             <td colspan="3" class="ft_group_results">
                 <input type="checkbox" value="1" name="group_results" id="group_results"{{ checked(grouped) }}>
@@ -195,12 +276,19 @@
 
     <table class="layout cat_list ft_cat_list">
         <tr>
+{% if constant('SITE_FLAVOR') == 'comics' %}
+            <td style="width:100%; padding-left: 1.6em; text-indent:-1.6em">
+                <label><input type="checkbox" name="filter_cat[{{ constant('CATEGORY_COMIC') }}]" id="cat_{{ constant('CATEGORY_COMIC') }}" value="1"{{ checked(input.filter_cat[constant('CATEGORY_COMIC')]) }}>
+                Comics</label>
+            </td>
+{% else %}
 {% for key, name in constant('CATEGORY') %}
             <td style="width:{{ (100 / constant('CATEGORY')|length)|round(1) }}%; padding-left: 1.6em; text-indent:-1.6em">
                 <label><input type="checkbox" name="filter_cat[{{ key + 1 }}]" id="cat_{{ key + 1 }}" value="1"{{ checked(input.filter_cat[key + 1]) }}>
                 {{ name }}</label>
             </td>
 {% endfor %}
+{% endif %}
         </tr>
     </table>
 
@@ -237,7 +325,9 @@
         <tr>
             <td>
                 <a class="brackets" href="random.php?action=torrent">Random Torrent</a>
+{% if constant('SITE_FLAVOR') != 'comics' %}
                 <a class="brackets" href="random.php?action=artist">Random Artist</a>
+{% endif %}
             </td>
             <td class="label">
             </td>

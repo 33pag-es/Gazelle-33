@@ -15,6 +15,7 @@ $tagMan    = new Manager\Tag();
 $tgMan     = new Manager\TGroup();
 $torMan    = new Manager\Torrent();
 $snatcher  = $Viewer->snatch();
+$isComic   = (bool)preg_match('/^comics$/', SITE_FLAVOR);
 
 if (isset($_GET['searchstr']) || isset($_GET['groupname'])) {
     $torrent = $torMan->findByInfohash($_GET['searchstr'] ?? $_GET['groupname']);
@@ -171,6 +172,14 @@ foreach ($Results as $Key => $GroupID) {
 <?php    } ?>
             <div class="group_info clear">
                 <?= $tgroup->link() ?>
+<?php if ($isComic) { ?>
+                <div class="comic_group_meta">
+                    <?= html_escape((string)$tgroup->year()) ?>
+                    · <?= html_escape(\Gazelle\Comic\Series::publisher($tgroup) ?? 'Unknown publisher') ?>
+                    · <?= html_escape(implode(', ', \Gazelle\Comic\Series::creatorList($tgroup))) ?>
+                    · <?= count($torrentList) ?> issue<?= count($torrentList) === 1 ? '' : 's' ?>
+                </div>
+<?php } ?>
                 <span style="float: right">
                 <?= $Twig->render('bookmark/action.twig', [
                     'class'         => 'torrent',
@@ -239,6 +248,9 @@ foreach ($Results as $Key => $GroupID) {
                 'viewer'  => $Viewer,
             ]) ?>
             &raquo; <?= $torrent->shortLabelLink() ?>
+<?php if ($isComic) { ?>
+            <?= implode(' ', $torrent->labelList($Viewer)) ?>
+<?php } ?>
         </td>
         <td class="td_time nobr"><?=time_diff($torrent->created(), 1)?></td>
 <?= $Twig->render('torrent/stats.twig', [
@@ -278,7 +290,12 @@ foreach ($Results as $Key => $GroupID) {
                     'torrent' => $torrent,
                     'viewer'  => $Viewer,
                 ]) ?>
+<?php if ($isComic) { ?>
+                <a href="<?= $torrent->url() ?>"><?= html_escape($tgroup->name()) ?></a>
+                <?= $torrent->label($Viewer) ?>
+<?php } else { ?>
                 <?= $torrent->fullLink() ?>
+<?php } ?>
                 <div class="tags"><?= implode(', ',
                     array_map(fn ($name) => "<a href=\"torrents.php?action="
                         . ($advancedSearch ? 'advanced' : 'basic')

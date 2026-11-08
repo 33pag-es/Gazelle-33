@@ -2,7 +2,9 @@
 
 <div class="linkbox">
     <a href="top10.php?type=torrents" class="brackets">{{ active('Torrents', selected == 'torrents') }}</a>
+{% if constant('SITE_FLAVOR') != 'comics' %}
     <a href="top10.php?type=lastfm" class="brackets">{{ active('Last.fm', selected == 'lastfm') }}</a>
+{% endif %}
     <a href="top10.php?type=users" class="brackets">{{ active('Users', selected == 'users') }}</a>
     <a href="top10.php?type=tags" class="brackets">{{ active('Tags', selected == 'tags') }}</a>
     <a href="top10.php?type=votes" class="brackets">{{ active('Votes', selected == 'votes') }}</a>

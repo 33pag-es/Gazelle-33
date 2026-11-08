@@ -125,12 +125,15 @@ if ($Viewer->permitted('site_advanced_top10')) {
                     <input type="radio" id="rdoAny" name="anyall" value="any"<?= $anyAll != 'all' ? ' checked' : '' ?>><label for="rdoAny"> Any</label>
                 </td>
             </tr>
+<?php if (!preg_match('/^comics$/', SITE_FLAVOR)) { ?>
             <tr id="artistfilter">
                 <td class="label">Exclude Artists (one on each line):</td>
                 <td>
                     <textarea name="excluded_artists" rows="3" cols="25" style="width: 95%"><?= html_escape($excludedArtists) ?></textarea>&nbsp;
                 </td>
             </tr>
+<?php } ?>
+<?php if (!preg_match('/^comics$/', SITE_FLAVOR)) { ?>
             <tr>
                 <td class="label">Format:</td>
                 <td>
@@ -143,6 +146,7 @@ if ($Viewer->permitted('site_advanced_top10')) {
                     </select>
                 </td>
             </tr>
+<?php } ?>
             <tr>
                 <td colspan="2" class="center">
                     <input type="submit" value="Filter torrents">

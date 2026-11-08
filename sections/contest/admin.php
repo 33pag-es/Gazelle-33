@@ -12,6 +12,9 @@ namespace Gazelle;
 if (!$Viewer->permitted('admin_manage_contest')) {
     Error403::error();
 }
+if (preg_match('/^comics$/', SITE_FLAVOR)) {
+    Error404::error();
+}
 
 $contestMan = new Manager\Contest();
 $create     = isset($_GET['action']) && $_GET['action'] === 'create';

@@ -25,11 +25,13 @@
         onchange="if (this.options[this.selectedIndex].value == '0') { $('#namebox').ghide(); $('#personal').gshow(); } else { $('#namebox').gshow(); $('#personal').ghide();}"
 {% endif %}>
 {% for id, name in constant('COLLAGE') %}
+    {% if constant('SITE_FLAVOR') != 'comics' or id not in [3, 4, 7] %}
     {% if (id == constant('COLLAGE_PERSONAL_ID') and viewer.canCreatePersonalCollage)
         or
         (id != constant('COLLAGE_PERSONAL_ID') and viewer.permitted('site_collages_create'))
     %}
                         <option value="{{ id }}"{{ selected(id == category) }}>{{ name }}</option>
+    {% endif %}
     {% endif %}
 {% endfor %}
                     </select>

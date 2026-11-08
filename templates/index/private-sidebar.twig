@@ -2,7 +2,7 @@
 <div class="thin">
     <div class="sidebar">
 
-{% if aotm?.tgroup %}
+{% if constant('SITE_FLAVOR') != 'comics' and aotm?.tgroup %}
 <div class="box">
     <div class="head colhead_dark">
         <strong>Album of the Month</strong>
@@ -150,13 +150,21 @@
         <li>Users active this month: {{ user_stats.monthActiveTotal|number_format }} ({{
             (user_stats.monthActiveTotal / user_count * 100)|number_format(1) }}%)</li>
         <li>Torrents: {{ torrent_stats.torrentTotal|number_format }}</li>
+{% if constant('SITE_FLAVOR') == 'comics' %}
+        <li>Series: {{ torrent_stats.seriesTotal|number_format }}</li>
+        <li>Issues: {{ torrent_stats.issueTotal|number_format }}</li>
+        <li>Checked: {{ torrent_stats.checkedTotal|number_format }}</li>
+{% else %}
         <li>Releases: {{ torrent_stats.albumTotal|number_format }}</li>
         <li>Artists: {{ torrent_stats.artistTotal|number_format }}</li>
         <li>"Perfect" FLACs: {{ torrent_stats.perfectFlacTotal|number_format }}</li>
         <li> ↳ <a href="better.php?method=single"><span class="tooltip" title="Here be bonus points!">Single seeded: {{ site_info.singleSeededTotal|number_format }}</span></a></li>
+{% endif %}
         <li>Collages: {{ collage_count|number_format }}</li>
+{% if constant('SITE_FLAVOR') != 'comics' %}
         <li>Requests: {{ request_stats.total|number_format }} ({{
             request_stats.filledPercent|number_format(1) }}% filled)</li>
+{% endif %}
         <li>Snatches: {{ user_stats.snatchTotal|number_format }}</li>
         <li>Peers: {{ user_stats.peerTotal|number_format }}</li>
         <li>Seeders: {{ user_stats.seederTotal|number_format }}</li>

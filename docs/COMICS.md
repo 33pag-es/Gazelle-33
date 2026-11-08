@@ -444,6 +444,23 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `app/Collector/Collage.php` | comic category for collage zips | `// COMIC-ONLY` |
 | `app/Collector/TList.php` | comic category for torrent-list zips | `// COMIC-ONLY` |
 | `app/Search/Torrent.php` | comic search fields | `// COMIC-ONLY` |
+| `app/Stats/Torrent.php` | comic series/issue/checked counters | `// COMIC-ONLY` |
+| `app/Route/Index/Authenticated.php` | hide featured album | `// COMIC-ONLY` |
+| `sections/requests/index.php` | 404 for comics | `// COMIC-ONLY` |
+| `sections/better/index.php` | 404 for comics | `// COMIC-ONLY` |
+| `sections/artist/index.php` | 404 for comics | `// COMIC-ONLY` |
+| `sections/top10/index.php` | hide Last.fm | `// COMIC-ONLY` |
+| `sections/top10/torrents.php` | hide music filters | `// COMIC-ONLY` |
+| `sections/contest/admin.php` | 404 for comics | `// COMIC-ONLY` |
+| `templates/index/page-header.twig` | hide artist/request search | `{# COMIC-ONLY #}` |
+| `templates/index/private-header.twig` | hide music OpenSearch/RSS | `{# COMIC-ONLY #}` |
+| `templates/index/private-sidebar.twig` | comic counters, hide AOTM | `{# COMIC-ONLY #}` |
+| `templates/rules/tag.twig` | comic tag prose | `{# COMIC-ONLY #}` |
+| `templates/rules/collage.twig` | comic collage prose | `{# COMIC-ONLY #}` |
+| `templates/user/edit-notification-filter.twig` | hide music dimensions | `{# COMIC-ONLY #}` |
+| `templates/user/setting/display.twig` | comic display wording | `{# COMIC-ONLY #}` |
+| `templates/collage/new.twig` | hide artist/label types | `{# COMIC-ONLY #}` |
+| `templates/top10/linkbox.twig` | hide Last.fm tab | `{# COMIC-ONLY #}` |
 | `misc/docker/sphinxsearch/sphinx.conf` | comic index fields | `# COMIC-ONLY` |
 | `app/Json/TGroup.php` | comic response fields | `// COMIC-ONLY` |
 | `app/Json/Torrent.php` | comic response fields | `// COMIC-ONLY` |

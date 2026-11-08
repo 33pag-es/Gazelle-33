@@ -58,7 +58,11 @@ class Torrent {
         'haslog' => false,
         'scene' => false,
         'vanityhouse' => false,
-        'year' => false];
+        'year' => false,
+        'checked' => false,
+        'pack' => false,
+        'issue_start' => false,
+        'issue_end' => false];
 
     /**
      * List of fields that can be used for fulltext searches
@@ -66,18 +70,23 @@ class Torrent {
     private static array $Fields = [
         'artistname' => 1,
         'cataloguenumber' => 1,
+        'creatorname' => 1,
         'description' => 1,
         'encoding' => 1,
         'filelist' => 1,
         'format' => 1,
         'groupname' => 1,
+        'issue' => 1,
         'media' => 1,
+        'publishername' => 1,
         'recordlabel' => 1,
         'remastercataloguenumber' => 1,
         'remasterrecordlabel' => 1,
         'remastertitle' => 1,
         'remasteryear' => 1,
+        'scanner' => 1,
         'searchstr' => 1,
+        'series' => 1,
         'taglist' => 1];
 
     /**
@@ -88,17 +97,20 @@ class Torrent {
         'encoding' => 1,
         'filelist' => 1,
         'format' => 1,
+        'issue' => 1,
         'media' => 1,
         'remastercataloguenumber' => 1,
         'remasterrecordlabel' => 1,
         'remastertitle' => 1,
-        'remasteryear' => 1];
+        'remasteryear' => 1,
+        'scanner' => 1];
 
     /**
      * Some form field names don't match the ones in the index
      */
     private static array $FormsToFields = [
-        'searchstr' => '(groupname,artistname,yearfulltext)'];
+        'searchstr' => '(groupname,publishername,creatorname,yearfulltext)',
+        'series' => 'groupname'];
 
     /**
      * Specify the operator type to use for fields. Empty key sets the default
@@ -442,6 +454,28 @@ class Torrent {
                 }
                 break;
 
+            case 'checked':
+            case 'pack':
+                if (!is_numeric($Value)) {
+                    return;
+                }
+                $Value = (int)$Value;
+                if (!in_array($Value, [0, 1], true)) {
+                    return;
+                }
+                $this->SphQL->where($Attribute, $Value);
+                $this->UsedTorrentAttrs[$Attribute] = $Value;
+                break;
+
+            case 'issue_start':
+            case 'issue_end':
+                if (!is_numeric($Value)) {
+                    return;
+                }
+                $this->SphQL->where($Attribute, (int)$Value);
+                $this->UsedTorrentAttrs[$Attribute] = (int)$Value;
+                break;
+
             default:
                 if (is_string($Value) && self::$Attributes[$Attribute] !== false) {
                     // Check if the submitted value can be converted to a valid one
@@ -768,6 +802,30 @@ class Torrent {
             if (!$Pass) {
                 return false;
             }
+        }
+        if (
+            isset($this->UsedTorrentAttrs['checked'])
+            && (int)$this->UsedTorrentAttrs['checked'] !== (int)$torrent->isChecked()
+        ) {
+            return false;
+        }
+        if (
+            isset($this->UsedTorrentAttrs['pack'])
+            && (int)$this->UsedTorrentAttrs['pack'] !== (int)$torrent->isPack()
+        ) {
+            return false;
+        }
+        if (
+            isset($this->UsedTorrentAttrs['issue_start'])
+            && (int)$this->UsedTorrentAttrs['issue_start'] !== $torrent->issueStart()
+        ) {
+            return false;
+        }
+        if (
+            isset($this->UsedTorrentAttrs['issue_end'])
+            && (int)$this->UsedTorrentAttrs['issue_end'] !== $torrent->issueEnd()
+        ) {
+            return false;
         }
         if (isset($this->UsedTorrentAttrs['scene'])) {
             if ($this->UsedTorrentAttrs['scene'] != $torrent->isScene()) {

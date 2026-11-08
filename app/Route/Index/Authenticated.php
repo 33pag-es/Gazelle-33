@@ -46,14 +46,15 @@ class Authenticated extends Route\Util\ActionRoute {
 
         $contest = $contestMan->currentContest();
         [$contestRank, $leaderboard] = $this->contestRank($contest);
+        $isComic = (bool)preg_match('/^comics$/', SITE_FLAVOR);
 
         echo $this->twig->render('index/private-sidebar.twig', [
             'blog'          => new Manager\Blog(),
             'collage_count' => new Stats\Collage()->collageTotal(),
             'contest_rank'  => $contestRank,
             'leaderboard'   => $leaderboard,
-            'aotm'          => $featured->findByType(FeaturedAlbumType::AlbumOfTheMonth),
-            'showcase'      => $featured->findByType(FeaturedAlbumType::Showcase),
+            'aotm'          => $isComic ? null : $featured->findByType(FeaturedAlbumType::AlbumOfTheMonth),
+            'showcase'      => $isComic ? null : $featured->findByType(FeaturedAlbumType::Showcase),
             'staff_blog'    => new Manager\StaffBlog(),
             'poll'          => new Manager\ForumPoll()->findByFeaturedPoll(),
             'request_stats' => new Stats\Request(),
