@@ -465,6 +465,7 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `app/Json/TGroup.php` | comic response fields | `// COMIC-ONLY` |
 | `app/Json/Torrent.php` | comic response fields | `// COMIC-ONLY` |
 | `app/Api/Torrent.php` | comic API fields | `// COMIC-ONLY` |
+| `app/Api/Request.php` | guard non-music artist role | `// COMIC-ONLY` |
 | `docs/07-API.md` | comic API fields | `<!-- COMIC-ONLY -->` |
 | `templates/index/page-header.twig` | hide music nav/search | `{# COMIC-ONLY #}` |
 | `templates/index/private-header.twig` | hide music RSS | `{# COMIC-ONLY #}` |

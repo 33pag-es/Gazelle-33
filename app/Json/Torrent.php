@@ -69,6 +69,12 @@ class Torrent extends \Gazelle\Json {
                 'filePath'      => $torrent->path(),
                 'userId'        => $torrent->uploaderId(),
                 'username'      => $torrent->uploader()->username(),
+                'issueStart'    => $torrent->issueStart(),
+                'issueEnd'      => $torrent->issueEnd(),
+                'issueLabel'    => \Gazelle\Comic\Torrent::issueLabel($torrent),
+                'scanner'       => $torrent->scanner(),
+                'pack'          => $torrent->isPack(),
+                'checked'       => $torrent->isChecked(),
             ]
         );
     }

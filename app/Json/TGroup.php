@@ -36,6 +36,8 @@ class TGroup extends \Gazelle\Json {
             'vanityHouse'     => $tgroup->isShowcase(),
             'isBookmarked'    => new Bookmark($this->user)->isBookmarked($tgroup),
             'tags'            => array_values($tgroup->tagNameList()),
+            'publisher'       => \Gazelle\Comic\Series::publisher($tgroup),
+            'creators'        => \Gazelle\Comic\Series::creatorList($tgroup),
             'musicInfo'       => $musicInfo,
         ];
     }

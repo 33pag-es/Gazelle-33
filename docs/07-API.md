@@ -979,6 +979,8 @@ Artists:
 
 ### Torrent Group
 
+Comic series responses also include `publisher` (string or null) and `creators` (array of names).
+
 **URL:**
 `ajax.php?action=torrentgroup&id=<Torrent Group Id>`
 
@@ -1096,6 +1098,8 @@ empty string '' previously) if there is no image.
 ```
 
 ### Torrent
+
+Comic torrent responses also include `issueStart`, `issueEnd`, `issueLabel`, `scanner`, `pack`, and `checked`. The group payload includes `publisher` and `creators`.
 
 **URL:**
 `ajax.php?action=torrent&id=<Torrent Id>`
@@ -1602,6 +1606,8 @@ __NOTE__: `checksum` field can have the following values: `checksum_ok`, `checks
 ## Requests
 
 ### Request
+
+For non-music requests (including comics), `Artists` is an empty array and `DisplayArtists` is an empty string.
 
 **URL:**
 `ajax.php?action=request&id=<Request Id>`
