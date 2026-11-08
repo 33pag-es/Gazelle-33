@@ -130,6 +130,34 @@ class Helper {
         );
     }
 
+    /**
+     * COMIC-ONLY: comic group test factory.
+     *
+     * @param string[] $creatorList
+     */
+    #[\NoDiscard]
+    public static function makeTGroupComic(
+        User   $user,
+        string $name,
+        string $publisher,
+        array  $creatorList,
+        int    $year = 2024,
+    ): TGroup {
+        $user->requestContext()->setViewer($user);
+        $tgroup = new \Gazelle\Manager\TGroup()->create(
+            categoryId:  CATEGORY_COMIC,
+            name:        $name,
+            description: 'phpunit comic description',
+            image:       new Image(null),
+            releaseType: null,
+            year:        $year,
+        );
+        \Gazelle\Comic\Series::setPublisher($tgroup, $publisher);
+        \Gazelle\Comic\Series::setCreators($tgroup, $creatorList);
+        $tgroup->refresh();
+        return $tgroup;
+    }
+
     #[\NoDiscard]
     public static function makeTGroupMusic(
         User        $user,
@@ -185,6 +213,41 @@ class Helper {
             remasterRecordLabel:     '',
             remasterCatalogueNumber: '',
         );
+    }
+
+    /**
+     * COMIC-ONLY: comic torrent test factory.
+     */
+    #[\NoDiscard]
+    public static function makeTorrentComic(
+        TGroup  $tgroup,
+        User    $user,
+        ?int    $issueStart = 1,
+        ?int    $issueEnd   = null,
+        ?string $issueLabel = null,
+        ?string $scanner    = 'Zone-Empire',
+        string  $format     = 'CBZ',
+        bool    $pack       = false,
+    ): Torrent {
+        $torrent = new \Gazelle\Manager\Torrent()->create(
+            tgroup:                  $tgroup,
+            user:                    $user,
+            description:             'phpunit comic torrent description',
+            media:                   '',
+            format:                  $format,
+            encoding:                '',
+            infohash:                'infohash-' . randomString(11),
+            filePath:                'unit-test',
+            fileList:                [],
+            size:                    random_int(10_000_000, 99_999_999),
+            isScene:                 false,
+            remasterYear:            null,
+            remasterTitle:           '',
+            remasterRecordLabel:     '',
+            remasterCatalogueNumber: '',
+        );
+        \Gazelle\Comic\Torrent::setIssue($torrent, $issueStart, $issueEnd, $issueLabel, $scanner, $pack);
+        return $torrent;
     }
 
     #[\NoDiscard]

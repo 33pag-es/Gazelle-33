@@ -331,6 +331,45 @@ abstract class TorrentAbstract extends BaseAttrObject {
         return $this->tgroup ??= new TGroup($this->groupId());
     }
 
+    // COMIC-ONLY: comic issue metadata accessors.
+    public function issueStart(): ?int {
+        $value = $this->info()['IssueStart'];
+        return $value === null ? null : (int)$value;
+    }
+
+    public function issueEnd(): ?int {
+        $value = $this->info()['IssueEnd'];
+        return $value === null ? null : (int)$value;
+    }
+
+    public function issueLabel(): ?string {
+        $value = $this->info()['IssueLabel'];
+        return $value === null ? null : (string)$value;
+    }
+
+    public function scanner(): ?string {
+        $value = $this->info()['Scanner'];
+        return $value === null ? null : (string)$value;
+    }
+
+    public function isPack(): bool {
+        return (bool)$this->info()['Pack'];
+    }
+
+    public function isChecked(): bool {
+        return (bool)$this->info()['Checked'];
+    }
+
+    public function checkedBy(): ?int {
+        $value = $this->info()['CheckedBy'];
+        return $value === null ? null : (int)$value;
+    }
+
+    public function checkedAt(): ?string {
+        $value = $this->info()['CheckedAt'];
+        return $value === null ? null : (string)$value;
+    }
+
     /**
      * Does it have a .cue file?
      */

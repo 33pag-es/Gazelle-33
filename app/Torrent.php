@@ -8,7 +8,7 @@ use OrpheusNET\BencodeTorrent\BencodeTorrent;
 
 class Torrent extends TorrentAbstract {
     final public const tableName               = 'torrents';
-    final public const CACHE_KEY               = 't_%d';
+    final public const CACHE_KEY               = 't_v4_%d'; // COMIC-ONLY
     final public const CACHE_FOLDERNAME        = 'foldername_%s';
     final public const CACHE_KEY_PEERLIST_PAGE = 'peerlist_page_%d_%d';
     final public const USER_RECENT_UPLOAD      = 'u_recent_up_%d';
@@ -32,6 +32,14 @@ class Torrent extends TorrentAbstract {
                 t.UserID,
                 t.Media,
                 t.Format,
+                t.IssueStart, /* COMIC-ONLY */
+                t.IssueEnd,
+                t.IssueLabel,
+                t.Scanner,
+                t.Pack,
+                t.Checked,
+                t.CheckedBy,
+                t.CheckedAt,
                 t.Encoding,
                 t.RemasterYear,
                 t.RemasterTitle,

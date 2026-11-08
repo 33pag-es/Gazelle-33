@@ -12,7 +12,7 @@ use Gazelle\Intf\CollageEntry;
 
 class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, CollageEntry {
     final public const tableName            = 'torrents_group';
-    final public const CACHE_KEY            = 'tg_v3_%d';
+    final public const CACHE_KEY            = 'tg_v4_%d'; // COMIC-ONLY
     final public const CACHE_TLIST_KEY      = 'tlist_%d';
     final public const USER_RECENT_UPLOAD   = 'u_recent_up_%d';
     final public const CACHE_REQUEST_TGROUP = 'req_tg_%d';
@@ -104,6 +104,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 tg.RevisionID,
                 tg.Name,
                 tg.Year,
+                tg.PublisherID, /* COMIC-ONLY */
                 tg.ReleaseType,
                 tg.CategoryID,
                 tg.Time,
@@ -128,6 +129,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
             // ... a deleted torrent led to a deleted tgroup
             'CategoryID'   => 1,
             'Name'         => "deleted group #{$this->id}",
+            'PublisherID'  => null,
             'ReleaseType'  => 0,
             'VanityHouse'  => false,
             'Year'         => null,

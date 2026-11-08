@@ -432,7 +432,9 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `templates/torrent/detail-torrent.twig` | comic row include | `{# COMIC-ONLY #}` |
 | `app/TGroup.php` | comic text/link/grouping, freeleech selection | `// COMIC-ONLY` |
 | `app/Torrent.php` | comic filename | `// COMIC-ONLY` |
+| `app/TorrentDeleted.php` | comic deleted-torrent columns | `// COMIC-ONLY` |
 | `app/TorrentAbstract.php` | comic primary extensions, label/perfect-flac guards | `// COMIC-ONLY` |
+| `tests/helper.php` | comic test factories | `// COMIC-ONLY` |
 | `app/Manager/TGroup.php` | comic group creation/merge/change-category | `// COMIC-ONLY` |
 | `app/Manager/Torrent.php` | comic torrent metadata | `// COMIC-ONLY` |
 | `app/Manager/Tag.php` | comic category for tag suggestions | `// COMIC-ONLY` |
