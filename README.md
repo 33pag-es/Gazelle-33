@@ -35,6 +35,14 @@ production if you are not prepared or knowledgeable in setting up servers,
 proxies, and tuning TCP configs to obtain proper performance and privacy.
 
 ## Development
+The host machine is a thin client. Do not install PHP, Composer, Node,
+npm, Cypress, MySQL, PostgreSQL, or Sphinx on the host. Every command in
+this section runs inside the `web` container; `docker compose exec -T web`
+is the canonical prefix. Makefile targets are container-only.
+
+The fork's customization and upstream-merge policy is in `AGENTS.md`.
+The comics-only target model and retrofit order are in `docs/COMICS.md`.
+
 Docker is used to develop Gazelle. See https://docs.docker.com/engine/install/
 for more information on getting Docker set up locally.
 

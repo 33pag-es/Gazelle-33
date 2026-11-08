@@ -1,9 +1,7 @@
+# COMIC-ONLY: container-only development targets for this fork.
 .DEFAULT_GOAL := help
 
 NOW := $(shell date +'%Y%m%d-%H%M%S')
-STORAGE_PATH_RIPLOG     := $(shell bin/getconf STORAGE_PATH_RIPLOG)
-STORAGE_PATH_RIPLOGHTML := $(shell bin/getconf STORAGE_PATH_RIPLOGHTML)
-STORAGE_PATH_TORRENT    := $(shell bin/getconf STORAGE_PATH_TORRENT)
 
 .SILENT: help
 .PHONY: help
@@ -35,11 +33,22 @@ help:
 	echo '  phpstan-analyse      - run phpstan over the code'
 	echo '  phpstan-baseline     - generate a new phpstan baseline'
 	echo '  test                 - run unit test suite'
+	echo '  test-comic           - run comic test suite'
 	echo '  twig-flush           - purge the Twig cache'
+	echo '  upstream-diff        - show divergence from upstream/master'
+
+.PHONY: test-comic
+test-comic:
+	docker compose exec -T web vendor/bin/phpunit -c misc/phpunit.xml tests/phpunit/Comic
+
+.PHONY: upstream-diff
+upstream-diff:
+	git fetch upstream
+	git diff --stat upstream/master...HEAD
 
 .PHONY: check-php
 check-php:
-	git status | awk '/(modified|new file):.*\.php$$/ {print $$NF}' | xargs php -l
+	git status --porcelain | awk '/\.php$$/ {print $$NF}' | docker compose exec -T web xargs -r php -l
 
 .PHONY: composer-dev-update
 composer-dev-update:
@@ -47,7 +56,7 @@ composer-dev-update:
 
 .PHONY: composer-live-update
 composer-live-update:
-	composer install --no-dev --optimize-autoloader --no-progress
+	docker compose exec -T web composer install --no-dev --optimize-autoloader --no-progress
 
 .PHONY: coverage
 coverage:
@@ -63,15 +72,15 @@ dump-all: dump-riplog dump-riploghtml dump-torrent
 
 .PHONY: dump-riplog
 dump-riplog:
-	tar -C "$(STORAGE_PATH_RIPLOG)/.." -jcf riplog.$(NOW).tar.bz2 "$$(basename $(STORAGE_PATH_RIPLOG))"
+	docker compose exec -T web sh -c 'p="$$(bin/getconf STORAGE_PATH_RIPLOG)"; tar -C "$$(dirname "$$p")" -jcf "/var/www/riplog.$(NOW).tar.bz2" "$$(basename "$$p")"'
 
 .PHONY: dump-riploghtml
 dump-riploghtml:
-	tar -C "$(STORAGE_PATH_RIPLOGHTML)/.." -jcf riploghtml.$(NOW).tar.bz2 "$$(basename $(STORAGE_PATH_RIPLOGHTML))"
+	docker compose exec -T web sh -c 'p="$$(bin/getconf STORAGE_PATH_RIPLOGHTML)"; tar -C "$$(dirname "$$p")" -jcf "/var/www/riploghtml.$(NOW).tar.bz2" "$$(basename "$$p")"'
 
 .PHONY: dump-torrent
 dump-torrent:
-	tar -C "$(STORAGE_PATH_TORRENT)/.." -jcf torrent.$(NOW).tar.bz2 "$$(basename $(STORAGE_PATH_TORRENT))"
+	docker compose exec -T web sh -c 'p="$$(bin/getconf STORAGE_PATH_TORRENT)"; tar -C "$$(dirname "$$p")" -jcf "/var/www/torrent.$(NOW).tar.bz2" "$$(basename "$$p")"'
 
 .PHONY: git-submodules
 git-submodules:
@@ -84,23 +93,17 @@ lint-css:
 
 .PHONY: lint-js
 lint-js:
-	npx eslint -c misc/eslint.config.mjs public/static
+	docker compose exec -T web npx eslint -c misc/eslint.config.mjs public/static
 
 .PHONY: lint-php
 lint-php:
-	find . -path ./vendor -prune \
-        -o -path ./cache -prune \
-        -o -path ./node_modules -prune \
-        -o -path ./misc/docker -prune \
-        -o -type f -name '*.php' \
-        -print0 \
-        | xargs -0 php -l -n | grep -v '^No syntax errors detected in' || true
-	vendor/bin/phpcs -p --parallel=4
-	vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
+	docker compose exec -T web sh -c 'find . -path ./vendor -prune -o -path ./cache -prune -o -path ./node_modules -prune -o -path ./misc/docker -prune -o -type f -name "*.php" -print0 | xargs -0 -n1 php -l -n | grep -v "^No syntax errors detected in" || true'
+	docker compose exec -T web vendor/bin/phpcs -p --parallel=4
+	docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
 
 .PHONY: lint-twig
 lint-twig:
-	bin/twig-parse $(find templates -type f)
+	docker compose exec -T web sh -c 'bin/twig-parse $$(find templates -type f)'
 
 .PHONY: lint-staged
 lint-staged:
@@ -126,15 +129,15 @@ mysqldump:
 
 .PHONY: ocelot-reload-conf
 ocelot-reload-conf:
-	pkill -HUP ocelot
+	docker compose exec -T ocelot pkill -HUP ocelot
 
 .PHONY: ocelot-reload-db
 ocelot-reload-db:
-	pkill -USR1 ocelot
+	docker compose exec -T ocelot pkill -USR1 ocelot
 
 .PHONY: pgdump
 pgdump:
-	docker exec -e POSTGRES_PASSWORD=nyalapw $(shell docker ps|awk '/postgres:/ {print $$1}') pg_dumpall -U nyala > misc/postgresql-dump.sql
+	docker compose exec -T pg pg_dumpall -U nyala > misc/postgresql-dump.sql
 
 .PHONY: psql
 psql:
@@ -142,19 +145,19 @@ psql:
 
 .PHONY: phpstan-analyse
 phpstan-analyse:
-	vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
+	docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
 
 .PHONY: phpstan-baseline
 phpstan-baseline:
-	vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon -vv --generate-baseline misc/phpstan-baseline.neon
+	docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon -vv --generate-baseline misc/phpstan-baseline.neon
 
 .PHONY: rector
 rector:
-	vendor/bin/rector process --config misc/rector.php
+	docker compose exec -T web vendor/bin/rector process --config misc/rector.php
 
 .PHONY: rector-dry-run
 rector-dry-run:
-	vendor/bin/rector process --dry-run --config misc/rector.php
+	docker compose exec -T web vendor/bin/rector process --dry-run --config misc/rector.php
 
 .PHONY: test
 test:
@@ -162,4 +165,4 @@ test:
 
 .PHONY: twig-flush
 twig-flush:
-	find cache/twig -mindepth 1 -depth -delete
+	docker compose exec -T web sh -c 'find cache/twig -mindepth 1 -depth -delete'
