@@ -366,7 +366,7 @@ Gate with `constant('SITE_FLAVOR') === 'comics'` or a dedicated
 | Riplogs / log links | `templates/torrent/detail-torrent.twig`, `sections/torrents/*log*` | hide; comics have no logs |
 | OpenSearch artist/request | `templates/index/private-header.twig` | hide artist/request search providers |
 | Random artist | `sections/random/index.php`, `templates/index/page-header.twig` | hide `random.php?action=artist` |
-| API music keys | `app/Api/*`, `app/Json/*` | keep keys for compatibility; add comic keys |
+| API music keys | `app/API/*`, `app/Json/*` | keep keys for compatibility; add comic keys |
 
 ## Configurability contract
 

@@ -235,7 +235,7 @@ Semantics:
 | Checked | new `sections/torrents/check.php` | POST + `authorize()` + `torrents_edit` |
 | Browse | `app/Search/Torrent.php`, `templates/torrent/browse-header.twig` | additive fields; hide music filters via `SITE_FLAVOR` |
 | Sphinx | `misc/docker/sphinxsearch/sphinx.conf` | add fields/attributes; keep music fields |
-| API/JSON | `app/Api/*`, `app/Json/*` | add comic fields; keep music keys |
+| API/JSON | `app/API/*`, `app/Json/*` | add comic fields; keep music keys |
 | Hide music | nav/RSS/sidebar templates, `sections/artist/*`, `sections/better/*`, requests, contests | gate with `SITE_FLAVOR`; do not delete |
 
 ## 6. Coding standards
