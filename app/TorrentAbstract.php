@@ -237,6 +237,13 @@ abstract class TorrentAbstract extends BaseAttrObject {
         );
     }
 
+    // COMIC-ONLY: comic torrents count comic media extensions, not music extensions.
+    protected function primaryExtRegexp(): string {
+        return $this->group()->categoryId() === CATEGORY_COMIC
+            ? COMIC_PRIMARY_EXT_REGEXP
+            : PRIMARY_EXT_REGEXP;
+    }
+
     /**
      * Aggregate the primary media file types per extension
      *
@@ -244,12 +251,13 @@ abstract class TorrentAbstract extends BaseAttrObject {
      */
     public function fileListPrimaryMap(): array {
         $map = [];
+        $primaryExtRegexp = $this->primaryExtRegexp();
         foreach ($this->fileList() as $file) {
             if (is_null($file['ext'])) {
                 continue;
             }
             $ext = substr($file['ext'], 1); // skip over period
-            if (preg_match('/^' . PRIMARY_EXT_REGEXP . '$/i', $ext)) {
+            if (preg_match('/^' . $primaryExtRegexp . '$/i', $ext)) {
                 $map[$ext] ??= 0;
                 ++$map[$ext];
             }
@@ -263,8 +271,9 @@ abstract class TorrentAbstract extends BaseAttrObject {
 
     public function fileListNonPrimarySize(): int {
         $size = 0;
+        $primaryExtRegexp = $this->primaryExtRegexp();
         foreach ($this->fileList() as $file) {
-            if (!preg_match('/^\.' . PRIMARY_EXT_REGEXP . '$/i', (string)$file['ext'])) {
+            if (!preg_match('/^\.' . $primaryExtRegexp . '$/i', (string)$file['ext'])) {
                 $size += (int)$file['size'];
             }
         }

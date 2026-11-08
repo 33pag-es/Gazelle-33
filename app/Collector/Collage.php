@@ -17,9 +17,9 @@ class Collage extends \Gazelle\Collector {
             FROM torrents AS t
             INNER JOIN torrents_leech_stats tls ON (tls.TorrentID = t.ID) /* FIXME: only needed if sorting by Seeders */
             INNER JOIN collages_torrents AS c ON (t.GroupID = c.GroupID AND c.CollageID = ?)
-            INNER JOIN torrents_group AS tg ON (tg.ID = t.GroupID AND tg.CategoryID = 1)
+            INNER JOIN torrents_group AS tg ON (tg.ID = t.GroupID AND tg.CategoryID IN (?, ?)) /* COMIC-ONLY */
             ORDER BY t.GroupID ASC, sequence DESC, " .  self::ORDER_BY[$this->orderBy];
-        $this->qid = self::$db->prepared_query($this->sql, $this->collage->id);
+        $this->qid = self::$db->prepared_query($this->sql, $this->collage->id, CATEGORY_COMIC, CATEGORY_MUSIC);
         return self::$db->has_results();
     }
 

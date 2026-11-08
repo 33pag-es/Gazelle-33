@@ -685,9 +685,11 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
     ): int {
         $regular = [];
         $large   = [];
+        $isComic = $this->categoryId() === CATEGORY_COMIC;
         foreach ($this->torrentIdList() as $torrentId) {
             $torrent = $torMan->findById($torrentId);
-            if ($all || $torrent->format() == 'FLAC') {
+            // COMIC-ONLY: every comic torrent is freeleechable; music keeps the FLAC rule.
+            if ($all || $isComic || $torrent->format() == 'FLAC') {
                 if ($threshold > 0 and $torrent->size() > $threshold) {
                     $large[] = $torrent->id;
                 } else {

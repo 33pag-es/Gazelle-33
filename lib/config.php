@@ -1054,9 +1054,17 @@ defined('CATEGORY') or define('CATEGORY', [
     'Comedy',
     'Comics'
 ]);
-defined('CATEGORY_GROUPED') or define('CATEGORY_GROUPED', array_intersect(['Music'], CATEGORY));
+defined('CATEGORY_GROUPED') or define('CATEGORY_GROUPED', array_intersect(CATEGORY, ['Music', 'Comics']));
 defined('CATEGORY_EBOOK') or define('CATEGORY_EBOOK', 3);
 defined('CATEGORY_MUSIC') or define('CATEGORY_MUSIC', 1);
+
+// COMIC-ONLY: comics profile defaults. Site-specific values belong in override.config.php.
+defined('SITE_FLAVOR') or define('SITE_FLAVOR', 'comics');
+defined('CATEGORY_ENABLED') or define('CATEGORY_ENABLED', ['Comics']);
+defined('CATEGORY_DEFAULT') or define('CATEGORY_DEFAULT', 'Comics');
+defined('CATEGORY_COMIC') or define('CATEGORY_COMIC', 7);
+defined('COMIC_FORMAT') or define('COMIC_FORMAT', ['CBZ', 'CBR', 'PDF', 'CB7']);
+defined('COMIC_PRIMARY_EXT_REGEXP') or define('COMIC_PRIMARY_EXT_REGEXP', '(?:cb[rz7]|pdf|jpe?g|png|gif)');
 
 // Icons of upload categories.
 defined('CATEGORY_ICON') or define('CATEGORY_ICON', [

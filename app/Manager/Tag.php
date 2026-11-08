@@ -630,6 +630,7 @@ class Tag extends \Gazelle\BaseManager {
     }
 
     public function userTopTagList(\Gazelle\User $user): array {
+        // COMIC-ONLY: suggest tags from comic snatches.
         self::$db->prepared_query("
             SELECT tags.Name
             FROM xbt_snatched AS s
@@ -637,13 +638,13 @@ class Tag extends \Gazelle\BaseManager {
             INNER JOIN torrents_group AS g ON (t.GroupID = g.ID)
             INNER JOIN torrents_tags AS tt ON (tt.GroupID = g.ID)
             INNER JOIN tags ON (tags.ID = tt.TagID)
-            WHERE g.CategoryID = 1
+            WHERE g.CategoryID = ?
                 AND tags.Uses > 10
                 AND s.uid = ?
             GROUP BY tt.TagID
             ORDER BY ((count(tags.Name) - 2) * (sum(tt.PositiveVotes) - sum(tt.NegativeVotes))) / (tags.Uses * 0.8) DESC
             LIMIT 8
-            ", $user->id
+            ", CATEGORY_COMIC, $user->id
         );
         return self::$db->collect(0);
     }

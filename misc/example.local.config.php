@@ -39,3 +39,11 @@ define('LOGIN_SLEEP_USEC', 0);
 define('SOURCE_FLAG', 'OPS');
 
 define('IMAGE_HOST_BANNED', ['phpunit.bad']);
+
+// COMIC-ONLY: comics profile
+define('SITE_FLAVOR', 'comics');
+define('CATEGORY_ENABLED', ['Comics']);
+define('CATEGORY_DEFAULT', 'Comics');
+define('CATEGORY_COMIC', 7);
+define('COMIC_FORMAT', ['CBZ', 'CBR', 'PDF', 'CB7']);
+define('COMIC_PRIMARY_EXT_REGEXP', '(?:cb[rz7]|pdf|jpe?g|png|gif)');

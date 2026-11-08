@@ -85,6 +85,10 @@ ALTER TABLE torrents
 `Scanner`, `Pack`, `Checked`, `CheckedBy`, `CheckedAt` with the same
 types and defaults.
 
+`deleted_torrents_group` also gains `PublisherID` (same type, after
+`Year`). `DB::softDelete()` refuses to remove a group when the source
+and the deleted mirror have different columns.
+
 `category` (data migration, no renumber):
 
 1. Add `comic` to the MySQL `category.upload` enum while keeping the
@@ -141,7 +145,10 @@ defined('COMIC_PRIMARY_EXT_REGEXP') or define('COMIC_PRIMARY_EXT_REGEXP', '(?:cb
 
 `CATEGORY_GROUPED` changes from
 `array_intersect(['Music'], CATEGORY)` to
-`array_intersect(['Music', 'Comics'], CATEGORY)`.
+`array_intersect(CATEGORY, ['Music', 'Comics'])`. The first array must be
+`CATEGORY` so the surviving keys stay `categoryId() - 1`; swapping the
+arguments yields a `Comics` entry at key 1 and `categoryGrouped()` stays
+false for category 7.
 
 Do **not** change `CATEGORY`, `CATEGORY_ICON`, `CATEGORY_MUSIC`,
 `CATEGORY_EBOOK`, `PRIMARY_MEDIA`, `PRIMARY_EXT_REGEXP`, `FORMAT`,
@@ -409,6 +416,7 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | File | Reason | Marker |
 |---|---|---|
 | `lib/config.php` | add `SITE_FLAVOR`, `CATEGORY_ENABLED`, `CATEGORY_COMIC`, `COMIC_*`; add Comics to `CATEGORY_GROUPED` | `// COMIC-ONLY` |
+| `misc/example.local.config.php` | comic profile for the Docker bootstrap | `// COMIC-ONLY` |
 | `Makefile` | Docker-only commands | `# COMIC-ONLY` |
 | `README.md` | host policy | `<!-- COMIC-ONLY -->` |
 | `sections/upload/upload.php` | default category, load music JS only for Music | `// COMIC-ONLY` |
@@ -422,11 +430,14 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `sections/torrents/edit_handle.php` | comic edit branch | `// COMIC-ONLY` |
 | `templates/torrent/browse-header.twig` | comic filters | `{# COMIC-ONLY #}` |
 | `templates/torrent/detail-torrent.twig` | comic row include | `{# COMIC-ONLY #}` |
-| `app/TGroup.php` | comic text/link/grouping | `// COMIC-ONLY` |
+| `app/TGroup.php` | comic text/link/grouping, freeleech selection | `// COMIC-ONLY` |
 | `app/Torrent.php` | comic filename | `// COMIC-ONLY` |
-| `app/TorrentAbstract.php` | comic label/perfect-flac guards | `// COMIC-ONLY` |
+| `app/TorrentAbstract.php` | comic primary extensions, label/perfect-flac guards | `// COMIC-ONLY` |
 | `app/Manager/TGroup.php` | comic group creation/merge/change-category | `// COMIC-ONLY` |
 | `app/Manager/Torrent.php` | comic torrent metadata | `// COMIC-ONLY` |
+| `app/Manager/Tag.php` | comic category for tag suggestions | `// COMIC-ONLY` |
+| `app/Collector/Collage.php` | comic category for collage zips | `// COMIC-ONLY` |
+| `app/Collector/TList.php` | comic category for torrent-list zips | `// COMIC-ONLY` |
 | `app/Search/Torrent.php` | comic search fields | `// COMIC-ONLY` |
 | `misc/docker/sphinxsearch/sphinx.conf` | comic index fields | `# COMIC-ONLY` |
 | `app/Json/TGroup.php` | comic response fields | `// COMIC-ONLY` |
@@ -466,8 +477,10 @@ Shared-code audit:
   `COMIC_PRIMARY_EXT_REGEXP` when the group category is Comics, and
   `PRIMARY_EXT_REGEXP` otherwise.
 - `Manager\Tag::userTopTagList()` and `app/Collector/{Collage,TList}.php`
-  hard-code `CategoryID = 1` (Music). For comic tag suggestions and
-  collage zips, use `CATEGORY_COMIC`; leave the dormant music path
+  hard-code `CategoryID = 1` (Music). Use `CATEGORY_COMIC` for comic tag
+  suggestions and collage zips. The collectors accept
+  `CATEGORY_COMIC` and `CATEGORY_MUSIC` so legacy music collages and
+  upstream collector tests still resolve; leave the dormant music path
   untouched.
 - `app/Stats/Torrent.php` music counters remain but are not called from
   comic templates.
