@@ -36,27 +36,59 @@ proxies, and tuning TCP configs to obtain proper performance and privacy.
 
 ## Production
 <!-- COMIC-ONLY: production stack and image. -->
+Production runs on two servers joined by a WireGuard tunnel:
+
+| | Site server (this repository) | Tracker server (`../Ocelot`) |
+|---|---|---|
+| Runs | Gazelle, MySQL, PostgreSQL, Manticore, memcached, Caddy | Ocelot, Caddy |
+| Public DNS | site hostname, proxied by Cloudflare or a plain A record | tracker hostname, A record (DNS-only) |
+| Tunnel address | `10.33.0.1` (`GAZELLE_TUNNEL_IP`) | `10.33.0.2` (`TRACKER_TUNNEL_IP`) |
+
+Over the tunnel only: Ocelot reads and writes MySQL (`10.33.0.1:3306`),
+Gazelle calls Ocelot (`10.33.0.2:34000`), and Ocelot calls Gazelle's
+freeleech-token callback (`10.33.0.1:8080`). Put both servers in the same
+region; Ocelot's MySQL latency is its critical path. Everything is
+IPv4-only.
+
 `Dockerfile.production` builds a runtime-only image. It contains PHP,
 nginx, cron, Composer dependencies, and compiled stylesheets; it does not
 contain Node, Cypress, Chromium, Xdebug, Python, shellcheck, or a source
 bind mount.
 
-`docker-compose.prod.yml` runs migrations once, then starts web,
-Manticore, MySQL, PostgreSQL, and memcached. Only the web port is
-published. Database and search ports stay on the private Compose network.
+### Site server
+
+1. WireGuard: copy `misc/wireguard/wg0.conf.example` to
+   `/etc/wireguard/wg0.conf`, fill it in, and
+   `systemctl enable --now wg-quick@wg0`.
+2. Start Docker after the tunnel (see “Boot order” below).
+3. Configure and start the stack:
 
 ```bash
 cp .env.example .env
 cp misc/example.production.config.php lib/override.config.php
 # Edit both files. The database/search hosts are the Compose service names:
-# mysql, pg, manticore, memcached.
+# mysql, pg, manticore, memcached. TRACKER_HOST is the tracker's tunnel IP.
 docker compose -f docker-compose.prod.yml up -d --build
 docker compose -f docker-compose.prod.yml logs -f migrate
 ```
 
+`docker-compose.prod.yml` runs migrations once, then starts web,
+Manticore, MySQL, PostgreSQL, and memcached. Web is published on loopback
+for Caddy. MySQL and a second web port are published only on
+`GAZELLE_TUNNEL_IP`; PostgreSQL, Manticore and memcached are not published.
+
 `MYSQL_PHINX_USER`/`MYSQL_PHINX_PASSWORD` create the DDL-capable migration
 account. `MYSQL_RO_USER`/`MYSQL_RO_PASSWORD` create the read-only account.
 Both must match the corresponding constants in `override.config.php`.
+MySQL's first start also creates the Ocelot account
+(`OCELOT_MYSQL_USER`/`OCELOT_MYSQL_PASSWORD`). It can log in only from
+`TRACKER_TUNNEL_IP` and has per-table grants matching Ocelot's queries,
+including `DROP` on `xbt_files_users` for its startup `TRUNCATE`; it cannot
+modify `users_main` or other site tables. The init script runs only on an
+empty data volume.
+
+`TRACKER_SECRET` and `TRACKER_REPORTKEY` in `override.config.php` must match
+the tracker server's `.env`.
 
 The production configuration is mounted read-only; the build does not
 include `lib/override.config.php`.
@@ -66,68 +98,65 @@ The `migrate` service exits successfully after all three migration phases;
 `web` waits for it. It runs again on the next `up`, so take a database
 backup before changing the image.
 
+### Tracker server
+
+See `../Ocelot/README.md`: WireGuard (`docker/wg0.conf.example`), `.env`,
+`docker-compose.prod.yml`, and Caddy (`docker/Caddyfile.example`).
+
+### Boot order
+
+On both servers Docker publishes ports on the tunnel address. If Docker
+starts before `wg0` exists, those containers fail to start and are not
+retried. Order Docker after WireGuard:
+
+```bash
+mkdir -p /etc/systemd/system/docker.service.d
+printf '[Unit]\nWants=wg-quick@wg0.service\nAfter=wg-quick@wg0.service\n' \
+    > /etc/systemd/system/docker.service.d/wireguard.conf
+systemctl daemon-reload
+```
+
+The tunnel address exists as soon as `wg0` is up, even if the other server
+is down.
+
+### Firewall
+
+Docker-published ports bypass ufw; that is why the stacks bind only to
+loopback and tunnel addresses. Firewall the host services:
+
+- Site server: SSH; `51820/udp` from the tracker's public IP; `443/tcp`
+  from Cloudflare's ranges only (https://www.cloudflare.com/ips/), or from
+  anywhere, plus `80/tcp` for certificates, without Cloudflare.
+- Tracker server: SSH; `80/tcp` and `443/tcp` from anywhere; `51820/udp`
+  from the site's public IP.
+
 ### Reverse proxy and client IP
 
-Terminate TLS at a reverse proxy on the host.
-`misc/caddy/Caddyfile.example` is a complete Caddy configuration for the
-site and the tracker announce endpoint; Caddy obtains the certificates.
+Terminate TLS at Caddy on the site server. Use
+`misc/caddy/Caddyfile.cloudflare.example` when Cloudflare proxies the site,
+otherwise `misc/caddy/Caddyfile.example`.
 
 - `web` is published on `WEB_BIND:WEB_PORT`, default `127.0.0.1:8080`.
-  Keep it off 80/443, which the proxy listens on; Docker cannot bind a port
-  the proxy already holds. Docker publishes ports past host firewalls such
-  as ufw, so do not bind it publicly.
+  Keep it off 80/443, which Caddy listens on; Docker cannot bind a port
+  Caddy already holds.
 - The Compose network is pinned (`GAZELLE_SUBNET`, `GAZELLE_GATEWAY`), so
-  the host proxy reaches the containers from `172.30.33.254`. Set
-  `ALLOWED_PROXY` in `override.config.php` to that address, as in
+  Caddy reaches the containers from `172.30.33.254`. Set `ALLOWED_PROXY` in
+  `override.config.php` to that address, as in
   `misc/example.production.config.php`. Without it every user appears to
   come from the gateway, and login throttling and IP bans hit everyone.
 - The proxy must replace `X-Forwarded-For` with the client address, not
-  append to it. Gazelle accepts the header only when it is one public IP
-  from `ALLOWED_PROXY`; Ocelot uses its first entry. Caddy's default
-  `reverse_proxy` replaces it. With nginx, use
-  `proxy_set_header X-Forwarded-For $remote_addr;`, not
+  append to it: Gazelle accepts the header only when it is one public IP
+  from `ALLOWED_PROXY`. Caddy's default `reverse_proxy` replaces it. With
+  nginx, use `proxy_set_header X-Forwarded-For $remote_addr;`, not
   `$proxy_add_x_forwarded_for`.
-- Expose only `/<passkey>/announce` and `/<passkey>/scrape` on the tracker
-  host; Ocelot's `update` and `report` actions are for internal calls.
-- The site and tracker are IPv4-only. Publish only A records (no AAAA);
-  both Caddy examples refuse IPv6 clients (403 on the site, a bencoded
-  failure on the tracker). Ocelot cannot parse IPv6 addresses.
-- If Cloudflare proxies the site, use `misc/caddy/Caddyfile.cloudflare.example`
-  instead and turn off IPv6 Compatibility in Cloudflare. It trusts
-  `CF-Connecting-IP` only from Cloudflare's published ranges and still sends
-  one address upstream, so `ALLOWED_PROXY` does not change. Cloudflare's
-  attack protection depends on the server's IP staying secret. With the
-  tracker on the same server as a DNS-only record, anyone can look up that
-  IP and send traffic straight to the server, around Cloudflare. To get
-  that protection, run the tracker on a separate server with its own IP.
-
-### Ocelot tracker overlay
-
-Ocelot is not started by the base production stack. To co-locate it with
-Gazelle and MySQL:
-
-```bash
-cp ../Ocelot/.env.example ../Ocelot/.env
-# Set the Ocelot DB credentials and 32-character tracker secrets, then keep
-# the matching values in .env and lib/override.config.php.
-docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml up -d --build
-```
-
-The overlay builds from the sibling Ocelot checkout, loads
-`../Ocelot/.env` through `env_file`, and publishes Ocelot on
-`TRACKER_BIND:TRACKER_PORT` (default `127.0.0.1:34000`). Set `OCELOT_IMAGE`
-to use a prebuilt image. The Gazelle production MySQL init creates the
-optional Ocelot account with per-table grants matching Ocelot's queries,
-including `DROP` on `xbt_files_users` for its startup `TRUNCATE`; it cannot
-modify `users_main` or other site tables. In
-`lib/override.config.php`, use `TRACKER_HOST=ocelot` and
-`TRACKER_PORT=34000` for Gazelle's internal calls; set
-`TRACKER_PUBLIC_HOST` to the external announce URL. Ocelot trusts
-`X-Forwarded-For`, so keep it on loopback behind the announce TLS proxy. If
-you publish it directly (`TRACKER_BIND=0.0.0.0`), set `OCELOT_IGNORE_XFF=1`
-in `../Ocelot/.env`. `TRACKER_SECRET` and
-`TRACKER_REPORTKEY` must match Ocelot’s `site_password` and
-`report_password` and the values in `lib/override.config.php`.
+- IPv4 only: publish no AAAA record. Both examples refuse IPv6 clients.
+- With Cloudflare: proxy the site hostname, SSL/TLS “Full (strict)” with a
+  Cloudflare Origin CA certificate, IPv6 Compatibility off. Caddy trusts
+  `CF-Connecting-IP` only from Cloudflare's ranges and still sends one
+  address upstream, so `ALLOWED_PROXY` does not change. Cloudflare protects
+  the site only while this server's IP stays unknown: keep it out of DNS,
+  and send email through a mail provider rather than from this server
+  (mail headers include the sending server's IP).
 
 ## Development
 <!-- COMIC-ONLY: fork-specific host and development policy. -->

@@ -15,8 +15,11 @@ define('STORAGE_PATH_TORRENT',    '/var/lib/gazelle/torrent');
 define('STORAGE_PATH_RIPLOG',     '/var/lib/gazelle/riplog');
 define('STORAGE_PATH_RIPLOGHTML', '/var/lib/gazelle/riploghtml');
 
-// Compose service name for Gazelle's internal calls to Ocelot.
-define('TRACKER_HOST', 'ocelot');
+// COMIC-ONLY: Ocelot runs on the tracker server. TRACKER_HOST is its
+// WireGuard address (TRACKER_TUNNEL_IP in .env): Gazelle calls Ocelot there,
+// and the freeleech-token callback is accepted only from that address, so it
+// must be an IP, not a hostname.
+define('TRACKER_HOST', '10.33.0.2');
 define('TRACKER_NAME', 'tracker.example.com');
 define('TRACKER_PORT', 34000);
 define('TRACKER_PUBLIC_HOST', 'https://tracker.example.com');

@@ -1,0 +1,22 @@
+# COMIC-ONLY: WireGuard tunnel from the site server to the tracker server.
+#
+# Install wireguard-tools, then:
+#   umask 077
+#   wg genkey | tee /etc/wireguard/site.key | wg pubkey > /etc/wireguard/site.pub
+# Copy this file to /etc/wireguard/wg0.conf, fill in the keys and the
+# tracker's public IP, and enable it before Docker starts (README):
+#   systemctl enable --now wg-quick@wg0
+#
+# The tracker server uses ../Ocelot/docker/wg0.conf.example. Addresses match
+# GAZELLE_TUNNEL_IP/TRACKER_TUNNEL_IP in .env.
+[Interface]
+Address = 10.33.0.1/24
+ListenPort = 51820
+PrivateKey = <contents of /etc/wireguard/site.key>
+
+[Peer]
+# Tracker server
+PublicKey = <tracker server's tracker.pub>
+AllowedIPs = 10.33.0.2/32
+Endpoint = <tracker server's public IPv4>:51820
+PersistentKeepalive = 25

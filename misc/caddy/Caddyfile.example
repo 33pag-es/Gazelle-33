@@ -1,46 +1,29 @@
-# COMIC-ONLY: host reverse proxy for the production stack.
+# COMIC-ONLY: host reverse proxy for the site server, without Cloudflare.
+# If Cloudflare proxies the site, use Caddyfile.cloudflare.example instead.
+# The tracker has its own server and Caddyfile (../Ocelot/docker/).
 #
 # Install Caddy on the host, copy this file to /etc/caddy/Caddyfile, replace
-# the hostnames and email, and reload Caddy. Caddy obtains and renews the TLS
-# certificates; the DNS records for both names must point at this host and
+# the hostname and email, and reload Caddy. Caddy obtains and renews the TLS
+# certificate; the site's A record (no AAAA) must point at this host and
 # ports 80/443 must be open.
 #
-# docker-compose.prod.yml publishes Gazelle on 127.0.0.1:8080 and the Ocelot
-# overlay on 127.0.0.1:34000 (WEB_BIND/WEB_PORT, TRACKER_BIND/TRACKER_PORT).
-# Keep WEB_PORT off 80/443: Caddy listens there on every interface, and
-# Docker cannot then bind the same port on 127.0.0.1.
+# docker-compose.prod.yml publishes Gazelle on 127.0.0.1:8080
+# (WEB_BIND/WEB_PORT). Keep WEB_PORT off 80/443: Caddy listens there on every
+# interface, and Docker cannot then bind the same port on 127.0.0.1.
 #
 # Client IP: Caddy replaces any X-Forwarded-For sent by the client with the
 # real client address. Gazelle trusts that header only from ALLOWED_PROXY
-# (the pinned Docker gateway, GAZELLE_GATEWAY in .env), and Ocelot uses its
-# first entry. Do not add `trusted_proxies` here: Caddy would then append to
-# the client's header, Gazelle would reject the list, and Ocelot would accept
-# the client-supplied first entry. If Cloudflare proxies the site, use
-# Caddyfile.cloudflare.example instead.
+# (the pinned Docker gateway, GAZELLE_GATEWAY in .env). Do not add
+# trusted_proxies here: Caddy would then append to the client's header and
+# Gazelle would reject the list.
 {
 	email admin@example.com
 }
 
 example.com {
-	# IPv4 only. Publish only A records (no AAAA) for both hostnames.
+	# IPv4 only.
 	@not_ipv4 not client_ip 0.0.0.0/0
 	respond @not_ipv4 "This site accepts IPv4 connections only." 403
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8080
-}
-
-tracker.example.com {
-	# Expose only announce and scrape. Ocelot's update and report actions use
-	# the same /<key>/<action> shape and are for Gazelle's internal calls.
-	# Ocelot tracks IPv4 peers only; answer IPv6 with a bencoded failure that
-	# BitTorrent clients display, instead of Ocelot's parse error.
-	@not_ipv4 not client_ip 0.0.0.0/0
-	@tracker path_regexp ^/[A-Za-z0-9]{32}/(announce|scrape)$
-	handle @tracker {
-		respond @not_ipv4 "d14:failure reason37:This tracker accepts IPv4 peers only.e" 200
-		reverse_proxy 127.0.0.1:34000
-	}
-	handle {
-		respond 404
-	}
 }

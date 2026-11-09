@@ -72,19 +72,18 @@ The first `docker compose up -d` bootstraps dependencies and runs all
 three migration phases. Migrations run again on every `web` container
 start.
 
-Production uses `Dockerfile.production` and `docker-compose.prod.yml`.
-The image has no Node, Cypress, Chromium, Xdebug, Python, shellcheck, or
-source bind mount. The Compose file runs a one-shot `migrate` service,
-publishes only the web port, and keeps MySQL/PostgreSQL/Manticore private.
-Set `.env` from `.env.example`, fill
-`lib/override.config.php`, and terminate TLS at the host reverse proxy.
-Never use the development Compose file in production.
-
-For a co-located tracker, copy `../Ocelot/.env.example` to
-`../Ocelot/.env` and merge `../Ocelot/docker-compose.prod.yml` into the
-production stack. The Ocelot env file is loaded through `env_file`; keep its
-credentials and 32-character tracker secrets in sync with Gazelle's `.env`
-and `lib/override.config.php`.
+Production runs on two servers joined by WireGuard (README § Production):
+the site server runs this repository's `docker-compose.prod.yml`, and the
+tracker server runs `../Ocelot/docker-compose.prod.yml`. The image has no
+Node, Cypress, Chromium, Xdebug, Python, shellcheck, or source bind mount.
+The Compose file runs a one-shot `migrate` service, publishes web on
+loopback for Caddy, publishes MySQL and a callback web port only on the
+tunnel address `GAZELLE_TUNNEL_IP`, and keeps PostgreSQL/Manticore private.
+Set `.env` from `.env.example`, fill `lib/override.config.php`
+(`TRACKER_HOST` is the tracker's tunnel IP), and terminate TLS at Caddy
+(`misc/caddy/`). Never use the development Compose file in production.
+Keep the Ocelot credentials and 32-character tracker secrets in sync with
+the tracker server's `.env`.
 
 ## 2. Upstream merge contract
 

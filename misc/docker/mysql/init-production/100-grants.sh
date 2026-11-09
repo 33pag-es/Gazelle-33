@@ -32,9 +32,11 @@ SQL
 # This script runs before migrations create the tables, and MySQL only
 # accepts a table grant on a missing table when it includes CREATE; CREATE on
 # an existing table name is inert. Keep this account dedicated to Ocelot.
+# The account only accepts logins from OCELOT_MYSQL_HOST, the tracker
+# server's WireGuard address; tunnel traffic reaches MySQL with that source.
 if [ -n "${OCELOT_MYSQL_PASSWORD:-}" ]; then
     ocelot_db=${MYSQL_DATABASE}
-    ocelot_who="'${OCELOT_MYSQL_USER:?}'@'%'"
+    ocelot_who="'${OCELOT_MYSQL_USER:?}'@'${OCELOT_MYSQL_HOST:?}'"
     mysql --protocol=socket -uroot <<SQL
 CREATE USER IF NOT EXISTS ${ocelot_who} IDENTIFIED WITH mysql_native_password BY '${OCELOT_MYSQL_PASSWORD}';
 GRANT CREATE, SELECT ON \`${ocelot_db}\`.torrents TO ${ocelot_who};

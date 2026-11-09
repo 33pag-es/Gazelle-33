@@ -1,12 +1,15 @@
-# Production stack for Gazelle-33.
+# Production stack for the Gazelle-33 site server. Ocelot runs on a separate
+# tracker server (../Ocelot/docker-compose.prod.yml) joined by WireGuard.
 # Copy .env.example to .env, set every value, and mount a
 # real lib/override.config.php (or point OVERRIDE_CONFIG at it).
 #
 # TLS is terminated by the host reverse proxy (misc/caddy/Caddyfile.example);
-# this stack serves HTTP on WEB_BIND:WEB_PORT (default 127.0.0.1:8080) and
-# does not publish database or search ports. Docker-published ports bypass
-# host firewalls such as ufw, so keep WEB_BIND on loopback unless the proxy
-# runs on another host.
+# this stack serves HTTP on WEB_BIND:WEB_PORT (default 127.0.0.1:8080).
+# MySQL and a second web port are published only on the WireGuard address
+# GAZELLE_TUNNEL_IP for the tracker server. Nothing else is published.
+# Docker-published ports bypass host firewalls such as ufw, so never bind
+# these to a public address. Docker must start after wg-quick@wg0 (see
+# README): a port bound to a missing address fails and is not retried.
 #
 # The default network is pinned so that the host proxy always reaches the
 # containers from GAZELLE_GATEWAY; set ALLOWED_PROXY in override.config.php
@@ -47,6 +50,8 @@ services:
     restart: unless-stopped
     ports:
       - ${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80
+      # Ocelot's freeleech-token callback, reachable only over WireGuard.
+      - ${GAZELLE_TUNNEL_IP:-10.33.0.1}:${GAZELLE_TUNNEL_PORT:-8080}:80
     depends_on:
       mysql:
         condition: service_started
@@ -84,6 +89,9 @@ services:
   mysql:
     image: percona/percona-server:8.4.8
     restart: unless-stopped
+    ports:
+      # Ocelot on the tracker server, reachable only over WireGuard.
+      - ${GAZELLE_TUNNEL_IP:-10.33.0.1}:3306:3306
     volumes:
       - mysql-data:/var/lib/mysql
       - ./misc/docker/mysql/cnf/client.cnf:/opt/mysql/client.cnf:ro
@@ -99,6 +107,7 @@ services:
       - MYSQL_PHINX_PASSWORD=${MYSQL_PHINX_PASSWORD:?set MYSQL_PHINX_PASSWORD}
       - OCELOT_MYSQL_USER=${OCELOT_MYSQL_USER:-ocelot}
       - OCELOT_MYSQL_PASSWORD=${OCELOT_MYSQL_PASSWORD:-}
+      - OCELOT_MYSQL_HOST=${TRACKER_TUNNEL_IP:-10.33.0.2}
       - PERCONA_TELEMETRY_DISABLE=1
     command:
       - mysqld

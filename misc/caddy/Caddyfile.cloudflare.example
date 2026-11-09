@@ -1,26 +1,23 @@
-# COMIC-ONLY: host reverse proxy when Cloudflare proxies the site, but not
-# the tracker. Use instead of Caddyfile.example.
+# COMIC-ONLY: host reverse proxy for the site server when Cloudflare proxies
+# the site. Use instead of Caddyfile.example. The tracker has its own server,
+# a DNS-only record, and its own Caddyfile (../Ocelot/docker/).
 #
-# Cloudflare DNS:
-#   example.com          proxied (orange cloud), SSL/TLS mode "Full (strict)"
-#   tracker.example.com  DNS only (grey cloud). Announces must reach Caddy
-#                        directly so Ocelot records the peer's own address.
+# Cloudflare: proxy the site hostname (orange cloud), SSL/TLS mode
+# "Full (strict)", Network > IPv6 Compatibility off. Firewall this server's
+# port 443 to Cloudflare's ranges (README), and never publish its IP in DNS.
 #
-# Certificates: the site uses a Cloudflare Origin CA certificate (SSL/TLS >
-# Origin Server > Create Certificate), saved to the paths below and readable
-# by the caddy user. The tracker host keeps Caddy's automatic certificate.
+# Certificate: a Cloudflare Origin CA certificate (SSL/TLS > Origin Server >
+# Create Certificate), saved to the paths below and readable by the caddy
+# user. Caddy does not request a public certificate on this server.
 #
 # Client IP: requests from Cloudflare's published ranges are trusted for
 # CF-Connecting-IP; any other connection uses its own address, so a client
-# that bypasses Cloudflare cannot choose its IP. Every upstream receives a
-# single X-Forwarded-For value, which is what Gazelle (ALLOWED_PROXY) and
-# Ocelot expect. Refresh the ranges from https://www.cloudflare.com/ips/
-# (fetched 2026-11-09).
+# that bypasses Cloudflare cannot choose its IP. Gazelle receives a single
+# X-Forwarded-For value, which ALLOWED_PROXY accepts. Refresh the ranges
+# from https://www.cloudflare.com/ips/ (fetched 2026-11-09).
 #
-# Upstreams match docker-compose.prod.yml: Gazelle on 127.0.0.1:8080 and the
-# Ocelot overlay on 127.0.0.1:34000.
+# docker-compose.prod.yml publishes Gazelle on 127.0.0.1:8080 (WEB_PORT).
 {
-	email admin@example.com
 	servers {
 		trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
 		client_ip_headers CF-Connecting-IP
@@ -36,23 +33,5 @@ example.com {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8080 {
 		header_up X-Forwarded-For {client_ip}
-	}
-}
-
-tracker.example.com {
-	# Expose only announce and scrape. Ocelot's update and report actions use
-	# the same /<key>/<action> shape and are for Gazelle's internal calls.
-	# Ocelot tracks IPv4 peers only; answer IPv6 with a bencoded failure that
-	# BitTorrent clients display, instead of Ocelot's parse error.
-	@not_ipv4 not client_ip 0.0.0.0/0
-	@tracker path_regexp ^/[A-Za-z0-9]{32}/(announce|scrape)$
-	handle @tracker {
-		respond @not_ipv4 "d14:failure reason37:This tracker accepts IPv4 peers only.e" 200
-		reverse_proxy 127.0.0.1:34000 {
-			header_up X-Forwarded-For {client_ip}
-		}
-	}
-	handle {
-		respond 404
 	}
 }
