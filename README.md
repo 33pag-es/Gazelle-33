@@ -82,7 +82,9 @@ docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml u
 
 The overlay builds from the sibling Ocelot checkout, loads
 `../Ocelot/.env` through `env_file`, and publishes `TRACKER_PORT` (default
-34000). Set `OCELOT_IMAGE` to use a prebuilt image. In
+34000). Set `OCELOT_IMAGE` to use a prebuilt image. The Gazelle production
+MySQL init creates the optional Ocelot account with DML plus the
+database-scoped `DROP` needed for Ocelot's startup `TRUNCATE`. In
 `lib/override.config.php`, use `TRACKER_HOST=ocelot` and
 `TRACKER_PORT=34000` for Gazelle's internal calls; set
 `TRACKER_PUBLIC_HOST` to the external announce URL. The tracker must sit
