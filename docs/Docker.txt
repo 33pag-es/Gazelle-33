@@ -17,6 +17,18 @@ Manticore uses plain tables. Rebuild the indices from MySQL after changing
 the image or index schema; the container does this at startup and through
 the cron indexer. Do not copy Sphinx 2.2 data files.
 
+ocelot
+------
+
+Ocelot is an optional overlay in the sibling repository:
+
+`docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml up -d --build`
+
+Copy `../Ocelot/.env.example` to `../Ocelot/.env` and keep its database
+credentials and 32-character tracker secrets in sync with Gazelle's `.env`
+and `lib/override.config.php`. The overlay publishes the tracker port and
+loads its own env file through `env_file`.
+
 mysql
 -----
 

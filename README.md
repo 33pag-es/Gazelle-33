@@ -46,7 +46,7 @@ Manticore, MySQL, PostgreSQL, and memcached. Only the web port is
 published. Database and search ports stay on the private Compose network.
 
 ```bash
-cp misc/example.production.env .env
+cp .env.example .env
 cp misc/example.production.config.php lib/override.config.php
 # Edit both files. The database/search hosts are the Compose service names:
 # mysql, pg, manticore, memcached.
@@ -67,6 +67,29 @@ Back up `gazelle-data`, `mysql-data`, `pg-data`, and `manticore-data`.
 The `migrate` service exits successfully after all three migration phases;
 `web` waits for it. It runs again on the next `up`, so take a database
 backup before changing the image.
+
+### Ocelot tracker overlay
+
+Ocelot is not started by the base production stack. To co-locate it with
+Gazelle and MySQL:
+
+```bash
+cp ../Ocelot/.env.example ../Ocelot/.env
+# Set the Ocelot DB credentials and 32-character tracker secrets, then keep
+# the matching values in .env and lib/override.config.php.
+docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml up -d --build
+```
+
+The overlay builds from the sibling Ocelot checkout, loads
+`../Ocelot/.env` through `env_file`, and publishes `TRACKER_PORT` (default
+34000). Set `OCELOT_IMAGE` to use a prebuilt image. In
+`lib/override.config.php`, use `TRACKER_HOST=ocelot` and
+`TRACKER_PORT=34000` for Gazelle's internal calls; set
+`TRACKER_PUBLIC_HOST` to the external announce URL. The tracker must sit
+behind the announce TLS proxy and accept `X-Forwarded-For`, or be started
+with `--ignore-xff` when it is directly exposed. `TRACKER_SECRET` and
+`TRACKER_REPORTKEY` must match Ocelot’s `site_password` and
+`report_password` and the values in `lib/override.config.php`.
 
 ## Development
 <!-- COMIC-ONLY: fork-specific host and development policy. -->

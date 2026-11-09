@@ -76,9 +76,15 @@ Production uses `Dockerfile.production` and `docker-compose.prod.yml`.
 The image has no Node, Cypress, Chromium, Xdebug, Python, shellcheck, or
 source bind mount. The Compose file runs a one-shot `migrate` service,
 publishes only the web port, and keeps MySQL/PostgreSQL/Manticore private.
-Set `.env` from `misc/example.production.env`, fill
+Set `.env` from `.env.example`, fill
 `lib/override.config.php`, and terminate TLS at the host reverse proxy.
 Never use the development Compose file in production.
+
+For a co-located tracker, copy `../Ocelot/.env.example` to
+`../Ocelot/.env` and merge `../Ocelot/docker-compose.prod.yml` into the
+production stack. The Ocelot env file is loaded through `env_file`; keep its
+credentials and 32-character tracker secrets in sync with Gazelle's `.env`
+and `lib/override.config.php`.
 
 ## 2. Upstream merge contract
 

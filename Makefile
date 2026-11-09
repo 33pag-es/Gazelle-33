@@ -35,6 +35,8 @@ help:
 	echo '  prod-build           - build the production web image'
 	echo '  prod-up              - start the production stack'
 	echo '  prod-logs            - follow production stack logs'
+	echo '  prod-ocelot-up       - start the production stack with the Ocelot overlay'
+	echo '  prod-ocelot-logs     - follow production stack plus Ocelot logs'
 	echo '  test                 - run unit test suite'
 	echo '  test-comic           - run comic test suite'
 	echo '  twig-flush           - purge the Twig cache'
@@ -55,6 +57,14 @@ prod-up:
 .PHONY: prod-logs
 prod-logs:
 	docker compose -f docker-compose.prod.yml logs -f
+
+.PHONY: prod-ocelot-up
+prod-ocelot-up:
+	docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml up -d --build
+
+.PHONY: prod-ocelot-logs
+prod-ocelot-logs:
+	docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml logs -f
 
 .PHONY: upstream-diff
 upstream-diff:

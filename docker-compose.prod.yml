@@ -1,5 +1,5 @@
 # Production stack for Gazelle-33.
-# Copy misc/example.production.env to .env, set every value, and mount a
+# Copy .env.example to .env, set every value, and mount a
 # real lib/override.config.php (or point OVERRIDE_CONFIG at it).
 #
 # TLS is terminated by the host reverse proxy; this stack serves HTTP on
@@ -89,6 +89,8 @@ services:
       - MYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD:?set MYSQL_RO_PASSWORD}
       - MYSQL_PHINX_USER=${MYSQL_PHINX_USER:?set MYSQL_PHINX_USER}
       - MYSQL_PHINX_PASSWORD=${MYSQL_PHINX_PASSWORD:?set MYSQL_PHINX_PASSWORD}
+      - OCELOT_MYSQL_USER=${OCELOT_MYSQL_USER:-ocelot}
+      - OCELOT_MYSQL_PASSWORD=${OCELOT_MYSQL_PASSWORD:-}
       - PERCONA_TELEMETRY_DISABLE=1
     command:
       - mysqld

@@ -23,3 +23,15 @@ GRANT SELECT ON sys.schema_redundant_indexes TO '${MYSQL_RO_USER}'@'%';
 GRANT SELECT ON sys.schema_unused_indexes TO '${MYSQL_RO_USER}'@'%';
 GRANT SELECT ON sys.x\$schema_flattened_keys TO '${MYSQL_RO_USER}'@'%';
 SQL
+
+# Ocelot is optional. It uses a native-password account because its
+# libmysqlclient build does not handle caching_sha2_password reliably.
+# Ocelot TRUNCATEs xbt_files_users at startup; MySQL requires DROP for that.
+# The grant is database-scoped because the table is created by migrations,
+# after this init script runs. Keep this account dedicated to Ocelot.
+if [ -n "${OCELOT_MYSQL_PASSWORD:-}" ]; then
+    mysql --protocol=socket -uroot <<SQL
+CREATE USER IF NOT EXISTS '${OCELOT_MYSQL_USER:?}'@'%' IDENTIFIED WITH mysql_native_password BY '${OCELOT_MYSQL_PASSWORD}';
+GRANT SELECT, INSERT, UPDATE, DELETE, DROP ON \`${MYSQL_DATABASE}\`.* TO '${OCELOT_MYSQL_USER}'@'%';
+SQL
+fi

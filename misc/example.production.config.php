@@ -15,9 +15,11 @@ define('STORAGE_PATH_TORRENT',    '/var/lib/gazelle/torrent');
 define('STORAGE_PATH_RIPLOG',     '/var/lib/gazelle/riplog');
 define('STORAGE_PATH_RIPLOGHTML', '/var/lib/gazelle/riploghtml');
 
-define('TRACKER_HOST', '10.0.0.2');
+// Compose service name for Gazelle's internal calls to Ocelot.
+define('TRACKER_HOST', 'ocelot');
 define('TRACKER_NAME', 'tracker.example.com');
-define('TRACKER_PORT', 12345);
+define('TRACKER_PORT', 34000);
+define('TRACKER_PUBLIC_HOST', 'https://tracker.example.com');
 
 define('SQLHOST', '10.0.0.1');
 define('IRC_HOSTNAME', 'irc.example.com');
@@ -48,8 +50,8 @@ define('SPHINXQL_HOST', SPHINX_HOST);
 // If Manticore is running on the same host as the PHP interpreter
 define('SPHINXQL_SOCK', '/var/run/manticore/manticore.sock');
 
-define('TRACKER_SECRET',    '0123456789abcdef0123456789abcdef01');
-define('TRACKER_REPORTKEY', '0123456789abcdef0123456789abcdef01');
+define('TRACKER_SECRET',    '0123456789abcdef0123456789abcdef');
+define('TRACKER_REPORTKEY', '0123456789abcdef0123456789abcdef');
 
 define('PASSWORD_PEPPER', 'changeme');
 define('ENCKEY',          'changeme');
