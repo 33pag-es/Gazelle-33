@@ -21,7 +21,7 @@ npm install
 2. Install and setup the following services:
     * MySQL
     * memcached
-    * sphinxsearch
+    * manticore
 
 Depending on your OS, these may be available in the package manager. You can see
 what versions of the above we support by looking at our docker-compose.yml
@@ -50,16 +50,16 @@ see expired unfetched activity.
     vendor/bin/phinx migrate
     vendor/bin/phinx migrate -c misc/phinx-pg.php
 
-7. Configure Sphinx - we recommend you use the included misc/docker/sphinxsearch/sphinx.conf
-   You can copy this to /etc/sphinx/sphinx.conf. You need to fill in the
+7. Configure Manticore - we recommend you use the included misc/docker/manticore/manticore.conf
+   You can copy this to /etc/manticoresearch/manticore.conf. You need to fill in the
    details of the SQL server from lib/override.config.php and you may need to
-   create the `/var/lib/sphinx` folder.
+   create the `/var/lib/manticore` folder.
 
-   More information is available at: https://sphinxsearch.com/docs/current.html
+   More information is available at: https://manual.manticoresearch.com/
 
    Run the indexer to finish the setup:
 
-   /usr/bin/indexer -c /etc/sphinx/sphinx.conf --all
+   /usr/bin/indexer -c /etc/manticoresearch/manticore.conf --all
 
 8. Generate stylesheets and their previews by running the following:
 

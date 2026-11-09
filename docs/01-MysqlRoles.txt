@@ -17,14 +17,14 @@ The remaining DROP privileges are for performing TRUNCATE operations.
 You should define names (be creative!) for the following roles:
 
 admin   - e.g. adm (a non-privileged user on the system to run phinx)
-sphinx  - e.g. spx
+search  - e.g. mnt
 tracker - e.g. trk
 website - e.g. www
 
 These mysql roles should be configured with different passwords and used in
 the following places:
 
-    /etc/sphinxsearch/sphinx.conf
+    /etc/manticoresearch/manticore.conf
     /var/www/gazelle/lib/override.config.php
     /var/www/ocelot/ocelot.conf
 

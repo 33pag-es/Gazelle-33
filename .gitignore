@@ -48,3 +48,6 @@ __MACOSX/
 /public/static/userscripts/gazelle-json-export.js.txt
 
 .phpunit.result.cache
+
+.env
+.manticore/

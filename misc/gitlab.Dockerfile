@@ -99,16 +99,19 @@ RUN apt-get update \
     && pip3 install --break-system-packages chardet eac-logchecker xld-logchecker
 
 # testing layer
-# backports needed for sphinx
-# sphinx needs its config that cannot be passed through a gitlab CI service
-# hence it is installed in this container
-RUN echo "deb http://deb.debian.org/debian ${DEB_RELEASE}-backports main" > /etc/apt/sources.list.d/backports.list \
+# Manticore provides the Sphinx-compatible search daemon and indexer.
+# It is installed in this container because the config cannot be passed
+# through a GitLab CI service.
+RUN curl -fsSL https://repo.manticoresearch.com/manticore-repo.noarch.deb \
+        -o /tmp/manticore-repo.noarch.deb \
+    && apt-get install -y --no-install-recommends /tmp/manticore-repo.noarch.deb \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         default-mysql-client \
+        libmariadb3 \
         libmemcached-tools \
+        manticore \
         postgresql-client \
-        sphinxsearch \
         # all below is needed until running cypress headless/electron-less is fixed: https://github.com/cypress-io/cypress/issues/23636
         libgtk2.0-0 \
         libnotify-dev \
@@ -117,8 +120,7 @@ RUN echo "deb http://deb.debian.org/debian ${DEB_RELEASE}-backports main" > /etc
         xvfb \
     && apt-get autoremove \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && sed -i 's/START=no/START=yes/' /etc/default/sphinxsearch
+    && rm -rf /var/lib/apt/lists/* /tmp/manticore-repo.noarch.deb
 
 # add firefox for cypress
 # command from https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/node16.16.0-chrome107-ff107/Dockerfile

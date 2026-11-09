@@ -263,17 +263,17 @@ defined('PG_RO_DSN') or define('PG_RO_DSN',
 );
 
 // ------------------------------------------------------------------------
-// Sphinx settings
+// Manticore search settings
 
-// Hostname of the Sphinx fulltext search engine. The hostnames
+// Hostname of the Manticore fulltext search engine. The hostnames
 // will probably need to be changed in production but the default
 // port numbers will be fine.
-defined('SPHINX_HOST') or define('SPHINX_HOST', 'sphinxsearch');
+defined('SPHINX_HOST') or define('SPHINX_HOST', 'manticore');
 
 // Default port of the above.
 defined('SPHINX_PORT') or define('SPHINX_PORT', 9312);
 
-// Hostname of the Sphinx query endpoint.
+// Hostname of the Manticore query endpoint.
 defined('SPHINXQL_HOST') or define('SPHINXQL_HOST', SPHINX_HOST);
 
 // Default port of the above.

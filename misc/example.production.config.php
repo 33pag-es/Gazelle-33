@@ -29,8 +29,11 @@ define('MYSQL_DB',      'changeme');
 define('MYSQL_RW_USER', 'changeme');
 define('MYSQL_RW_PASS', 'changeme');
 
-define('MYSQL_PHINX_USER', 'thisis.phinx');
-define('MYSQL_PHINX_PASS', 'thisis.phinx');
+define('MYSQL_RO_USER', 'changeme');
+define('MYSQL_RO_PASS', 'changeme');
+
+define('MYSQL_PHINX_USER', 'changeme');
+define('MYSQL_PHINX_PASS', 'changeme');
 
 define('PG_HOST',    'localhost');
 define('PG_DB',      'changeme');
@@ -39,11 +42,11 @@ define('PG_RW_PASS', 'changeme');
 define('PG_RO_USER', 'changeme');
 define('PG_RO_PASS', 'changeme');
 
-define('SPHINX_HOST', 'sphinx.example.com');
+define('SPHINX_HOST', 'manticore.example.com');
 define('SPHINXQL_HOST', SPHINX_HOST);
 
-// If sphinx is running on the same host as the PHP interpreter
-define('SPHINXQL_SOCK', '/var/run/sphinx.sock');
+// If Manticore is running on the same host as the PHP interpreter
+define('SPHINXQL_SOCK', '/var/run/manticore/manticore.sock');
 
 define('TRACKER_SECRET',    '0123456789abcdef0123456789abcdef01');
 define('TRACKER_REPORTKEY', '0123456789abcdef0123456789abcdef01');

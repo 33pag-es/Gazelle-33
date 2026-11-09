@@ -1,0 +1,2 @@
+* * * * * manticore flock -w 0 /tmp/manticore-index.lock /usr/bin/indexer -c /var/lib/manticore/manticore.conf --rotate delta >> /var/log/manticore/index.log 2>&1
+5 * * * * manticore flock -w 0 /tmp/manticore-index.lock /usr/bin/indexer -c /var/lib/manticore/manticore.conf --rotate --all >> /var/log/manticore/index.log 2>&1

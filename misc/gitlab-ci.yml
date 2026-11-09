@@ -104,10 +104,10 @@ e2e-tests:
         - node_modules
     - key:
         files:
-          - misc/docker/sphinxsearch/sphinx.conf
-        prefix: sphinx
+          - misc/docker/manticore/manticore.conf
+        prefix: manticore
       paths:
-        - .sphinxsearch
+        - .manticore
   coverage: /^\s*Lines:\s*\d+.\d+\%/
   script:
     - /bin/bash "${CI_PROJECT_DIR}/misc/docker/web/bootstrap-base.sh"

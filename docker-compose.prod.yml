@@ -1,0 +1,130 @@
+# Production stack for Gazelle-33.
+# Copy misc/example.production.env to .env, set every value, and mount a
+# real lib/override.config.php (or point OVERRIDE_CONFIG at it).
+#
+# TLS is terminated by the host reverse proxy; this stack serves HTTP on
+# WEB_PORT (default 80) and does not publish database or search ports.
+name: gazelle-33-prod
+
+x-web-build: &web-build
+  context: .
+  dockerfile: Dockerfile.production
+  args:
+    SITE_HOST: ${SITE_HOST:-example.com}
+    SITE_NAME: ${SITE_NAME:-Gazelle}
+    SITE_URL: ${SITE_URL:-https://example.com}
+    STATIC_SERVER: ${STATIC_SERVER:-/static}
+
+x-web-volumes: &web-volumes
+  - gazelle-data:/var/lib/gazelle
+  - ${OVERRIDE_CONFIG:-./lib/override.config.php}:/var/www/lib/override.config.php:ro
+
+services:
+  migrate:
+    build: *web-build
+    image: gazelle-33-web:prod
+    entrypoint: ["/bin/bash", "/var/www/misc/docker/web/migrate.sh"]
+    restart: "no"
+    depends_on:
+      - mysql
+      - pg
+    volumes: *web-volumes
+    environment:
+      - MYSQL_HOST=mysql
+      - PG_HOST=pg
+
+  web:
+    build: *web-build
+    image: gazelle-33-web:prod
+    restart: unless-stopped
+    ports:
+      - ${WEB_PORT:-80}:80
+    depends_on:
+      mysql:
+        condition: service_started
+      memcached:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+      manticore:
+        condition: service_started
+    volumes: *web-volumes
+    environment:
+      - ENV=production
+      - PHP_VER=8.5
+      - MYSQL_HOST=mysql
+      - MANTICORE_HOST=manticore
+      - MANTICORE_PORT=9306
+
+  manticore:
+    build: misc/docker/manticore
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - manticore-data:/var/lib/manticore
+      - ./misc/docker/manticore/manticore.conf:/etc/manticoresearch/manticore.conf:ro
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER:?set MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+
+  mysql:
+    image: percona/percona-server:8.4.8
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./misc/docker/mysql/cnf/client.cnf:/opt/mysql/client.cnf:ro
+      - ./misc/docker/mysql/init-production:/docker-entrypoint-initdb.d:ro
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE:?set MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER:?set MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+      - MYSQL_RO_USER=${MYSQL_RO_USER:?set MYSQL_RO_USER}
+      - MYSQL_RO_PASSWORD=${MYSQL_RO_PASSWORD:?set MYSQL_RO_PASSWORD}
+      - MYSQL_PHINX_USER=${MYSQL_PHINX_USER:?set MYSQL_PHINX_USER}
+      - MYSQL_PHINX_PASSWORD=${MYSQL_PHINX_PASSWORD:?set MYSQL_PHINX_PASSWORD}
+      - PERCONA_TELEMETRY_DISABLE=1
+    command:
+      - mysqld
+      - --group-concat-max-len=1048576
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --log-bin-trust-function-creators=ON
+      - --userstat=on
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      - --mysql_native_password=ON
+
+  pg:
+    build:
+      context: .
+      dockerfile: misc/pg.Dockerfile
+    image: postgres:orpheus
+    restart: unless-stopped
+    volumes:
+      - pg-data:/var/lib/postgresql
+      - ./misc/docker/pg/init:/docker-entrypoint-initdb.d:ro
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${POSTGRES_USER:?set POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE:?set POSTGRES_DATABASE}
+      - POSTGRES_DB_USER=${POSTGRES_DB_USER:?set POSTGRES_DB_USER}
+      - POSTGRES_USER_PASSWORD=${POSTGRES_USER_PASSWORD:?set POSTGRES_USER_PASSWORD}
+      - PG_RO_USER=${PG_RO_USER:?set PG_RO_USER}
+      - PG_RO_PASS=${PG_RO_PASS:?set PG_RO_PASS}
+
+  memcached:
+    image: memcached:1.6.41-alpine
+    restart: unless-stopped
+
+volumes:
+  gazelle-data:
+  manticore-data:
+  mysql-data:
+  pg-data:

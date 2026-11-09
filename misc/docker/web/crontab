@@ -1,2 +1,2 @@
 PATH=$PATH:/var/www/bin
-*/15 * * * * gazelle scheduler >> /tmp/schedule.log
+*/15 * * * * su -s /bin/bash gazelle -c '/var/www/bin/scheduler' >> /tmp/schedule.log 2>&1

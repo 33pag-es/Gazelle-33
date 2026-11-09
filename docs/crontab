@@ -4,5 +4,5 @@
 PATH=$PATH:/var/www/bin
 
 0,15,30,45  *   * * * scheduler >> /tmp/schedule.log
-*           *   * * * /usr/bin/indexer -c /etc/sphinx/sphinx.conf --rotate delta log_delta > /dev/null
-5           */2 * * * /usr/bin/indexer -c /etc/sphinx/sphinx.conf --rotate --all >> /tmp/sphinx-indexer.log
+*           *   * * * /usr/bin/indexer -c /etc/manticoresearch/manticore.conf --rotate delta log_delta > /dev/null
+5           */2 * * * /usr/bin/indexer -c /etc/manticoresearch/manticore.conf --rotate --all >> /tmp/manticore-indexer.log

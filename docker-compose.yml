@@ -64,24 +64,25 @@ services:
       - --log-bin-trust-function-creators=ON
       - --userstat=on
       - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
-      # neither sphinxsearch or ocelot are compatible with the mysql8 caching_sha2_password plugin
+      # Ocelot is not compatible with the mysql8 caching_sha2_password plugin
       - --mysql_native_password=ON
 
-  sphinxsearch:
-    build: misc/docker/sphinxsearch
+  manticore:
+    build: misc/docker/manticore
     depends_on:
       - mysql
       - web
     volumes:
-      - sphinx-data:/var/lib/sphinxsearch/data/
-      - ./misc/docker/sphinxsearch/sphinx.conf:/var/lib/sphinxsearch/conf/sphinx.conf
+      - manticore-data:/var/lib/manticore
+      - ./misc/docker/manticore/manticore.conf:/etc/manticoresearch/manticore.conf:ro
     environment:
       # These should match what you set for your mysql container above
       - MYSQL_USER=gazelle
       - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=gazelle
 
 volumes:
   gazelle-data:
+  manticore-data:
   mysql-data:
   pg-data:
-  sphinx-data:

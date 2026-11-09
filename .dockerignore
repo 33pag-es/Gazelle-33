@@ -2,9 +2,14 @@
 html/
 .docker/data
 .docker/mysql
-.docker/sphinxsearch
+.docker/manticore
 .idea/
 .vscode/
 cache/
 node_modules/
 vendor/
+.git
+.gitignore
+.env
+lib/override.config.php
+tests/

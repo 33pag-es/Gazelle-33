@@ -3,8 +3,8 @@
 Gazelle is a web framework geared towards private BitTorrent trackers.
 Although naturally focusing on music, it can be modified for most
 needs. Gazelle is written in PHP, Twig and JavaScript. It traditionally
-uses Mysql and Sphinx, but work is under way to replace those with
-Postgresql.
+uses Mysql and Manticore Search (SphinxQL), but work is under way to
+replace those with Postgresql.
 
 ## Gazelle Runtime Dependencies
 * [PHP 8.5.9+](https://www.php.net/) (required)
@@ -13,7 +13,7 @@ Postgresql.
 * [nginx](http://wiki.nginx.org/Main) (required)
 * [nodeJS 20+](https://nodejs.org/en/) (required)
 * [memcached](http://memcached.org/) (required)
-* [sphinx 2.2.1 or newer](http://sphinxsearch.com/) (required)
+* [Manticore Search 29.9.0+](https://manticoresearch.com/) (required, SphinxQL-compatible)
 * [ocelot](https://github.com/OPSnet/Ocelot) (optional)
 
 ## Logchecker
@@ -34,10 +34,44 @@ Due to the nature of torrenting, we HIGHLY recommend not trying to run this in
 production if you are not prepared or knowledgeable in setting up servers,
 proxies, and tuning TCP configs to obtain proper performance and privacy.
 
+## Production
+<!-- COMIC-ONLY: production stack and image. -->
+`Dockerfile.production` builds a runtime-only image. It contains PHP,
+nginx, cron, Composer dependencies, and compiled stylesheets; it does not
+contain Node, Cypress, Chromium, Xdebug, Python, shellcheck, or a source
+bind mount.
+
+`docker-compose.prod.yml` runs migrations once, then starts web,
+Manticore, MySQL, PostgreSQL, and memcached. Only the web port is
+published. Database and search ports stay on the private Compose network.
+
+```bash
+cp misc/example.production.env .env
+cp misc/example.production.config.php lib/override.config.php
+# Edit both files. The database/search hosts are the Compose service names:
+# mysql, pg, manticore, memcached.
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml logs -f migrate
+```
+
+`MYSQL_PHINX_USER`/`MYSQL_PHINX_PASSWORD` create the DDL-capable migration
+account. `MYSQL_RO_USER`/`MYSQL_RO_PASSWORD` create the read-only account.
+Both must match the corresponding constants in `override.config.php`.
+
+Terminate TLS at the host reverse proxy. `WEB_PORT` defaults to 80 and
+must not be exposed directly to the public internet without HTTPS and a
+reverse proxy. The production configuration is mounted read-only; the
+build does not include `lib/override.config.php`.
+
+Back up `gazelle-data`, `mysql-data`, `pg-data`, and `manticore-data`.
+The `migrate` service exits successfully after all three migration phases;
+`web` waits for it. It runs again on the next `up`, so take a database
+backup before changing the image.
+
 ## Development
 <!-- COMIC-ONLY: fork-specific host and development policy. -->
 The host machine is a thin client. Do not install PHP, Composer, Node,
-npm, Cypress, MySQL, PostgreSQL, or Sphinx on the host. Every command in
+npm, Cypress, MySQL, PostgreSQL, or Manticore on the host. Every command in
 this section runs inside the `web` container; `docker compose exec -T web`
 is the canonical prefix. Makefile targets are container-only.
 
@@ -139,9 +173,9 @@ And then:
 
 In the same vein, you can use `mysqldump` to perform a backup.
 
-To view the sphinx tables:
+To view the Manticore tables:
 
-`docker compose exec sphinxsearch mysql -h 127.0.0.1 -P 9306`
+`docker compose exec manticore mysql -h 127.0.0.1 -P 9306`
 
 #### Boris
 You can run Boris directly:

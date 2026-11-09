@@ -1,9 +1,21 @@
 Notes on upgrading Docker containers
 
-sphinxsearch
-------------
+production
+----------
 
-No particular notes, the plan is to remove this entirely at some point.
+Use `Dockerfile.production` and `docker-compose.prod.yml`. The production
+image contains only runtime dependencies; rebuild it with
+`docker compose -f docker-compose.prod.yml build web` after changing source.
+The `migrate` service runs the three migration phases once per `up` and must
+exit successfully before web starts. Back up the MySQL, PostgreSQL, Gazelle
+storage, and Manticore volumes before upgrading.
+
+manticore
+---------
+
+Manticore uses plain tables. Rebuild the indices from MySQL after changing
+the image or index schema; the container does this at startup and through
+the cron indexer. Do not copy Sphinx 2.2 data files.
 
 mysql
 -----

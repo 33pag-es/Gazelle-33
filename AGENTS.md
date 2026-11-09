@@ -12,7 +12,7 @@ target data model and the ordered retrofit phases.
 ## 1. Host policy: Docker only
 
 The host machine is a thin client. Never install or invoke PHP, Composer,
-Node, npm, Cypress, MySQL, PostgreSQL, or Sphinx on the host.
+Node, npm, Cypress, MySQL, PostgreSQL, or Manticore on the host.
 
 Every command runs inside the `web` container:
 
@@ -47,7 +47,7 @@ make upstream-diff
 docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
 
 # code style
-docker compose exec -T web vendor/bin/phpcs -p --parallel=4
+docker compose exec -T web vendor/bin/phpcs -p
 
 # twig syntax
 docker compose exec -T web sh -c 'bin/twig-parse $(find templates -type f)'
@@ -64,13 +64,21 @@ docker compose exec -T web bin/getconf SITE_NAME
 make mysql
 make psql
 
-# Sphinx reindex
-docker compose exec -T sphinxsearch indexer -c /var/lib/sphinxsearch/conf/sphinx.conf --rotate --all
+# Manticore reindex
+docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
 ```
 
 The first `docker compose up -d` bootstraps dependencies and runs all
 three migration phases. Migrations run again on every `web` container
 start.
+
+Production uses `Dockerfile.production` and `docker-compose.prod.yml`.
+The image has no Node, Cypress, Chromium, Xdebug, Python, shellcheck, or
+source bind mount. The Compose file runs a one-shot `migrate` service,
+publishes only the web port, and keeps MySQL/PostgreSQL/Manticore private.
+Set `.env` from `misc/example.production.env`, fill
+`lib/override.config.php`, and terminate TLS at the host reverse proxy.
+Never use the development Compose file in production.
 
 ## 2. Upstream merge contract
 
@@ -146,14 +154,18 @@ Data:
 
 Search:
 
-- Sphinx index `torrents` (plus `delta`), config at
-  `misc/docker/sphinxsearch/sphinx.conf`.
+- Manticore table `torrents` (plus `delta`), config at
+  `misc/docker/manticore/manticore.conf`.
 - Staging tables `sphinx_tg`, `sphinx_t`, `sphinx_a` are populated by the
   indexer; `sphinx_delta` is written by `TGroup::refresh()`.
-- After changing indexed columns, update the Sphinx source and rebuild:
-  `docker compose exec -T sphinxsearch indexer -c /var/lib/sphinxsearch/conf/sphinx.conf --rotate --all`.
+- After changing indexed columns, update the Manticore source and rebuild:
+  `docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all`.
 - If the index is stale during development, run the same command with
   `--rotate delta` for the delta index.
+- Manticore uses `table ... { type = plain }`; the delta table declares
+  `killlist_target = torrents:kl`. The Sphinx `ngram_chars`/`ngram_len`
+  settings are omitted because they overlap the charset table; CJK text is
+  tokenized by the charset table instead of character n-grams.
 
 Tracker:
 
@@ -234,7 +246,7 @@ Semantics:
 | Torrent row/label | `app/TorrentAbstract.php`, `templates/comic/torrent-row.twig` | comic branch; music branch untouched |
 | Checked | new `sections/torrents/check.php` | POST + `authorize()` + `torrents_edit` |
 | Browse | `app/Search/Torrent.php`, `templates/torrent/browse-header.twig` | additive fields; hide music filters via `SITE_FLAVOR` |
-| Sphinx | `misc/docker/sphinxsearch/sphinx.conf` | add fields/attributes; keep music fields |
+| Search | `misc/docker/manticore/manticore.conf` | add fields/attributes; keep music fields |
 | API/JSON | `app/API/*`, `app/Json/*` | add comic fields; keep music keys |
 | Hide music | nav/RSS/sidebar templates, `sections/artist/*`, `sections/better/*`, requests, contests | gate with `SITE_FLAVOR`; do not delete |
 
@@ -304,9 +316,9 @@ Semantics:
    columns through MySQL (`self::$db`), or add a PostgreSQL migration
    that recreates/alters the foreign table. Do not assume
    `relay.torrents_group` has `PublisherID` until it is added.
-- **Sphinx staging tables** (`sphinx_tg`, `sphinx_t`, `sphinx_a`,
+- **Manticore staging tables** (`sphinx_tg`, `sphinx_t`, `sphinx_a`,
    `sphinx_delta`) are part of the schema. Add comic columns to the
-   staging tables and `sphinx.conf` together.
+   staging tables and `manticore.conf` together.
 - **Tests mutate the dev database.** Clean up in `tearDown()`; never point
    the suite at a database you care about.
 - **`make lint-twig`** previously expanded `$(find ...)` as a Make

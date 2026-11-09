@@ -114,7 +114,7 @@ PostgreSQL mirror:
 3. Do not remap `request.id_category`; requests remain category 7 and
    stay dormant.
 
-New Sphinx staging columns (MySQL, via a new migration):
+New search staging columns (MySQL, via a new migration):
 
 - `sphinx_tg`: `publisher VARCHAR(255) NULL`, `creators VARCHAR(2048) NULL`.
 - `sphinx_t`: `issue_start INT NULL`, `issue_end INT NULL`,
@@ -293,7 +293,7 @@ New endpoint: `sections/torrents/check.php`.
   `CheckedAt = now()`.
 - Writes `$torrent->logger()->torrent($torrent, $Viewer,
   'marked checked'/'marked unchecked')`.
-- Flushes the torrent cache and refreshes the Sphinx delta.
+- Flushes the torrent cache and refreshes the Manticore delta.
 - Returns the series page with a flash message, or JSON when
   `AJAX` is defined.
 
@@ -316,7 +316,7 @@ UI:
 - Keep the music fields and attributes in the class so upstream patches
   still apply; hide them in the comic UI.
 
-`misc/docker/sphinxsearch/sphinx.conf` source changes:
+`misc/docker/manticore/manticore.conf` source changes:
 
 - `sphinx_tg`: add `publisher` from `publisher.Name`, `creators` from
   `creator.Name` joined through `series_creator`.
@@ -326,6 +326,12 @@ UI:
   attributes.
 - `sql_joined_field creatorname`: reuse the `sphinx_a` pattern, joining
   `series_creator` + `creator`, ordered by torrent id.
+
+Manticore 29 uses plain `table` blocks (`type = plain`). The delta table
+must declare `killlist_target = torrents:kl`, and the delta source must not
+select `Creators` twice. The Sphinx CJK `ngram_chars` settings are omitted
+because they overlap the existing charset table; rebuild indices from MySQL
+instead of converting Sphinx data files.
 
 `templates/torrent/browse-header.twig` comic branch:
 
@@ -470,7 +476,7 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `templates/user/setting/display.twig` | comic display wording | `{# COMIC-ONLY #}` |
 | `templates/collage/new.twig` | hide artist/label types | `{# COMIC-ONLY #}` |
 | `templates/top10/linkbox.twig` | hide Last.fm tab | `{# COMIC-ONLY #}` |
-| `misc/docker/sphinxsearch/sphinx.conf` | comic index fields | `# COMIC-ONLY` |
+| `misc/docker/manticore/manticore.conf` | comic index fields | `# COMIC-ONLY` |
 | `app/Json/TGroup.php` | comic response fields | `// COMIC-ONLY` |
 | `app/Json/Torrent.php` | comic response fields | `// COMIC-ONLY` |
 | `app/API/Torrent.php` | comic API fields | `// COMIC-ONLY` |
@@ -613,10 +619,10 @@ row, edition group, similar albums, or riplog link; a staff user toggles
 `CHECKED`; the row shows `CHECKED`; the audit trail contains the note; a
 non-staff POST returns 403.
 
-### Phase 5 — Browse and Sphinx
+### Phase 5 — Browse and search
 
 Files: `app/Search/Torrent.php`, `templates/torrent/browse-header.twig`,
-`sections/torrents/browse.php`, `misc/docker/sphinxsearch/sphinx.conf`,
+`sections/torrents/browse.php`, `misc/docker/manticore/manticore.conf`,
 new MySQL migration for staging columns, `tests/phpunit/Comic/SearchTest.php`.
 
 Behavior: search by series, creator, publisher, issue, scanner, format,
@@ -686,7 +692,7 @@ docker compose exec -T web vendor/bin/phpunit -c misc/phpunit.xml tests/phpunit/
 docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
 docker compose exec -T web vendor/bin/phpcs -p --parallel=4
 docker compose exec -T web sh -c 'bin/twig-parse $(find templates -type f)'
-docker compose exec -T sphinxsearch indexer -c /var/lib/sphinxsearch/conf/sphinx.conf --rotate --all
+docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
 ```
 
 Manual UI proof: `http://localhost:7001/` after `docker compose up -d`.

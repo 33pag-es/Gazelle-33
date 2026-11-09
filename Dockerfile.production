@@ -1,0 +1,103 @@
+# Production Gazelle image: runtime PHP, nginx, and cron only.
+# Development tooling (Node, Cypress, Chromium, Xdebug, Python, shellcheck)
+# is built in disposable stages and is not present in the final image.
+
+FROM node:22-bookworm-slim AS assets
+
+ARG SITE_HOST=example.com
+ARG SITE_NAME=Gazelle
+ARG SITE_URL=https://example.com
+ARG STATIC_SERVER=/static
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+COPY sass ./sass
+COPY public ./public
+COPY bin/build-scss.mjs ./bin/build-scss.mjs
+RUN node -e 'const fs = require("fs"); fs.writeFileSync("/tmp/config-css.js", JSON.stringify({SITE_HOST: process.env.SITE_HOST, SITE_NAME: process.env.SITE_NAME, SITE_URL: process.env.SITE_URL, STATIC_SERVER: process.env.STATIC_SERVER}));' \
+    && node bin/build-scss.mjs /tmp/config-css.js
+
+FROM composer:2 AS vendor
+
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install \
+        --no-dev \
+        --no-scripts \
+        --no-autoloader \
+        --ignore-platform-reqs \
+        --no-progress
+COPY app ./app
+COPY classes ./classes
+RUN composer dump-autoload --no-dev --classmap-authoritative
+
+FROM debian:trixie-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PHP_VER=8.5
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        cron \
+        curl \
+        gnupg2 \
+        netcat-openbsd \
+        nginx \
+        perl \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://packages.sury.org/php/apt.gpg > /usr/share/keyrings/debsuryorg-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ trixie main" > /etc/apt/sources.list.d/php.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        php${PHP_VER}-apcu \
+        php${PHP_VER}-bcmath \
+        php${PHP_VER}-cli \
+        php${PHP_VER}-curl \
+        php${PHP_VER}-fpm \
+        php${PHP_VER}-gd \
+        php${PHP_VER}-gmp \
+        php${PHP_VER}-iconv \
+        php${PHP_VER}-intl \
+        php${PHP_VER}-mbstring \
+        php${PHP_VER}-memcached \
+        php${PHP_VER}-mysql \
+        php${PHP_VER}-pgsql \
+        php${PHP_VER}-xml \
+        php${PHP_VER}-zip \
+    && apt-get purge -y --auto-remove apt-transport-https gnupg2 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www
+
+RUN useradd -r -m -d /var/lib/gazelle -s /bin/bash gazelle
+
+COPY --chown=gazelle:gazelle app ./app
+COPY --chown=gazelle:gazelle bin ./bin
+COPY --chown=gazelle:gazelle classes ./classes
+COPY --chown=gazelle:gazelle lib ./lib
+COPY --chown=gazelle:gazelle misc ./misc
+COPY --chown=gazelle:gazelle sections ./sections
+COPY --chown=gazelle:gazelle templates ./templates
+COPY --chown=gazelle:gazelle public ./public
+COPY --from=assets --chown=gazelle:gazelle /app/public/static/styles ./public/static/styles
+COPY --from=vendor --chown=gazelle:gazelle /app/vendor ./vendor
+COPY --chown=gazelle:gazelle composer.json composer.lock gazelle.php phinx.php ./
+
+RUN cp misc/docker/web/php.ini /etc/php/${PHP_VER}/cli/php.ini \
+    && cp misc/docker/web/php.ini /etc/php/${PHP_VER}/fpm/php.ini \
+    && cp misc/docker/web/php-production.ini /etc/php/${PHP_VER}/cli/conf.d/99-production.ini \
+    && cp misc/docker/web/php-production.ini /etc/php/${PHP_VER}/fpm/conf.d/99-production.ini \
+    && cp misc/docker/web/www-production.conf /etc/php/${PHP_VER}/fpm/pool.d/www.conf \
+    && cp misc/docker/web/nginx-production.conf /etc/nginx/sites-available/gazelle.conf \
+    && ln -s /etc/nginx/sites-available/gazelle.conf /etc/nginx/sites-enabled/gazelle.conf \
+    && rm -f /etc/nginx/sites-enabled/default \
+    && chmod 0755 misc/docker/web/entrypoint-production.sh misc/docker/web/migrate.sh \
+    && mkdir -p /var/lib/gazelle /var/log/php /var/run/php /var/www/cache/twig \
+    && chown -R gazelle:gazelle /var/lib/gazelle /var/www/cache /var/log/php /var/run/php
+
+EXPOSE 80/tcp
+
+ENTRYPOINT [ "/bin/bash", "/var/www/misc/docker/web/entrypoint-production.sh" ]

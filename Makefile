@@ -32,6 +32,9 @@ help:
 	echo '  pgdump               - dump postgresql database from docker to misc/postgresql-dump.sql'
 	echo '  phpstan-analyse      - run phpstan over the code'
 	echo '  phpstan-baseline     - generate a new phpstan baseline'
+	echo '  prod-build           - build the production web image'
+	echo '  prod-up              - start the production stack'
+	echo '  prod-logs            - follow production stack logs'
 	echo '  test                 - run unit test suite'
 	echo '  test-comic           - run comic test suite'
 	echo '  twig-flush           - purge the Twig cache'
@@ -40,6 +43,18 @@ help:
 .PHONY: test-comic
 test-comic:
 	docker compose exec -T web vendor/bin/phpunit -c misc/phpunit.xml tests/phpunit/Comic
+
+.PHONY: prod-build
+prod-build:
+	docker compose -f docker-compose.prod.yml build
+
+.PHONY: prod-up
+prod-up:
+	docker compose -f docker-compose.prod.yml up -d --build
+
+.PHONY: prod-logs
+prod-logs:
+	docker compose -f docker-compose.prod.yml logs -f
 
 .PHONY: upstream-diff
 upstream-diff:
