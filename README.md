@@ -89,6 +89,13 @@ site and the tracker announce endpoint; Caddy obtains the certificates.
   `$proxy_add_x_forwarded_for`.
 - Expose only `/<passkey>/announce` and `/<passkey>/scrape` on the tracker
   host; Ocelot's `update` and `report` actions are for internal calls.
+- If Cloudflare proxies the site, use `misc/caddy/Caddyfile.cloudflare.example`
+  instead. It trusts `CF-Connecting-IP` only from Cloudflare's published
+  ranges and still sends one address upstream, so `ALLOWED_PROXY` does not
+  change. Keep the tracker hostname DNS-only. Because that record resolves
+  to the server, the origin address is public: Cloudflare hides the site's
+  traffic but cannot stop direct traffic to the server unless the tracker
+  runs on a separate IP.
 
 ### Ocelot tracker overlay
 

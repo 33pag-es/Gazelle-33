@@ -13,10 +13,10 @@
 # Client IP: Caddy replaces any X-Forwarded-For sent by the client with the
 # real client address. Gazelle trusts that header only from ALLOWED_PROXY
 # (the pinned Docker gateway, GAZELLE_GATEWAY in .env), and Ocelot uses its
-# first entry. Do not add `trusted_proxies` here unless another proxy (for
-# example a CDN) sits in front of Caddy: Caddy would then append to the
-# client's header, Gazelle would reject the list, and Ocelot would accept
-# the client-supplied first entry.
+# first entry. Do not add `trusted_proxies` here: Caddy would then append to
+# the client's header, Gazelle would reject the list, and Ocelot would accept
+# the client-supplied first entry. If Cloudflare proxies the site, use
+# Caddyfile.cloudflare.example instead.
 {
 	email admin@example.com
 }
