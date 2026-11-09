@@ -89,13 +89,17 @@ site and the tracker announce endpoint; Caddy obtains the certificates.
   `$proxy_add_x_forwarded_for`.
 - Expose only `/<passkey>/announce` and `/<passkey>/scrape` on the tracker
   host; Ocelot's `update` and `report` actions are for internal calls.
+- The site and tracker are IPv4-only. Publish only A records (no AAAA);
+  both Caddy examples refuse IPv6 clients (403 on the site, a bencoded
+  failure on the tracker). Ocelot cannot parse IPv6 addresses.
 - If Cloudflare proxies the site, use `misc/caddy/Caddyfile.cloudflare.example`
-  instead. It trusts `CF-Connecting-IP` only from Cloudflare's published
-  ranges and still sends one address upstream, so `ALLOWED_PROXY` does not
-  change. Keep the tracker hostname DNS-only. Because that record resolves
-  to the server, the origin address is public: Cloudflare hides the site's
-  traffic but cannot stop direct traffic to the server unless the tracker
-  runs on a separate IP.
+  instead and turn off IPv6 Compatibility in Cloudflare. It trusts
+  `CF-Connecting-IP` only from Cloudflare's published ranges and still sends
+  one address upstream, so `ALLOWED_PROXY` does not change. Cloudflare's
+  attack protection depends on the server's IP staying secret. With the
+  tracker on the same server as a DNS-only record, anyone can look up that
+  IP and send traffic straight to the server, around Cloudflare. To get
+  that protection, run the tracker on a separate server with its own IP.
 
 ### Ocelot tracker overlay
 

@@ -29,6 +29,10 @@
 
 example.com {
 	tls /etc/caddy/cloudflare-origin.pem /etc/caddy/cloudflare-origin.key
+	# IPv4 only. Also turn off Network > IPv6 Compatibility in Cloudflare so
+	# IPv6 visitors are not offered the site at all.
+	@not_ipv4 not client_ip 0.0.0.0/0
+	respond @not_ipv4 "This site accepts IPv4 connections only." 403
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:8080 {
 		header_up X-Forwarded-For {client_ip}
@@ -38,8 +42,12 @@ example.com {
 tracker.example.com {
 	# Expose only announce and scrape. Ocelot's update and report actions use
 	# the same /<key>/<action> shape and are for Gazelle's internal calls.
+	# Ocelot tracks IPv4 peers only; answer IPv6 with a bencoded failure that
+	# BitTorrent clients display, instead of Ocelot's parse error.
+	@not_ipv4 not client_ip 0.0.0.0/0
 	@tracker path_regexp ^/[A-Za-z0-9]{32}/(announce|scrape)$
 	handle @tracker {
+		respond @not_ipv4 "d14:failure reason37:This tracker accepts IPv4 peers only.e" 200
 		reverse_proxy 127.0.0.1:34000 {
 			header_up X-Forwarded-For {client_ip}
 		}
