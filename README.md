@@ -58,15 +58,37 @@ docker compose -f docker-compose.prod.yml logs -f migrate
 account. `MYSQL_RO_USER`/`MYSQL_RO_PASSWORD` create the read-only account.
 Both must match the corresponding constants in `override.config.php`.
 
-Terminate TLS at the host reverse proxy. `WEB_PORT` defaults to 80 and
-must not be exposed directly to the public internet without HTTPS and a
-reverse proxy. The production configuration is mounted read-only; the
-build does not include `lib/override.config.php`.
+The production configuration is mounted read-only; the build does not
+include `lib/override.config.php`.
 
 Back up `gazelle-data`, `mysql-data`, `pg-data`, and `manticore-data`.
 The `migrate` service exits successfully after all three migration phases;
 `web` waits for it. It runs again on the next `up`, so take a database
 backup before changing the image.
+
+### Reverse proxy and client IP
+
+Terminate TLS at a reverse proxy on the host.
+`misc/caddy/Caddyfile.example` is a complete Caddy configuration for the
+site and the tracker announce endpoint; Caddy obtains the certificates.
+
+- `web` is published on `WEB_BIND:WEB_PORT`, default `127.0.0.1:8080`.
+  Keep it off 80/443, which the proxy listens on; Docker cannot bind a port
+  the proxy already holds. Docker publishes ports past host firewalls such
+  as ufw, so do not bind it publicly.
+- The Compose network is pinned (`GAZELLE_SUBNET`, `GAZELLE_GATEWAY`), so
+  the host proxy reaches the containers from `172.30.33.254`. Set
+  `ALLOWED_PROXY` in `override.config.php` to that address, as in
+  `misc/example.production.config.php`. Without it every user appears to
+  come from the gateway, and login throttling and IP bans hit everyone.
+- The proxy must replace `X-Forwarded-For` with the client address, not
+  append to it. Gazelle accepts the header only when it is one public IP
+  from `ALLOWED_PROXY`; Ocelot uses its first entry. Caddy's default
+  `reverse_proxy` replaces it. With nginx, use
+  `proxy_set_header X-Forwarded-For $remote_addr;`, not
+  `$proxy_add_x_forwarded_for`.
+- Expose only `/<passkey>/announce` and `/<passkey>/scrape` on the tracker
+  host; Ocelot's `update` and `report` actions are for internal calls.
 
 ### Ocelot tracker overlay
 
@@ -81,15 +103,18 @@ docker compose -f docker-compose.prod.yml -f ../Ocelot/docker-compose.prod.yml u
 ```
 
 The overlay builds from the sibling Ocelot checkout, loads
-`../Ocelot/.env` through `env_file`, and publishes `TRACKER_PORT` (default
-34000). Set `OCELOT_IMAGE` to use a prebuilt image. The Gazelle production
-MySQL init creates the optional Ocelot account with DML plus the
-database-scoped `DROP` needed for Ocelot's startup `TRUNCATE`. In
+`../Ocelot/.env` through `env_file`, and publishes Ocelot on
+`TRACKER_BIND:TRACKER_PORT` (default `127.0.0.1:34000`). Set `OCELOT_IMAGE`
+to use a prebuilt image. The Gazelle production MySQL init creates the
+optional Ocelot account with per-table grants matching Ocelot's queries,
+including `DROP` on `xbt_files_users` for its startup `TRUNCATE`; it cannot
+modify `users_main` or other site tables. In
 `lib/override.config.php`, use `TRACKER_HOST=ocelot` and
 `TRACKER_PORT=34000` for Gazelle's internal calls; set
-`TRACKER_PUBLIC_HOST` to the external announce URL. The tracker must sit
-behind the announce TLS proxy and accept `X-Forwarded-For`, or be started
-with `--ignore-xff` when it is directly exposed. `TRACKER_SECRET` and
+`TRACKER_PUBLIC_HOST` to the external announce URL. Ocelot trusts
+`X-Forwarded-For`, so keep it on loopback behind the announce TLS proxy. If
+you publish it directly (`TRACKER_BIND=0.0.0.0`), set `OCELOT_IGNORE_XFF=1`
+in `../Ocelot/.env`. `TRACKER_SECRET` and
 `TRACKER_REPORTKEY` must match Ocelot’s `site_password` and
 `report_password` and the values in `lib/override.config.php`.
 

@@ -430,10 +430,11 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 |---|---|---|
 | `lib/config.php` | add `SITE_FLAVOR`, `CATEGORY_ENABLED`, `CATEGORY_COMIC`, `COMIC_*`; add Comics to `CATEGORY_GROUPED` | `// COMIC-ONLY` |
 | `misc/example.local.config.php` | comic profile for the Docker bootstrap | `// COMIC-ONLY` |
+| `misc/example.production.config.php` | production tracker host, `ALLOWED_PROXY` for the pinned Compose gateway | `// COMIC-ONLY` |
 | `Makefile` | Docker-only commands | `# COMIC-ONLY` |
 | `docker-compose.yml` | persist `/var/lib/gazelle` storage | `# COMIC-ONLY` |
 | `misc/docker/web/entrypoint.sh` | cache ownership fallback and storage initialization for Docker Desktop | `# COMIC-ONLY` |
-| `README.md` | host policy | `<!-- COMIC-ONLY -->` |
+| `README.md` | host policy, production stack, reverse proxy and client IP | `<!-- COMIC-ONLY -->` |
 | `sections/upload/upload.php` | default category, load music JS only for Music | `// COMIC-ONLY` |
 | `sections/ajax/upload.php` | category map/default | `// COMIC-ONLY` |
 | `sections/upload/upload_handle.php` | comic branch | `// COMIC-ONLY` |

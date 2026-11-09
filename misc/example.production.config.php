@@ -21,6 +21,11 @@ define('TRACKER_NAME', 'tracker.example.com');
 define('TRACKER_PORT', 34000);
 define('TRACKER_PUBLIC_HOST', 'https://tracker.example.com');
 
+// COMIC-ONLY: trust X-Forwarded-For only from the host reverse proxy, which
+// reaches the containers from GAZELLE_GATEWAY in .env. This replaces the
+// upstream Opera Turbo ranges.
+define('ALLOWED_PROXY', ['172.30.33.254']);
+
 define('SQLHOST', '10.0.0.1');
 define('IRC_HOSTNAME', 'irc.example.com');
 

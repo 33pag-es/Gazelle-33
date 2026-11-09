@@ -2,8 +2,16 @@
 # Copy .env.example to .env, set every value, and mount a
 # real lib/override.config.php (or point OVERRIDE_CONFIG at it).
 #
-# TLS is terminated by the host reverse proxy; this stack serves HTTP on
-# WEB_PORT (default 80) and does not publish database or search ports.
+# TLS is terminated by the host reverse proxy (misc/caddy/Caddyfile.example);
+# this stack serves HTTP on WEB_BIND:WEB_PORT (default 127.0.0.1:8080) and
+# does not publish database or search ports. Docker-published ports bypass
+# host firewalls such as ufw, so keep WEB_BIND on loopback unless the proxy
+# runs on another host.
+#
+# The default network is pinned so that the host proxy always reaches the
+# containers from GAZELLE_GATEWAY; set ALLOWED_PROXY in override.config.php
+# to that address. The gateway is the last host address so that no container
+# address shares its string prefix (Gazelle's proxyCheck() matches prefixes).
 name: gazelle-33-prod
 
 x-web-build: &web-build
@@ -38,7 +46,7 @@ services:
     image: gazelle-33-web:prod
     restart: unless-stopped
     ports:
-      - ${WEB_PORT:-80}:80
+      - ${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80
     depends_on:
       mysql:
         condition: service_started
@@ -124,6 +132,13 @@ services:
   memcached:
     image: memcached:1.6.41-alpine
     restart: unless-stopped
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${GAZELLE_SUBNET:-172.30.33.0/24}
+          gateway: ${GAZELLE_GATEWAY:-172.30.33.254}
 
 volumes:
   gazelle-data:
