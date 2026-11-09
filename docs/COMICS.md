@@ -425,7 +425,8 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `lib/config.php` | add `SITE_FLAVOR`, `CATEGORY_ENABLED`, `CATEGORY_COMIC`, `COMIC_*`; add Comics to `CATEGORY_GROUPED` | `// COMIC-ONLY` |
 | `misc/example.local.config.php` | comic profile for the Docker bootstrap | `// COMIC-ONLY` |
 | `Makefile` | Docker-only commands | `# COMIC-ONLY` |
-| `misc/docker/web/entrypoint.sh` | cache ownership fallback for Docker Desktop | `# COMIC-ONLY` |
+| `docker-compose.yml` | persist `/var/lib/gazelle` storage | `# COMIC-ONLY` |
+| `misc/docker/web/entrypoint.sh` | cache ownership fallback and storage initialization for Docker Desktop | `# COMIC-ONLY` |
 | `README.md` | host policy | `<!-- COMIC-ONLY -->` |
 | `sections/upload/upload.php` | default category, load music JS only for Music | `// COMIC-ONLY` |
 | `sections/ajax/upload.php` | category map/default | `// COMIC-ONLY` |

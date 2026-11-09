@@ -9,6 +9,8 @@ services:
       - pg
     volumes:
       - .:/var/www
+      # COMIC-ONLY: persist torrent and image storage across container recreation.
+      - gazelle-data:/var/lib/gazelle
       - ./misc/docker/web/nginx.conf:/etc/nginx/sites-available/gazelle.conf
     environment:
       - ENV=dev
@@ -79,6 +81,7 @@ services:
       - MYSQL_PASSWORD=password
 
 volumes:
+  gazelle-data:
   mysql-data:
   pg-data:
   sphinx-data:

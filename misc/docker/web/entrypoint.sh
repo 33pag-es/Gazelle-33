@@ -48,6 +48,20 @@ if ! $PHINXBIN migrate -c ./misc/my2-phinx.php; then
     exit 1
 fi
 
+# COMIC-ONLY: the named volume is empty on first use; create the storage tree.
+if [ ! -d /var/lib/gazelle/torrent ] \
+    || [ ! -d /var/lib/gazelle/general ] \
+    || [ ! -d /var/lib/gazelle/riplog ] \
+    || [ ! -d /var/lib/gazelle/riploghtml ]; then
+    echo "Initializing file storage..."
+    mkdir -p /var/lib/gazelle
+    perl /var/www/bin/generate-storage-dirs /var/lib/gazelle/general 1 100
+    perl /var/www/bin/generate-storage-dirs /var/lib/gazelle/riplog 2 100
+    perl /var/www/bin/generate-storage-dirs /var/lib/gazelle/riploghtml 2 100
+    perl /var/www/bin/generate-storage-dirs /var/lib/gazelle/torrent 2 100
+    chown -R gazelle:gazelle /var/lib/gazelle
+fi
+
 # restart the web container if it is left running for more than a year!
 openssl req -x509 -newkey ed25519 \
     -noenc -keyout /etc/nginx/selfsigned.key -out /etc/nginx/selfsigned.crt \
