@@ -16,8 +16,8 @@ authorize();
 
 $releaseTypes = new ReleaseType()->list();
 $formId       = (int)$_POST['formid'];
-$tags         = trim($_POST['tags' . $formId]);
-$notTags      = trim($_POST['nottags' . $formId]);
+$tags         = trim($_POST['tags' . $formId] ?? '');
+$notTags      = trim($_POST['nottags' . $formId] ?? '');
 if (strlen($tags) > 500) {
     Error400::error('Tag list cannot exceed 500 characters');
 }
@@ -25,16 +25,26 @@ if (strlen($notTags) > 500) {
     Error400::error('"Not Tag" list cannot exceed 500 characters');
 }
 
+// COMIC-ONLY: the comic form does not post the music-only dimensions, and
+// category values are zero-based indexes into CATEGORY. Missing dimensions
+// are stored empty so the filter still matches every comic upload.
+$categoryList = array_values(array_filter(
+    array_map(
+        fn ($id) => CATEGORY[(int)$id] ?? null,
+        $_POST['categories' . $formId] ?? [],
+    ),
+    fn ($name) => $name !== null,
+));
 $filter = new Notification\Filter()
-    ->setYears((int)$_POST['fromyear' . $formId], (int)$_POST['toyear' . $formId])
-    ->setUsers($_POST['users' . $formId])
+    ->setYears((int)($_POST['fromyear' . $formId] ?? 0), (int)($_POST['toyear' . $formId] ?? 0))
+    ->setUsers($_POST['users' . $formId] ?? '')
     ->setBoolean('exclude_va', isset($_POST['excludeva' . $formId]))
     ->setBoolean('new_groups_only', isset($_POST['newgroupsonly' . $formId]))
-    ->setMultiLine('artist', $_POST['artists' . $formId])
+    ->setMultiLine('artist', $_POST['artists' . $formId] ?? '')
     ->setMultiLine('tag', $tags)
     ->setMultiLine('not_tag', $notTags)
-    ->setMultiLine('record_label', $_POST['recordlabel' . $formId])
-    ->setMultiValue('category', array_map(fn($id) => CATEGORY[$id], $_POST['categories' . $formId] ?? []))
+    ->setMultiLine('record_label', $_POST['recordlabel' . $formId] ?? '')
+    ->setMultiValue('category', $categoryList)
     ->setMultiValue('format', array_map(fn($id) => FORMAT[$id], $_POST['formats' . $formId] ?? []))
     ->setMultiValue('encoding', array_map(fn($id) => ENCODING[$id], $_POST['bitrates' . $formId] ?? []))
     ->setMultiValue('media', array_map(fn($id) => MEDIA[$id], $_POST['media' . $formId] ?? []))

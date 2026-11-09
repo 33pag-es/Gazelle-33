@@ -38,6 +38,10 @@ switch ($_GET['p'] ?? '') {
         ]);
         break;
     case 'requests':
+        // COMIC-ONLY: requests are disabled for this profile.
+        if (preg_match('/^comics$/', SITE_FLAVOR)) {
+            Error404::error();
+        }
         echo $Twig->render('rules/request.twig');
         break;
     case 'tag':

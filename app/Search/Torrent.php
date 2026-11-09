@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: additive comic search fields and attributes.
+
 // phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
 namespace Gazelle\Search;
@@ -512,6 +514,10 @@ class Torrent {
             $this->search_filelist($Term);
         } elseif ($Field === 'taglist') {
             $this->search_taglist($Term);
+        } elseif ($Field === 'issue' && preg_match('/^\d+$/', $Term)) {
+            // COMIC-ONLY: numeric issues are attributes; single-digit values
+            // are below Sphinx min_word_len and would never match the field.
+            $this->process_attribute('issue_start', (int)$Term);
         } else {
             $this->add_field($Field, $Term);
         }

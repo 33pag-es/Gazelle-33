@@ -1,3 +1,4 @@
+{# COMIC-ONLY #}
 <h3 id="jump">Rule Sections</h3>
 <div class="box pad rule_table" style="padding: 10px 10px 10px 20px;">
     <table class="m_table" width="100%">
@@ -21,6 +22,7 @@
                 These are the rules for seeding/leeching activity on this site.
             </td>
         </tr>
+{% if constant('SITE_FLAVOR') != 'comics' %}
         <tr class="rowb">
             <td class="nobr">
                 <a href="rules.php?p=requests">Requests</a>
@@ -29,6 +31,7 @@
                 These are the rules that govern requests.
             </td>
         </tr>
+{% endif %}
         <tr class="rowa">
             <td class="nobr">
                 <a href="rules.php?p=collages">Collages</a>

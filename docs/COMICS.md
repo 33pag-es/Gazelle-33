@@ -114,7 +114,8 @@ New Sphinx staging columns (MySQL, via a new migration):
 
 - `sphinx_tg`: `publisher VARCHAR(255) NULL`, `creators VARCHAR(2048) NULL`.
 - `sphinx_t`: `issue_start INT NULL`, `issue_end INT NULL`,
-  `scanner VARCHAR(100) NULL`, `pack TINYINT(1) NOT NULL DEFAULT 0`,
+  `issue_label VARCHAR(32) NULL`, `scanner VARCHAR(100) NULL`,
+  `pack TINYINT(1) NOT NULL DEFAULT 0`,
   `checked TINYINT(1) NOT NULL DEFAULT 0`.
 - `sphinx_delta`: mirror the same columns.
 - `sphinx_a` remains the artist/creator joined-field table; use it for
@@ -304,6 +305,8 @@ UI:
 
 - Fields: `series` (maps to `groupname`), `creatorname`, `publishername`,
   `issue`, `scanner`, `format`, `taglist`, `description`, `filelist`.
+  `issue` uses `IssueLabel` when set, otherwise the numeric
+  `IssueStart`/`IssueEnd` range.
 - Attributes: `checked` (0/1), `pack` (0/1), `issue_start`, `issue_end`.
 - `searchstr` expands to `(groupname,publishername,creatorname,yearfulltext)`.
 - Keep the music fields and attributes in the class so upstream patches
@@ -313,8 +316,8 @@ UI:
 
 - `sphinx_tg`: add `publisher` from `publisher.Name`, `creators` from
   `creator.Name` joined through `series_creator`.
-- `sphinx_t`: add `issue_start`, `issue_end`, `scanner`, `pack`,
-  `checked`.
+- `sphinx_t`: add `issue_start`, `issue_end`, `issue_label`, `scanner`,
+  `pack`, `checked`.
 - `sql_query`: select the new columns and expose them as fields or
   attributes.
 - `sql_joined_field creatorname`: reuse the `sphinx_a` pattern, joining
@@ -436,12 +439,11 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `templates/torrent/browse-header.twig` | comic filters | `{# COMIC-ONLY #}` |
 | `templates/torrent/detail-torrent.twig` | comic row include | `{# COMIC-ONLY #}` |
 | `app/TGroup.php` | comic text/link/grouping, freeleech selection | `// COMIC-ONLY` |
+| `app/View.php` | hide music nav items, rename random group link | `// COMIC-ONLY` |
 | `app/Torrent.php` | comic filename | `// COMIC-ONLY` |
 | `app/TorrentDeleted.php` | comic deleted-torrent columns | `// COMIC-ONLY` |
 | `app/TorrentAbstract.php` | comic primary extensions, label/perfect-flac guards | `// COMIC-ONLY` |
 | `tests/helper.php` | comic test factories | `// COMIC-ONLY` |
-| `app/Manager/TGroup.php` | comic group creation/merge/change-category | `// COMIC-ONLY` |
-| `app/Manager/Torrent.php` | comic torrent metadata | `// COMIC-ONLY` |
 | `app/Manager/Tag.php` | comic category for tag suggestions | `// COMIC-ONLY` |
 | `app/Collector/Collage.php` | comic category for collage zips | `// COMIC-ONLY` |
 | `app/Collector/TList.php` | comic category for torrent-list zips | `// COMIC-ONLY` |
@@ -469,10 +471,16 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `app/API/Torrent.php` | comic API fields | `// COMIC-ONLY` |
 | `app/API/Request.php` | guard non-music artist role | `// COMIC-ONLY` |
 | `docs/07-API.md` | comic API fields | `<!-- COMIC-ONLY -->` |
-| `templates/index/page-header.twig` | hide music nav/search | `{# COMIC-ONLY #}` |
-| `templates/index/private-header.twig` | hide music RSS | `{# COMIC-ONLY #}` |
-| `templates/index/private-sidebar.twig` | comic stats | `{# COMIC-ONLY #}` |
-| `templates/rules/*.twig` | comic rules prose | `{# COMIC-ONLY #}` |
+| `sections/contest/index.php` | 404 for comics | `// COMIC-ONLY` |
+| `sections/random/index.php` | block random artist for comics | `// COMIC-ONLY` |
+| `sections/rules/index.php` | 404 for request rules | `// COMIC-ONLY` |
+| `sections/user/notify_handle.php` | comic notification dimensions and category mapping | `// COMIC-ONLY` |
+| `sections/torrents/edit_category_handle.php` | reject comic category changes | `// COMIC-ONLY` |
+| `templates/index/private-main.twig` | hide contest widget | `{# COMIC-ONLY #}` |
+| `templates/rules/golden.twig` | remove request-abuse link | `{# COMIC-ONLY #}` |
+| `templates/rules/toc.twig` | hide request rules row | `{# COMIC-ONLY #}` |
+| `templates/torrent/detail-header.twig` | hide request links | `{# COMIC-ONLY #}` |
+| `templates/torrent/edit-torrent.twig` | hide category change for comics | `{# COMIC-ONLY #}` |
 
 ## Implementation phases
 
@@ -497,7 +505,7 @@ Shared-code audit:
 
 - `TGroup::setFreeleech()` must accept comic torrents. Change the
   `format() === 'FLAC'` condition to
-  `$tgroup->categoryName() === 'Comics' || $torrent->format() === 'FLAC'`.
+  `$tgroup->categoryId() === CATEGORY_COMIC || $torrent->format() === 'FLAC'`.
 - `TorrentAbstract::fileListPrimary*()` must use
   `COMIC_PRIMARY_EXT_REGEXP` when the group category is Comics, and
   `PRIMARY_EXT_REGEXP` otherwise.
@@ -582,8 +590,10 @@ filename; a pack upload with issue `1-10` shows `1-10 (...) / Pack`.
 ### Phase 4 — Series page and checked workflow
 
 Files: `sections/torrents/details.php`, new `templates/comic/*`, new
-`sections/torrents/check.php`, `app/TGroup.php`, `app/Torrent.php`,
-`app/TorrentAbstract.php`, `tests/phpunit/Comic/SeriesPageTest.php`.
+`app/Comic/SeriesPage.php`, new `sections/torrents/check.php`,
+`app/TGroup.php`, `app/Torrent.php`, `app/TorrentAbstract.php`,
+`tests/phpunit/Comic/SeriesPageTest.php`,
+`tests/phpunit/Comic/CheckedTest.php`.
 
 Behavior: comics render the series layout; music blocks are absent;
 staff toggle checked state with an audit entry; the badge updates.

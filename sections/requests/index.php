@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: requests are hidden.
+
 /** @phpstan-var \Gazelle\User $Viewer */
 
 declare(strict_types=1);

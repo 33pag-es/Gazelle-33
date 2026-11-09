@@ -12,6 +12,7 @@ $uploadForm = new Upload($Viewer);
 $emitJS = isset($_GET['js']);
 // COMIC-ONLY: default to the comic category.
 $categoryIndex = (int)($_GET['categoryid'] ?? CATEGORY_COMIC - 1);
+$comicCategory = CATEGORY[CATEGORY_COMIC - 1];
 if (!in_array(CATEGORY[$categoryIndex] ?? '', CATEGORY_ENABLED, true)) {
     $categoryIndex = CATEGORY_COMIC - 1;
 }
@@ -29,7 +30,7 @@ switch (CATEGORY[$categoryIndex] ?? '') {
         echo $emitJS ? $uploadForm->albumReleaseJS() : $uploadForm->comedy();
         break;
 
-    case 'Comics':
+    case $comicCategory:
         echo $emitJS ? $uploadForm->descriptionJS() : $uploadForm->comic();
         break;
 

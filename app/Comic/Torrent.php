@@ -39,4 +39,25 @@ final class Torrent extends \Gazelle\Base {
         $end = $torrent->issueEnd();
         return $end !== null && $end > $start ? "{$start}-{$end}" : (string)$start;
     }
+
+    /**
+     * Mark a comic torrent checked or unchecked, audit it, and refresh caches.
+     */
+    public static function setChecked(BaseTorrent $torrent, \Gazelle\User $viewer, bool $checked): void {
+        self::$db->prepared_query("
+            UPDATE torrents SET
+                Checked   = ?,
+                CheckedBy = ?,
+                CheckedAt = now()
+            WHERE ID = ?
+        ", (int)$checked, $viewer->id, $torrent->id);
+        $torrent->logger()->torrent(
+            $torrent,
+            $viewer,
+            $checked ? 'marked checked' : 'marked unchecked',
+        );
+        $torrent->flush();
+        $torrent->group()->refresh();
+        (new \Gazelle\Stats\Torrent())->flushComic();
+    }
 }

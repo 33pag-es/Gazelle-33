@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: checked-state route.
+
 declare(strict_types=1);
 
 namespace Gazelle;

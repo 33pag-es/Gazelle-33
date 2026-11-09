@@ -90,7 +90,7 @@ class Torrent extends TorrentAbstract {
     public function torrentFilename(bool $asText, int $maxLength): string {
         $tgroup = $this->group();
         // COMIC-ONLY: series - issue (scanner) [format]-<torrentId>.
-        if ($tgroup->categoryName() === 'Comics') {
+        if ($tgroup->categoryId() === CATEGORY_COMIC) {
             $filename = $tgroup->name();
             $issue    = Comic\Torrent::issueLabel($this);
             if ($issue !== '') {
@@ -508,6 +508,10 @@ class Torrent extends TorrentAbstract {
         self::$cache->decrement('stats_torrent_count');
         $this->flush();
         $tgroup->refresh();
+        if ($tgroup->categoryId() === CATEGORY_COMIC) {
+            // COMIC-ONLY: issue and checked totals changed.
+            (new Stats\Torrent())->flushComic();
+        }
 
         self::$db->set_query_id($qid);
         return [true, "torrent " . $this->id . " removed"];

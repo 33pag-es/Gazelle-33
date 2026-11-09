@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: additive comic fields and null-safe artist payloads.
+
 namespace Gazelle\API;
 
 class Torrent extends AbstractAPI {

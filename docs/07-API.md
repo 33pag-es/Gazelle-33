@@ -979,6 +979,7 @@ Artists:
 
 ### Torrent Group
 
+<!-- COMIC-ONLY: additive comic response fields. -->
 Comic series responses also include `publisher` (string or null) and `creators` (array of names).
 
 **URL:**

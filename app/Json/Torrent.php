@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: additive issue fields.
+
 namespace Gazelle\Json;
 
 use Gazelle\Enum\TorrentFlag;

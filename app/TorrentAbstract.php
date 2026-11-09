@@ -238,8 +238,12 @@ abstract class TorrentAbstract extends BaseAttrObject {
     }
 
     // COMIC-ONLY: comic torrents count comic media extensions, not music extensions.
+    protected function isComicGroup(): bool {
+        return $this->group()->categoryId() === CATEGORY_COMIC;
+    }
+
     protected function primaryExtRegexp(): string {
-        return $this->group()->categoryId() === CATEGORY_COMIC
+        return $this->isComicGroup()
             ? COMIC_PRIMARY_EXT_REGEXP
             : PRIMARY_EXT_REGEXP;
     }
@@ -431,7 +435,7 @@ abstract class TorrentAbstract extends BaseAttrObject {
      * - FLAC from any other media
      */
     public function isPerfectFlac(): bool {
-        if ($this->group()->categoryName() === 'Comics') {
+        if ($this->isComicGroup()) {
             return false;
         }
         return $this->format() === 'FLAC'
@@ -448,7 +452,7 @@ abstract class TorrentAbstract extends BaseAttrObject {
      * - 24bit FLAC from any other media
      */
     public function isPerfecterFlac(): bool {
-        if ($this->group()->categoryName() === 'Comics') {
+        if ($this->isComicGroup()) {
             return false;
         }
         return $this->format() === 'FLAC'
@@ -719,7 +723,7 @@ abstract class TorrentAbstract extends BaseAttrObject {
 
     public function shortLabelList(): array {
         $info = $this->info();
-        if ($this->group()->categoryName() === 'Comics') {
+        if ($this->isComicGroup()) {
             // COMIC-ONLY: issue (scanner) [format] plus the pack marker.
             return array_values(array_filter([
                 Comic\Torrent::issueLabel($this),
@@ -781,7 +785,7 @@ abstract class TorrentAbstract extends BaseAttrObject {
     public function labelList(User|null $viewer = null): array {
         $info = $this->info();
         $extra = [];
-        if ($this->group()->categoryName() === 'Comics') {
+        if ($this->isComicGroup()) {
             $extra[] = $this->labelElement(
                 $this->isChecked() ? 'tl_checked' : 'tl_unchecked',
                 $this->isChecked() ? 'CHECKED' : 'UNCHECKED',

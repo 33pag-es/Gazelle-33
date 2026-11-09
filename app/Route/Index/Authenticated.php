@@ -44,9 +44,10 @@ class Authenticated extends Route\Util\ActionRoute {
             $newsReader->witness($this->ctx->viewer());
         }
 
-        $contest = $contestMan->currentContest();
-        [$contestRank, $leaderboard] = $this->contestRank($contest);
+        // COMIC-ONLY: contests are music/request contests in this profile.
         $isComic = (bool)preg_match('/^comics$/', SITE_FLAVOR);
+        $contest = $isComic ? null : $contestMan->currentContest();
+        [$contestRank, $leaderboard] = $isComic ? [null, []] : $this->contestRank($contest);
 
         echo $this->twig->render('index/private-sidebar.twig', [
             'blog'          => new Manager\Blog(),

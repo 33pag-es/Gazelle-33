@@ -358,7 +358,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
 
     public function text(): string {
         // COMIC-ONLY: series title, start year, and publisher.
-        if ($this->categoryName() === 'Comics') {
+        if ($this->categoryId() === CATEGORY_COMIC) {
             $text = $this->name();
             if ($this->year()) {
                 $text .= " ({$this->year()})";
@@ -578,7 +578,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 VanityHouse, Size, Snatched, Seeders, Leechers, LogScore, Scene, HasLog,
                 HasCue, FreeTorrent, Media, Format, Encoding, Description, RemasterYear, RemasterTitle,
                 RemasterRecordLabel, RemasterCatalogueNumber, FileList, TagList,
-                Publisher, Creators, issue_start, issue_end, scanner, pack, checked,
+                Publisher, Creators, issue_start, issue_end, issue_label, scanner, pack, checked,
                 VoteScore, ArtistName)
             SELECT
                 t.ID, g.ID, g.Name, g.Year, g.CategoryID, t.created, g.ReleaseType,
@@ -588,12 +588,13 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 t.RemasterYear, t.RemasterTitle, t.RemasterRecordLabel, t.RemasterCatalogueNumber,
                 replace(replace(t.FileList, '_', ' '), '/', ' ') AS FileList,
                 replace(group_concat(coalesce(t2.Name, '') SEPARATOR ' '), '.', '_'),
-                coalesce(p.Name, ''),
+                coalesce(max(p.Name), ''),
                 coalesce((SELECT group_concat(c.Name SEPARATOR ' ')
                     FROM series_creator sc
                     INNER JOIN creator c ON (c.CreatorID = sc.CreatorID)
                     WHERE sc.GroupID = g.ID), ''),
-                t.IssueStart, t.IssueEnd, coalesce(t.Scanner, ''),
+                coalesce(t.IssueStart, 0), coalesce(t.IssueEnd, 0),
+                coalesce(t.IssueLabel, ''), coalesce(t.Scanner, ''),
                 cast(t.Pack AS CHAR), cast(t.Checked AS CHAR), ?, ?
             FROM torrents t
             INNER JOIN torrents_leech_stats tls ON (tls.TorrentID = t.ID)
@@ -860,6 +861,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
      */
     public function removeTGroup(): int {
         $isMusic = ($this->categoryName() === 'Music');
+        $isComic = ($this->categoryId() === CATEGORY_COMIC);
 
         self::$db->begin_transaction();
         // Artists
@@ -966,6 +968,10 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
 
         if ($isMusic) {
             self::$cache->decrement('stats_album_count');
+        }
+        if ($isComic) {
+            // COMIC-ONLY: series, issue, and checked totals changed.
+            (new Stats\Torrent())->flushComic();
         }
         self::$cache->decrement('stats_group_count');
 

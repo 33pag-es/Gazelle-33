@@ -1,3 +1,4 @@
+{# COMIC-ONLY: gate request links for the comics profile. #}
 {{ header(tgroup.text, {
     'js': 'browse,comments,torrent,bbcode,cover_art,subscriptions,voting',
     'css': 'logchecker',
@@ -15,7 +16,9 @@
                 revision_id }}&amp;auth={{ viewer.auth }}" class="brackets">Revert to this revision</a></b>
 {%   endif %}
 {% endif %}
+{% if constant('SITE_FLAVOR') != 'comics' %}
             <a href="{{ tgroup.url|raw }}&amp;action=editrequest" class="brackets">Request an Edit</a>
+{% endif %}
 {%- include 'bookmark/action.twig' with {'class': 'torrent', 'id': tgroup.id, 'is_bookmarked': is_bookmarked} only %}
             <a href="#" class="brackets" id="subscribelink_torrents{{
                 tgroup.id }}" onclick="SubscribeComments('torrents', {{ tgroup.id }}); return false;">{%-
@@ -23,7 +26,7 @@
 {% if tgroup.categoryName == 'Music' %}
             <a href="upload.php?groupid={{ tgroup.id }}" class="brackets">Add format</a>
 {% endif %}
-{% if viewer.permitted('site_submit_requests') %}
+{% if constant('SITE_FLAVOR') != 'comics' and viewer.permitted('site_submit_requests') %}
             <a href="requests.php?action=new&amp;groupid={{ tgroup.id }}" class="brackets">Request format</a>
 {% endif %}
             <a href="{{ tgroup.url|raw }}&amp;action=history" class="brackets">View history</a>

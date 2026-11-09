@@ -1,3 +1,4 @@
+{# COMIC-ONLY #}
 {% from 'macro/form.twig' import checked -%}
 {% from 'macro/header.twig' import rss_a -%}
 {{ header('Manage notifications', {'js': 'vendor/jquery.validate,form_validate'}) }}
@@ -87,8 +88,10 @@
                 <td class="label"><strong>Only these categories</strong></td>
                 <td>
     {% if constant('SITE_FLAVOR') == 'comics' %}
-                    <input type="checkbox" name="categories{{ loop.parent.loop.index }}[]" id="cat_{{ constant('CATEGORY_COMIC') }}_{{ filter.ID }}" value="{{ constant('CATEGORY_COMIC') }}"{{ checked('Comics' in filter.Categories) }}>
-                    <label for="cat_{{ constant('CATEGORY_COMIC') }}_{{ filter.ID }}">Comics</label>&nbsp;
+                    {% set comicCategory = constant('CATEGORY_COMIC') - 1 %}
+                    {% set comicCategoryName = constant('CATEGORY')[comicCategory] %}
+                    <input type="checkbox" name="categories{{ loop.index }}[]" id="cat_{{ comicCategory }}_{{ filter.ID }}" value="{{ comicCategory }}"{{ checked(comicCategoryName in filter.Categories) }}>
+                    <label for="cat_{{ comicCategory }}_{{ filter.ID }}">{{ comicCategoryName }}</label>&nbsp;
     {% else %}
     {% for key, name in constant('CATEGORY') %}
                     <input type="checkbox" name="categories{{ loop.parent.loop.index }}[]" id="cat_{{ key }}_{{ filter.ID }}" value="{{ key }}"{{ checked(name in filter.Categories) }}>

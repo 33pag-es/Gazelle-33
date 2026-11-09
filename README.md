@@ -35,6 +35,7 @@ production if you are not prepared or knowledgeable in setting up servers,
 proxies, and tuning TCP configs to obtain proper performance and privacy.
 
 ## Development
+<!-- COMIC-ONLY: fork-specific host and development policy. -->
 The host machine is a thin client. Do not install PHP, Composer, Node,
 npm, Cypress, MySQL, PostgreSQL, or Sphinx on the host. Every command in
 this section runs inside the `web` container; `docker compose exec -T web`

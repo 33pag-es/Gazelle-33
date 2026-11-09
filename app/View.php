@@ -87,9 +87,18 @@ class View extends Base {
         }
 
         $PageID = [$module, $_REQUEST['action'] ?? false, $_REQUEST['type'] ?? false];
+        // COMIC-ONLY: hide music-only user navigation entries and rename the
+        // random group link for the comics profile.
+        $isComic = (bool)preg_match('/^comics$/', SITE_FLAVOR);
         $navLinks = [];
         foreach (new Manager\UserNavigation()->userControlList($user) as $n) {
             [, $Key, $Title, $Target, $Tests, $TestUser] = array_values($n);
+            if ($isComic && in_array($Key, ['better', 'logchecker'], true)) {
+                continue;
+            }
+            if ($isComic && $Key === 'random') {
+                $Title = 'Random Series';
+            }
             if (str_contains($Tests, ':')) {
                 $testList = [];
                 foreach (array_map(trim(...), explode(',', $Tests)) as $Part) {

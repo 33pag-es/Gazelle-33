@@ -29,6 +29,11 @@ if ($title === '') {
 }
 
 $newCategoryId = (int)($_POST['newcategoryid'] ?? 0);
+// COMIC-ONLY: comic series use publisher/creator metadata and cannot be
+// converted to or from a music category through this form.
+if ($old->categoryId() === CATEGORY_COMIC || $newCategoryId === CATEGORY_COMIC) {
+    Error403::error('Comic series cannot be moved between categories.');
+}
 $newName = new Manager\Category()->findNameById($newCategoryId);
 if (!$newName) {
     Error400::error('Bad category');

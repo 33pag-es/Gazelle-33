@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: additive series/issue/checked counters.
+
 namespace Gazelle\Stats;
 
 class Torrent extends \Gazelle\Base {
@@ -24,6 +26,18 @@ class Torrent extends \Gazelle\Base {
             'stats_checked_count',
         ]);
         unset($this->info);
+        return $this;
+    }
+
+    /**
+     * Invalidate only the comic counters used by the index sidebar.
+     */
+    public function flushComic(): static {
+        self::$cache->deleteMulti([
+            'stats_series_count',
+            'stats_issue_count',
+            'stats_checked_count',
+        ]);
         return $this;
     }
 

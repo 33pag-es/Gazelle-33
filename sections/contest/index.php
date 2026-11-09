@@ -9,6 +9,11 @@ declare(strict_types=1);
 
 namespace Gazelle;
 
+// COMIC-ONLY: contests are music/request contests in this profile.
+if (preg_match('/^comics$/', SITE_FLAVOR)) {
+    Error404::error();
+}
+
 $contestMan = new Manager\Contest();
 
 switch ($_GET['action'] ?? '') {

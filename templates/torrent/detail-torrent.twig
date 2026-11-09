@@ -1,3 +1,4 @@
+{# COMIC-ONLY #}
 {% from 'macro/form.twig' import hidden %}
 {% set torrent_id = torrent.id %}
 {% set tgroup     = torrent.group %}
@@ -20,7 +21,7 @@
 {%- else -%}
                     "{{ torrent.location }}">
 {%- endif -%}
-                    ▶ {{ (torrent.group.categoryName == 'Music' or torrent.group.categoryName == 'Comics') ? torrent.label(viewer)|raw : torrent.name }}</a>
+                    ▶ {{ (torrent.group.categoryName == 'Music' or torrent.group.categoryId == constant('CATEGORY_COMIC')) ? torrent.label(viewer)|raw : torrent.name }}</a>
                 </td>
 {% include 'torrent/stats.twig' with {
     'prev_primary' : prev_primary,

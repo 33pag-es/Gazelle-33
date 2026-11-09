@@ -77,12 +77,13 @@
     </div>
 </li>
 
+{# COMIC-ONLY #}
 <li id="gr3.1"><a name="gr3.1" href="#gr3.1" class="rule_link">3.1</a>
     <div class="rule_wrap">
         <div class="rule_short">Do not engage in ratio manipulation.</div>
         <div class="rule_long">Transferring buffer&nbsp;—&nbsp;or increasing your
         buffer&nbsp;—&nbsp;through unintended uses of the BitTorrent protocol or site
-        features (<i>e.g.</i> <a href="rules.php?p=requests">request abuse</a>)
+        features ({% if constant('SITE_FLAVOR') == 'comics' %}abuse of site features{% else %}<i>e.g.</i> <a href="rules.php?p=requests">request abuse</a>{% endif %})
         constitutes ratio manipulation. Asking people to snatch your uploads
         is forbidden outside forum threads specifically aimed at that purpose
         (example: "We will snatch your first upload"). When in doubt, send a

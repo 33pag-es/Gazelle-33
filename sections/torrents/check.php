@@ -20,7 +20,7 @@ $torrent = new Manager\Torrent()->findById((int)($_POST['torrentid'] ?? 0));
 if (is_null($torrent)) {
     Error404::error();
 }
-if ($torrent->group()->categoryName() !== 'Comics') {
+if ($torrent->group()->categoryId() !== CATEGORY_COMIC) {
     Error400::error('Only comic torrents can be checked.');
 }
 
@@ -29,16 +29,7 @@ if ($checked === false || !in_array($checked, [0, 1], true)) {
     Error400::error('Invalid checked state.');
 }
 
-DB::DB()->prepared_query("
-    UPDATE torrents SET
-        Checked   = ?,
-        CheckedBy = ?,
-        CheckedAt = now()
-    WHERE ID = ?
-", $checked, $Viewer->id, $torrent->id);
-$torrent->logger()->torrent($torrent, $Viewer, $checked ? 'marked checked' : 'marked unchecked');
-$torrent->flush();
-$torrent->group()->refresh();
+Comic\Torrent::setChecked($torrent, $Viewer, (bool)$checked);
 
 if (defined('AJAX')) {
     json_print('success', ['checked' => $checked]);

@@ -1,5 +1,7 @@
+{# COMIC-ONLY #}
 {% from 'macro/form.twig' import selected %}
 {% set is_music = torrent.group.categoryName == 'Music' %}
+{% set is_comic = torrent.group.categoryId == constant('CATEGORY_COMIC') %}
 {% if viewer.permitted('torrents_edit') %}
 <div class="thin">
 {%  if is_music %}
@@ -59,7 +61,7 @@
     </form>
     <br>
 {%  endif %}
-{%  if viewer.permitted('users_mod') %}
+{%  if viewer.permitted('users_mod') and not is_comic %}
     <h2><a name="category-change">Change category</a></h2>
     <form action="torrents.php" method="post">
         <input type="hidden" name="action" value="changecategory">

@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: better/trumping is hidden.
+
 declare(strict_types=1);
 
 namespace Gazelle;

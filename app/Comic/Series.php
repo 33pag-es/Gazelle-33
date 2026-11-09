@@ -46,12 +46,19 @@ final class Series extends \Gazelle\Base {
         self::$db->prepared_query("
             DELETE FROM series_creator WHERE GroupID = ?
         ", $tgroup->id);
-        foreach ($ids as $sequence => $creatorId) {
+        if ($ids) {
+            $args = [];
+            foreach ($ids as $sequence => $creatorId) {
+                $args[] = $tgroup->id;
+                $args[] = $creatorId;
+                $args[] = $sequence;
+            }
             self::$db->prepared_query("
                 INSERT INTO series_creator
                        (GroupID, CreatorID, Sequence)
-                VALUES (?,       ?,         ?)
-            ", $tgroup->id, $creatorId, $sequence);
+                VALUES " . placeholders($ids, '(?, ?, ?)'),
+                ...$args,
+            );
         }
         $tgroup->flush();
         return count($ids);

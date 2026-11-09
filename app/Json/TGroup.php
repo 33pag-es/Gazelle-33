@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: additive publisher/creator fields.
+
 declare(strict_types=1);
 
 namespace Gazelle\Json;

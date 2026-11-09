@@ -6,26 +6,29 @@ namespace Gazelle\Comic;
 
 use InvalidArgumentException;
 
+/**
+ * @phpstan-type ComicProperties array{
+ *     title: string,
+ *     publisher: string,
+ *     creators: string[],
+ *     year: int,
+ *     issue_start: ?int,
+ *     issue_end: ?int,
+ *     issue_label: ?string,
+ *     scanner: ?string,
+ *     pack: bool,
+ *     format: string,
+ *     tags: string[],
+ *     description: string,
+ *     release_description: ?string,
+ *     groupid: ?int,
+ * }
+ */
 final class Upload {
     /**
      * Validate and normalize the comic upload form.
      *
-     * @return array{
-     *     title: string,
-     *     publisher: string,
-     *     creators: string[],
-     *     year: int,
-     *     issue_start: ?int,
-     *     issue_end: ?int,
-     *     issue_label: ?string,
-     *     scanner: ?string,
-     *     pack: bool,
-     *     format: string,
-     *     tags: string[],
-     *     description: string,
-     *     release_description: ?string,
-     *     groupid: ?int,
-     * }
+     * @return ComicProperties
      * @throws InvalidArgumentException
      */
     public static function properties(array $post): array {
@@ -87,6 +90,62 @@ final class Upload {
             'release_description' => $releaseDescription,
             'groupid'             => $groupId,
         ];
+    }
+
+    /**
+     * @param ComicProperties $comic
+     */
+    public static function applySeries(\Gazelle\TGroup $tgroup, array $comic): void {
+        Series::setPublisher($tgroup, $comic['publisher']);
+        Series::setCreators($tgroup, $comic['creators']);
+    }
+
+    /**
+     * @param ComicProperties $comic
+     */
+    public static function applyIssue(\Gazelle\Torrent $torrent, array $comic): void {
+        Torrent::setIssue(
+            $torrent,
+            $comic['issue_start'],
+            $comic['issue_end'],
+            $comic['issue_label'],
+            $comic['scanner'],
+            $comic['pack'],
+        );
+    }
+
+    /**
+     * Apply the series and torrent fields changed by the comic edit form.
+     *
+     * @param ComicProperties $comic
+     */
+    public static function applyMetadata(\Gazelle\TGroup $tgroup, \Gazelle\Torrent $torrent, array $comic): void {
+        $tgroup->setField('Name', $comic['title']);
+        $tgroup->setField('Year', $comic['year']);
+        $tgroup->setField('WikiBody', $comic['description']);
+        $tgroup->modify();
+        self::applySeries($tgroup, $comic);
+        self::applyIssue($torrent, $comic);
+    }
+
+    /**
+     * Replace the group tags after the metadata transaction has committed.
+     *
+     * @param string[] $tagList
+     */
+    public static function updateTags(\Gazelle\TGroup $tgroup, array $tagList, \Gazelle\User $viewer): void {
+        $tagMan  = new \Gazelle\Manager\Tag();
+        $current = $tgroup->tagNameList();
+        foreach ($current as $name) {
+            if (!in_array($name, $tagList, true)) {
+                $tagMan->findByName($name)?->removeTGroup($tgroup);
+            }
+        }
+        foreach ($tagList as $name) {
+            if (!in_array($name, $current, true)) {
+                $tagMan->softCreate($name, $viewer)?->addTGroup($tgroup, $viewer, 10);
+            }
+        }
     }
 
     /**

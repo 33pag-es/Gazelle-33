@@ -19,7 +19,8 @@ if (is_null($torrent)) {
     Error404::error();
 }
 $uploaderId = $torrent->uploaderId();
-$isComic    = $torrent->group()->categoryName() === 'Comics'; // COMIC-ONLY
+$isComic    = $torrent->group()->categoryId() === CATEGORY_COMIC; // COMIC-ONLY
+$comicCategory = CATEGORY[CATEGORY_COMIC - 1];
 
 if ($Viewer->id != $uploaderId && !$Viewer->permitted('torrents_edit')) {
     Error403::error("You are not allowed to edit this torrent");
@@ -146,7 +147,7 @@ switch ($torrent->group()->categoryName()) {
         }
         break;
 
-    case 'Comics':
+    case $comicCategory:
         break;
 
     default:
@@ -309,42 +310,17 @@ if ($Viewer->permitted('torrents_freeleech')) {
 
 $torrent->modify();
 if ($isComic) {
-    $tgroup = $torrent->group();
-    $tgroup->setField('Name', $comic['title']);
-    $tgroup->setField('Year', $comic['year']);
-    $tgroup->setField('WikiBody', $comic['description']);
-    $tgroup->modify();
-    Comic\Series::setPublisher($tgroup, $comic['publisher']);
-    Comic\Series::setCreators($tgroup, $comic['creators']);
-    Comic\Torrent::setIssue(
-        $torrent,
-        $comic['issue_start'],
-        $comic['issue_end'],
-        $comic['issue_label'],
-        $comic['scanner'],
-        $comic['pack'],
-    );
+    Comic\Upload::applyMetadata($torrent->group(), $torrent, $comic);
     $change[] = 'comic metadata updated';
 }
-$torrent->group()->refresh();
 
 $db->commit();
+// COMIC-ONLY: refresh() starts its own transaction, so run it after the commit.
+$torrent->group()->refresh();
 
 if ($isComic) {
     // Tag edits manage their own transactions, so run them after the metadata commit.
-    $tgroup  = $torrent->group();
-    $tagMan  = new Manager\Tag();
-    $current = $tgroup->tagNameList();
-    foreach ($current as $name) {
-        if (!in_array($name, $comic['tags'], true)) {
-            $tagMan->findByName($name)?->removeTGroup($tgroup);
-        }
-    }
-    foreach ($comic['tags'] as $name) {
-        if (!in_array($name, $current, true)) {
-            $tagMan->softCreate($name, $Viewer)?->addTGroup($tgroup, $Viewer, 10);
-        }
-    }
+    Comic\Upload::updateTags($torrent->group(), $comic['tags'], $Viewer);
 }
 
 $changeLog = shortenString(implode(', ', $change), 300);

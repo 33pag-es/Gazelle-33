@@ -94,6 +94,7 @@ if (!in_array(CATEGORY[(int)$categoryId - 1] ?? '', CATEGORY_ENABLED, true)) {
 $uploadForm = new Upload($Viewer, $Properties, $Err);
 
 // COMIC-ONLY: the music lookup assets are only needed for music uploads.
+$comicCategory = CATEGORY[CATEGORY_COMIC - 1];
 $isMusicCategory = CATEGORY[(int)$categoryId - 1] === 'Music';
 $headerOption = [
     'js' => $isMusicCategory
@@ -108,7 +109,7 @@ echo $uploadForm->head($categoryId, true);
 echo match (CATEGORY[(int)$categoryId - 1]) {
     'Audiobooks',       => $uploadForm->audiobook(),
     'Applications'      => $uploadForm->application(),
-    'Comics'            => $uploadForm->comic(),
+    $comicCategory      => $uploadForm->comic(),
     'Comedy'            => $uploadForm->comedy(),
     'E-Books'           => $uploadForm->ebook(),
     'E-Learning Videos' => $uploadForm->elearning(),

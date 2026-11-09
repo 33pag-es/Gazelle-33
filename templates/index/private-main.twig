@@ -1,5 +1,6 @@
+{# COMIC-ONLY #}
     <div class="main_column">
-{% if contest %}
+{% if contest and constant('SITE_FLAVOR') != 'comics' %}
         <div id="contest-info" class="box" style="text-align:center">
 {%  if contest.banner %}
             <br><a href="/contest.php?action=leaderboard">

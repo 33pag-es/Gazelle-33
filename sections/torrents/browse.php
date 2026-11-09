@@ -9,6 +9,7 @@
 
 declare(strict_types=1);
 
+// COMIC-ONLY: comic browse summaries.
 namespace Gazelle;
 
 $tagMan    = new Manager\Tag();

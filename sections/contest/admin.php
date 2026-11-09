@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: contest administration is hidden.
+
 /**
  * @phpstan-var \Gazelle\User $Viewer
  * @phpstan-var \Twig\Environment $Twig

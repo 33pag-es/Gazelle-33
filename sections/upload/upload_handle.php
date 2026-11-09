@@ -37,14 +37,15 @@ if ($Viewer->disableUpload()) {
 $ArtistForm     = [];
 $ArtistNameList = [];
 $ArtistRoleList = [];
-$categoryId     = (int)$_POST['type'] + 1;
-$categoryName   = CATEGORY[$categoryId - 1];
-$isEnabledCategory = static fn (string $name): bool => in_array($name, CATEGORY_ENABLED, true);
+$categoryId     = (int)($_POST['type'] ?? -1) + 1;
+$categoryName   = CATEGORY[$categoryId - 1] ?? '';
+$comicCategory  = CATEGORY[CATEGORY_COMIC - 1];
+$isEnabledCategory = static fn (?string $name): bool => $name !== null && in_array($name, CATEGORY_ENABLED, true);
 if (!$isEnabledCategory($categoryName)) {
     json_error('That upload category is not available.');
 }
 $isMusicUpload  = ($categoryName === 'Music');
-$isComicUpload  = ($categoryName === 'Comics'); // COMIC-ONLY
+$isComicUpload  = ($categoryName === $comicCategory); // COMIC-ONLY
 
 $Properties = [];
 $Properties['Artists'] = $ArtistForm;
@@ -484,7 +485,7 @@ if ($isMusicUpload) {
 if ($isComicUpload) {
     if ($Properties['GroupID']) {
         $tgroup = $tgMan->findById($Properties['GroupID']);
-        if ($tgroup && $tgroup->categoryName() !== 'Comics') {
+        if ($tgroup && $tgroup->categoryId() !== CATEGORY_COMIC) {
             $tgroup = null;
         }
     }
@@ -532,8 +533,7 @@ if ($tgroup) {
     $Viewer->stats()->incrementTGroup(Enum\UserSummaryTGroup::uniqueGroup);
 }
 if ($isComicUpload) {
-    Comic\Series::setPublisher($tgroup, $comic['publisher']);
-    Comic\Series::setCreators($tgroup, $comic['creators']);
+    Comic\Upload::applySeries($tgroup, $comic);
 }
 $GroupID = $tgroup->id;
 $logName = $tgroup->text();
@@ -562,14 +562,7 @@ $torrent = $torMan->create(
     logScore:                0,
 );
 if ($isComicUpload) {
-    Comic\Torrent::setIssue(
-        $torrent,
-        $comic['issue_start'],
-        $comic['issue_end'],
-        $comic['issue_label'],
-        $comic['scanner'],
-        $comic['pack'],
-    );
+    Comic\Upload::applyIssue($torrent, $comic);
 }
 $TorrentID       = $torrent->id;
 $upload['new'][] = $torrent;
@@ -620,6 +613,10 @@ if (!new File\Torrent($TorrentID)->put($bencoder->getEncode())) {
 }
 $db->commit(); // We have a usable upload, any subsequent failures can be repaired ex post facto
 $Debug->mark('upload: database committed');
+if ($isComicUpload) {
+    // COMIC-ONLY: series/issue totals changed.
+    (new Stats\Torrent())->flushComic();
+}
 
 //******************************************************************************//
 //--------------- Finalize -----------------------------------------------------//

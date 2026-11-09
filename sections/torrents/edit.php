@@ -22,6 +22,7 @@ if (($Viewer->id != $torrent->uploaderId() && !$Viewer->permitted('torrents_edit
 
 $tgroup       = $torrent->group();
 $categoryName = $tgroup->categoryName();
+$comicCategory = CATEGORY[CATEGORY_COMIC - 1];
 $isMusic      = $categoryName === 'Music';
 $artist       = $isMusic ? $tgroup->primaryArtist() : null;
 
@@ -88,7 +89,7 @@ if ($torrent->remasterYear() !== null || $Viewer->permitted('edit_unknowns')) {
         'Audiobooks'        => $uploadForm->audiobook(),
         'Comedy'            => $uploadForm->comedy(),
         'Applications'      => $uploadForm->application(),
-        'Comics'            => $uploadForm->comic(),
+        $comicCategory      => $uploadForm->comic(),
         'E-Books'           => $uploadForm->ebook(),
         'E-Learning Videos' => $uploadForm->elearning(),
         default => $uploadForm->music([], new Manager\TGroup()),

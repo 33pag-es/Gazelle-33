@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: guard non-music artist payloads.
+
 namespace Gazelle\API;
 
 class Request extends AbstractAPI {

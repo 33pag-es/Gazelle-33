@@ -1,5 +1,7 @@
 <?php
 
+// COMIC-ONLY: music-only Top 10 views are hidden.
+
 /**
  * @phpstan-var \Gazelle\User $Viewer
  * @phpstan-var \Twig\Environment $Twig

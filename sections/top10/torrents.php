@@ -9,6 +9,7 @@
 
 declare(strict_types=1);
 
+// COMIC-ONLY: music-only Top 10 filters are hidden.
 namespace Gazelle;
 
 $torMan    = new Manager\Torrent();
