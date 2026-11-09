@@ -104,7 +104,11 @@ PostgreSQL mirror:
 1. Add `'comic'` to `category_upload_t` with
    `ALTER TYPE category_upload_t ADD VALUE IF NOT EXISTS 'comic'`.
    Run this in its own migration; PostgreSQL does not allow using the new
-   enum value in the same transaction.
+   enum value in the same transaction. The migration must sort before
+   `20250204000000_attr_tables.php`, which copies the MySQL category rows
+   into PostgreSQL. This fork uses
+   `20250203000000_comic_category_enum_early.php` for that prerequisite;
+   the later `20261108000000_comic_category_enum.php` is idempotent.
 2. In a following migration, update the PostgreSQL `category` row 7 to
    `upload = 'comic', is_grouped = true`; keep all rows.
 3. Do not remap `request.id_category`; requests remain category 7 and
