@@ -54,7 +54,8 @@ foreach (Enum\TorrentFlag::cases() as $flag) {
     $Properties[$flag->value] = isset($_POST[$flag->value]);
 }
 
-$comic = null;
+$comic      = null;
+$comicImage = null;
 if ($isComic) {
     try {
         $comic = Comic\Upload::properties($_POST);
@@ -65,6 +66,15 @@ if ($isComic) {
     $Properties['GroupDescription'] = $comic['description'];
     $Properties['Description']      = $comic['release_description'] ?? '';
     $Properties['Format']           = $comic['format'];
+
+    // The cover belongs to the series; only series editors may change it.
+    $comicImage = $torrent->group()->image();
+    if (Comic\Upload::canEditSeries($Viewer) && isset($_POST['image'])) {
+        $comicImage = Image::fromUntrusted((string)$_POST['image']);
+        if ($comicImage->url() !== $torrent->group()->image()->url() && $comicImage->errorMessage()) {
+            Error400::error($comicImage->errorMessage());
+        }
+    }
 }
 
 //******************************************************************************//
@@ -276,6 +286,10 @@ if (
 //--------------- Start database stuff -----------------------------------------//
 
 $db = DB::DB();
+// COMIC-ONLY: as in the upstream group edit, record the wiki revision before
+// the new description is written; createRevision() runs its own transaction.
+$comicRevised = $isComic && Comic\Upload::reviseSeries($torrent->group(), $comic, $comicImage, $Viewer);
+
 $db->begin_transaction(); // It's all or nothing
 
 if (isset($_FILES['logfiles'])) {
@@ -310,8 +324,9 @@ if ($Viewer->permitted('torrents_freeleech')) {
 
 $torrent->modify();
 if ($isComic) {
-    Comic\Upload::applyMetadata($torrent->group(), $torrent, $comic);
-    $change[] = 'comic metadata updated';
+    $change[] = Comic\Upload::applyMetadata($torrent->group(), $torrent, $comic, $Viewer, $comicImage)
+        ? 'comic series and issue updated'
+        : 'comic issue updated';
 }
 
 $db->commit();
@@ -319,6 +334,9 @@ $db->commit();
 $torrent->group()->refresh();
 
 if ($isComic) {
+    if ($comicRevised) {
+        $torrent->group()->imageFlush();
+    }
     // Tag edits manage their own transactions, so run them after the metadata commit.
     Comic\Upload::updateTags($torrent->group(), $comic['tags'], $Viewer);
 }

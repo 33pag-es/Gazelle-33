@@ -532,7 +532,9 @@ if ($tgroup) {
     }
     $Viewer->stats()->incrementTGroup(Enum\UserSummaryTGroup::uniqueGroup);
 }
-if ($isComicUpload) {
+if ($isComicUpload && $IsNewGroup) {
+    // COMIC-ONLY: an existing series keeps its publisher and creators; only
+    // series editors change them, through the edit form.
     Comic\Upload::applySeries($tgroup, $comic);
 }
 $GroupID = $tgroup->id;

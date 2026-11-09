@@ -725,12 +725,13 @@ abstract class TorrentAbstract extends BaseAttrObject {
         $info = $this->info();
         if ($this->isComicGroup()) {
             // COMIC-ONLY: issue (scanner) [format] plus the pack marker.
-            return array_values(array_filter([
+            // The label is rendered as HTML, so escape the user-supplied parts.
+            return array_map(html_escape(...), array_values(array_filter([
                 Comic\Torrent::issueLabel($this),
                 $this->scanner(),
                 $this->format(),
                 $this->isPack() ? 'Pack' : null,
-            ], fn ($value) => $value !== null && $value !== ''));
+            ], fn ($value) => $value !== null && $value !== '')));
         }
         $label = [];
         if (!empty($info['Media'])) {

@@ -1,25 +1,33 @@
 {# COMIC-ONLY #}
 {% from 'macro/form.twig' import autocomplete, selected %}
+{% set ro = series_locked ? ' readonly' : '' %}
 <table id="form-comic-upload" cellpadding="3" cellspacing="1" border="0" class="layout border slice" width="100%">
 {% include 'upload/alert.twig' %}
+{% if series_locked %}
+    <tr>
+        <td class="label"></td>
+        <td><span class="small">Series details are shared by every issue in this series and can only be changed by staff.
+            Changes to the series fields and description here are ignored.</span></td>
+    </tr>
+{% endif %}
     <tr id="name">
         <td class="label">Series title:</td>
-        <td><input type="text" id="title" name="title" size="60" value="{{ torrent.Title }}"></td>
+        <td><input type="text" id="title" name="title" size="60" value="{{ torrent.Title }}"{{ ro }}></td>
     </tr>
     <tr>
         <td class="label">Publisher:</td>
-        <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"></td>
+        <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"{{ ro }}></td>
     </tr>
     <tr>
         <td class="label">Creators:</td>
         <td>
-            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}">
+            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}"{{ ro }}>
             <span class="small">Separate multiple creators with commas.</span>
         </td>
     </tr>
     <tr>
         <td class="label">Year:</td>
-        <td><input type="number" id="year" name="year" size="5" max="{{ 'now'|date('Y') + 1 }}" value="{{ torrent.Year }}"></td>
+        <td><input type="number" id="year" name="year" size="5" max="{{ 'now'|date('Y') + 1 }}" value="{{ torrent.Year }}"{{ ro }}></td>
     </tr>
     <tr>
         <td class="label">Issue start:</td>
@@ -51,9 +59,9 @@
     </tr>
     <tr>
         <td class="label">Tags:</td>
-        <td><input type="text" id="tags" name="tags" size="60" value="{{ torrent.TagList }}"{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}></td>
+        <td><input type="text" id="tags" name="tags" size="60" value="{{ torrent.TagList }}"{{ ro }}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}></td>
     </tr>
-{% include 'upload/cover.twig' with {'is_uploaded': false, 'image': image} only %}
+{% include 'upload/cover.twig' with {'is_uploaded': series_locked, 'image': image} only %}
     <tr>
         <td class="label">Description:</td>
         <td>{{ description.emit|raw }}</td>

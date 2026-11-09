@@ -112,11 +112,17 @@ class Upload extends Base {
     public function comic(): string {
         // COMIC-ONLY: the group description and the torrent description are separate textareas.
         $description = new Textarea('desc', $this->Torrent['GroupDescription'] ?? '', 60, 5);
+        // Series fields are read-only when adding an issue to an existing series,
+        // and when an uploader without torrents_edit edits their own issue.
+        $isEdit = is_array($this->Torrent) && !empty($this->Torrent['ID']);
+        $seriesLocked = is_array($this->Torrent) && !empty($this->Torrent['GroupID'])
+            && !($isEdit && Comic\Upload::canEditSeries($this->user));
         return self::$twig->render('upload/comic.twig', [
             'description'         => $description,
             'release_description' => $this->releaseDescription(),
             'image'               => $this->Torrent['Image'] ?? new Image(null),
             'is_uploaded'         => $this->isUploaded,
+            'series_locked'       => $seriesLocked,
             'torrent'             => $this->Torrent ?: [],
             'user'                => $this->user,
         ]);

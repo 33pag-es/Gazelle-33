@@ -94,4 +94,24 @@ final class ComicTorrentTest extends TestCase {
         $this->assertSame('5', Comic\Torrent::issueLabel($torrent), 'issue-single');
         $this->assertFalse($torrent->isPack(), 'issue-single-pack');
     }
+
+    public function testLabelEscapesUserInput(): void {
+        $torrent = Helper::makeTorrentComic(
+            tgroup:     $this->makeTGroup(),
+            user:       $this->user,
+            issueStart: null,
+            issueLabel: '<b>Annual</b>',
+            scanner:    '<img src=x onerror=alert(1)>',
+            format:     'CBZ',
+        );
+        $torrent = new Manager\Torrent()->findById($torrent->id);
+
+        $this->assertSame(
+            '&lt;b&gt;Annual&lt;/b&gt; / &lt;img src=x onerror=alert(1)&gt; / CBZ',
+            $torrent->shortLabel(),
+            'label-escaped',
+        );
+        $this->assertStringNotContainsString('<img', $torrent->shortLabelLink(), 'label-link-escaped');
+        $this->assertStringNotContainsString('<img', $torrent->label($this->user), 'label-full-escaped');
+    }
 }

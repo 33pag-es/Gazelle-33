@@ -115,25 +115,74 @@ final class Upload {
     }
 
     /**
-     * Apply the series and torrent fields changed by the comic edit form.
+     * Series fields are shared by every issue in the series, so changing them
+     * needs the same permission as the upstream group edit form.
+     */
+    public static function canEditSeries(\Gazelle\User $viewer): bool {
+        return $viewer->permitted('torrents_edit');
+    }
+
+    /**
+     * Record a wiki revision when the series description or cover changes.
+     * Call this before applyMetadata(), as the upstream group edit does, so
+     * the first revision stashes the original body and image.
      *
      * @param ComicProperties $comic
      */
-    public static function applyMetadata(\Gazelle\TGroup $tgroup, \Gazelle\Torrent $torrent, array $comic): void {
+    public static function reviseSeries(
+        \Gazelle\TGroup $tgroup,
+        array           $comic,
+        \Gazelle\Image  $image,
+        \Gazelle\User   $viewer,
+    ): bool {
+        if (
+            !self::canEditSeries($viewer)
+            || ($comic['description'] === $tgroup->description()
+                && $image->url() === $tgroup->image()->url())
+        ) {
+            return false;
+        }
+        $tgroup->createRevision($comic['description'], $image, 'comic series edit', $viewer);
+        return true;
+    }
+
+    /**
+     * Apply the comic edit form. The uploader may change their own issue
+     * fields; series fields are applied only for viewers who can edit series.
+     *
+     * @param ComicProperties $comic
+     * @return bool true when the series fields were applied
+     */
+    public static function applyMetadata(
+        \Gazelle\TGroup  $tgroup,
+        \Gazelle\Torrent $torrent,
+        array            $comic,
+        \Gazelle\User    $viewer,
+        \Gazelle\Image   $image,
+    ): bool {
+        self::applyIssue($torrent, $comic);
+        if (!self::canEditSeries($viewer)) {
+            return false;
+        }
         $tgroup->setField('Name', $comic['title']);
         $tgroup->setField('Year', $comic['year']);
         $tgroup->setField('WikiBody', $comic['description']);
+        $tgroup->setField('WikiImage', $image->url());
         $tgroup->modify();
         self::applySeries($tgroup, $comic);
-        self::applyIssue($torrent, $comic);
+        return true;
     }
 
     /**
      * Replace the group tags after the metadata transaction has committed.
+     * Tags belong to the series, so this needs the series edit permission.
      *
      * @param string[] $tagList
      */
     public static function updateTags(\Gazelle\TGroup $tgroup, array $tagList, \Gazelle\User $viewer): void {
+        if (!self::canEditSeries($viewer)) {
+            return;
+        }
         $tagMan  = new \Gazelle\Manager\Tag();
         $current = $tgroup->tagNameList();
         foreach ($current as $name) {

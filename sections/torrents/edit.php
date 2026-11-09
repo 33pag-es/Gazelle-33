@@ -42,7 +42,9 @@ if ($Viewer->permitted('torrents_edit') && ($Viewer->permitted('users_mod') || $
     }
 }
 
-if ($torrent->remasterYear() !== null || $Viewer->permitted('edit_unknowns')) {
+// COMIC-ONLY: comics have no remaster edition, so the music "unknown release"
+// gate would hide the edit form from the uploader of every comic torrent.
+if ($tgroup->categoryId() === CATEGORY_COMIC || $torrent->remasterYear() !== null || $Viewer->permitted('edit_unknowns')) {
     $torrentInfo = [
         'ID'                      => $torrent->id,
         'Media'                   => $torrent->media(),
