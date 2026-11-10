@@ -68,15 +68,16 @@ final class ComicEditTest extends TestCase {
 
     public function testUploaderChangesOnlyIssueFields(): void {
         [$tgroup, $torrent] = $this->makeIssue();
-        $comic = Comic\Upload::properties($this->editPost());
+        // an uploader's form is read for the issue fields only
+        $comic = Comic\Upload::issueProperties($this->editPost());
 
         $this->assertFalse(Comic\Upload::canEditSeries($this->uploader), 'edit-uploader-cannot-edit-series');
         $this->assertFalse(
-            Comic\Upload::reviseSeries($tgroup, $comic, Image::fromUntrusted(null), $this->uploader),
+            Comic\Upload::reviseSeries($tgroup, null, Image::fromUntrusted(null), $this->uploader),
             'edit-uploader-no-revision',
         );
         $this->assertFalse(
-            Comic\Upload::applyMetadata($tgroup, $torrent, $comic, $this->uploader, $tgroup->image()),
+            Comic\Upload::applyMetadata($tgroup, $torrent, $comic, null, $this->uploader, $tgroup->image()),
             'edit-uploader-series-skipped',
         );
 
@@ -89,16 +90,48 @@ final class ComicEditTest extends TestCase {
         $this->assertSame('After', $torrent->scanner(), 'edit-uploader-scanner-changed');
     }
 
+    public function testIssueEditIndependentOfSeriesState(): void {
+        // Members add and remove series tags from the series page, so the
+        // series fields of the edit form may no longer pass upload validation.
+        $post = [
+            'title'       => '',
+            'publisher'   => '',
+            'creators'    => [''],
+            'year'        => '',
+            'tags'        => '',
+            'desc'        => '',
+            'issue_start' => '7',
+            'issue_end'   => '9',
+            'format'      => 'pdf',
+        ];
+        $issue = Comic\Upload::issueProperties($post);
+        $this->assertSame(7, $issue['issue_start'], 'edit-issue-start');
+        $this->assertSame(9, $issue['issue_end'], 'edit-issue-end');
+        $this->assertTrue($issue['pack'], 'edit-issue-pack');
+        $this->assertSame('PDF', $issue['format'], 'edit-issue-format');
+    }
+
+    public function testLongTagListAcceptedOnEditOnly(): void {
+        $tagList = array_map(fn ($n) => "phpunit.comic.tag.$n", range(1, 20));
+        $post    = [...$this->editPost(), 'tags' => implode(', ', $tagList)];
+        $this->assertGreaterThan(200, strlen($post['tags']), 'edit-tags-over-upload-limit');
+
+        $this->assertSame($tagList, Comic\Upload::seriesProperties($post, isEdit: true)['tags'], 'edit-tags-accepted');
+        $this->expectException(\InvalidArgumentException::class);
+        Comic\Upload::seriesProperties($post);
+    }
+
     public function testStaffChangesSeriesWithRevision(): void {
         [$tgroup, $torrent] = $this->makeIssue();
-        $comic = Comic\Upload::properties($this->editPost());
+        $comic  = Comic\Upload::issueProperties($this->editPost());
+        $series = Comic\Upload::seriesProperties($this->editPost(), isEdit: true);
 
         $this->assertTrue(
-            Comic\Upload::reviseSeries($tgroup, $comic, $tgroup->image(), $this->staff),
+            Comic\Upload::reviseSeries($tgroup, $series, $tgroup->image(), $this->staff),
             'edit-staff-revision',
         );
         $this->assertTrue(
-            Comic\Upload::applyMetadata($tgroup, $torrent, $comic, $this->staff, $tgroup->image()),
+            Comic\Upload::applyMetadata($tgroup, $torrent, $comic, $series, $this->staff, $tgroup->image()),
             'edit-staff-series-applied',
         );
 

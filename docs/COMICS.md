@@ -231,9 +231,16 @@ Edit path:
 
 - `sections/torrents/edit.php` already renders `Upload::comic()` for
   comics. Pass the `torrent` key so the cover prefill works.
-- `sections/torrents/edit_handle.php` gets a `$isComic` branch that
-  validates and updates the same fields plus the torrent label. Music
+- `sections/torrents/edit_handle.php` gets a `$isComic` branch. Music
   validation remains untouched.
+- The issue fields (`Comic\Upload::issueProperties()`) are validated for
+  every editor. The series fields (`seriesProperties()`) are read and
+  validated only for viewers with `torrents_edit`; an uploader's edit must
+  not depend on the state of the series (members add and remove series
+  tags from the series page). On edit the `tags` field accepts 1000
+  characters instead of 200.
+- Staff also edit title, year, cover, description, publisher, and creators
+  on the group edit page (`torrents.php?action=editgroup`).
 
 ## Series page
 
@@ -302,6 +309,29 @@ UI:
 - Series page row shows a `CHECKED` / `UNCHECKED` badge.
 - Staff see a toggle link.
 - Browse search accepts `checked=1|0`.
+- When an editor without `torrents_edit` changes the issue start, issue
+  end, issue label, scanner, or format of a checked torrent, the torrent
+  returns to `Checked = 0`, `CheckedBy = NULL`, `CheckedAt = NULL` and the
+  audit trail records the editor. Staff edits and release-description
+  edits keep the checked state. The edit form warns the uploader.
+
+## Series repair
+
+All repair tools require `torrents_edit`.
+
+- Add issue: the series page links to `upload.php?groupid=<id>`.
+- Merge series: group edit page, `tgroup-merge`. Both groups must be
+  Comics. The target keeps its publisher and creators.
+- Move issue: torrent edit page, `editgroupid`. The destination must be a
+  comic series. A series left empty is removed.
+- Split issue: torrent edit page, `newgroup` with `title` and `year`.
+  `Comic\Series::splitFromTorrent()` creates a comic series that starts
+  with the publisher, creators, and tags of the old one, and refuses a
+  title/year/publisher that already exists.
+- Autocomplete: `torrents.php?action=autocomplete_comic&type=publisher|creator&query=`
+  returns up to 10 names by prefix (`Name LIKE 'query%'` on the unique
+  `Name` index; minimum 2 characters). Wired to `#publisher` and
+  `#creators` on the upload, torrent edit, and group edit forms.
 
 ## Browse and search
 
@@ -491,8 +521,15 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `templates/index/private-main.twig` | hide contest widget | `{# COMIC-ONLY #}` |
 | `templates/rules/golden.twig` | remove request-abuse link | `{# COMIC-ONLY #}` |
 | `templates/rules/toc.twig` | hide request rules row | `{# COMIC-ONLY #}` |
-| `templates/torrent/detail-header.twig` | hide request links | `{# COMIC-ONLY #}` |
-| `templates/torrent/edit-torrent.twig` | hide category change for comics | `{# COMIC-ONLY #}` |
+| `templates/torrent/detail-header.twig` | hide request links, add-issue link | `{# COMIC-ONLY #}` |
+| `templates/torrent/edit-torrent.twig` | hide category change, show move/split for comics | `{# COMIC-ONLY #}` |
+| `templates/tgroup/edit.twig` | series publisher/creators, series merge | `{# COMIC-ONLY #}` |
+| `sections/torrents/edit_group.php` | series publisher/creators | `// COMIC-ONLY` |
+| `sections/torrents/edit_group_handle.php` | series publisher/creators, comic year floor, skip absent freeleech fields | `// COMIC-ONLY` |
+| `sections/torrents/merge.php` | series merge | `// COMIC-ONLY` |
+| `sections/torrents/new_groupid.php` | move issue to another series | `// COMIC-ONLY` |
+| `sections/torrents/new_group_handle.php` | split issue into a new series | `// COMIC-ONLY` |
+| `public/static/functions/autocomplete.mjs` | publisher/creator autocomplete | `// COMIC-ONLY` |
 
 ## Implementation phases
 

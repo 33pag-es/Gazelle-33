@@ -20,6 +20,28 @@ if (!$Viewer->permitted('torrents_edit')) {
     Error403::error();
 }
 
+// COMIC-ONLY: an issue splits into a new series, which has no artist.
+$comicTorrent = new Manager\Torrent()->findById((int)($_POST['torrentid'] ?? 0));
+if ($comicTorrent?->group()->categoryId() === CATEGORY_COMIC) {
+    try {
+        $series = Comic\Upload::titleAndYear($_POST);
+        if (empty($_POST['confirm'])) {
+            echo $Twig->render('comic/confirm-split.twig', [
+                'title'   => $series['title'],
+                'year'    => $series['year'],
+                'torrent' => $comicTorrent,
+                'viewer'  => $Viewer,
+            ]);
+            return;
+        }
+        $new = Comic\Series::splitFromTorrent($comicTorrent, $series['title'], $series['year'], $Viewer);
+    } catch (\InvalidArgumentException $e) {
+        Error400::error($e->getMessage());
+    }
+    header('Location: ' . $new->location());
+    return;
+}
+
 $artistName = trim($_POST['artist']);
 $title      = trim($_POST['title']);
 $year       = (int)$_POST['year'];

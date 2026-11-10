@@ -10,6 +10,7 @@ $includeFile = match ($_REQUEST['action'] ?? '') {
     'add_alias'          => 'add_alias.php',
     'add_cover_art'      => 'add_cover_art.php',
     'add_tag'            => '../ajax/torrent_tag_add.php',
+    'autocomplete_comic' => 'autocomplete_comic.php', // COMIC-ONLY
     'autocomplete_tags'  => 'autocomplete_tags.php',
     'changecategory'     => 'edit_category_handle.php',
     'check'              => 'check.php',

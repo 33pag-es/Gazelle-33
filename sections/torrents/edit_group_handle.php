@@ -113,7 +113,7 @@ if ($tgroup->year() !== $year) {
         json_error(
             "You may not specify a year that far in the future. Instead, set it to $future and report the upload afterwards to have the year set as appropriate by staff."
         );
-    } elseif ($year < 1925) {
+    } elseif ($year < ($tgroup->categoryId() === CATEGORY_COMIC ? Comic\Upload::YEAR_MIN : 1925)) { // COMIC-ONLY
         json_error("Year is too far in the past");
     }
     $tgroup->setField('Year', $year);
@@ -150,7 +150,8 @@ if ($newRevision) {
     $tgroup->createRevision($body, $image, $summary, $Viewer);
 }
 
-if ($Viewer->permitted('torrents_freeleech')) {
+// COMIC-ONLY: the form only offers the freeleech controls for music groups.
+if ($Viewer->permitted('torrents_freeleech') && isset($_POST['leech_type'])) {
     $torMan    = new Manager\Torrent();
     $leechType = Enum\LeechType::tryFrom($_POST['leech_type']) ?? Enum\LeechType::Normal;
     $reason    = Enum\LeechReason::tryFrom($_POST['leech_reason']) ?? Enum\LeechReason::Normal;
@@ -169,6 +170,32 @@ if ($tgroup->dirty()) {
     $tgroup->imageFlush();
     if ($logInfo) {
         $tgroup->logger()->group($tgroup, $Viewer, implode(', ', $logInfo));
+    }
+}
+
+// COMIC-ONLY: publisher and creators live outside torrents_group, so they
+// are written and logged after the group fields.
+if ($tgroup->categoryId() === CATEGORY_COMIC && isset($_POST['publisher'])) {
+    try {
+        $publisher   = Comic\Upload::publisherName($_POST['publisher']);
+        $creatorList = Comic\Upload::creatorList($_POST['creators'] ?? []);
+    } catch (\InvalidArgumentException $e) {
+        Error400::error($e->getMessage());
+    }
+    $seriesLog   = [];
+    $oldPublisher = Comic\Series::publisher($tgroup);
+    if ($publisher !== $oldPublisher) {
+        Comic\Series::setPublisher($tgroup, $publisher);
+        $seriesLog[] = "publisher “{$oldPublisher}” → “{$publisher}”";
+    }
+    $oldCreatorList = Comic\Series::creatorList($tgroup);
+    if ($creatorList !== $oldCreatorList) {
+        Comic\Series::setCreators($tgroup, $creatorList);
+        $seriesLog[] = 'creators “' . implode(', ', $oldCreatorList) . '” → “' . implode(', ', $creatorList) . '”';
+    }
+    if ($seriesLog) {
+        $tgroup->refresh();
+        $tgroup->logger()->group($tgroup, $Viewer, implode(', ', $seriesLog));
     }
 }
 

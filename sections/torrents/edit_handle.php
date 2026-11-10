@@ -54,18 +54,24 @@ foreach (Enum\TorrentFlag::cases() as $flag) {
     $Properties[$flag->value] = isset($_POST[$flag->value]);
 }
 
-$comic      = null;
-$comicImage = null;
+$comic        = null;
+$comicSeries  = null;
+$comicImage   = null;
+$comicUncheck = false;
 if ($isComic) {
+    // The uploader edits the issue; series fields are shared by every issue
+    // and are only read from staff, so stale series data cannot block an edit.
     try {
-        $comic = Comic\Upload::properties($_POST);
+        $comic = Comic\Upload::issueProperties($_POST);
+        if (Comic\Upload::canEditSeries($Viewer)) {
+            $comicSeries = Comic\Upload::seriesProperties($_POST, isEdit: true);
+        }
     } catch (\InvalidArgumentException $e) {
         Error400::error($e->getMessage());
     }
-    $Properties['Name']             = $comic['title'];
-    $Properties['GroupDescription'] = $comic['description'];
-    $Properties['Description']      = $comic['release_description'] ?? '';
-    $Properties['Format']           = $comic['format'];
+    $Properties['Description'] = $comic['release_description'] ?? '';
+    $Properties['Format']      = $comic['format'];
+    $comicUncheck = Comic\Upload::invalidatesCheck($torrent, $comic, $Viewer);
 
     // The cover belongs to the series; only series editors may change it.
     $comicImage = $torrent->group()->image();
@@ -288,7 +294,7 @@ if (
 $db = DB::DB();
 // COMIC-ONLY: as in the upstream group edit, record the wiki revision before
 // the new description is written; createRevision() runs its own transaction.
-$comicRevised = $isComic && Comic\Upload::reviseSeries($torrent->group(), $comic, $comicImage, $Viewer);
+$comicRevised = $isComic && Comic\Upload::reviseSeries($torrent->group(), $comicSeries, $comicImage, $Viewer);
 
 $db->begin_transaction(); // It's all or nothing
 
@@ -324,7 +330,7 @@ if ($Viewer->permitted('torrents_freeleech')) {
 
 $torrent->modify();
 if ($isComic) {
-    $change[] = Comic\Upload::applyMetadata($torrent->group(), $torrent, $comic, $Viewer, $comicImage)
+    $change[] = Comic\Upload::applyMetadata($torrent->group(), $torrent, $comic, $comicSeries, $Viewer, $comicImage)
         ? 'comic series and issue updated'
         : 'comic issue updated';
 }
@@ -338,7 +344,13 @@ if ($isComic) {
         $torrent->group()->imageFlush();
     }
     // Tag edits manage their own transactions, so run them after the metadata commit.
-    Comic\Upload::updateTags($torrent->group(), $comic['tags'], $Viewer);
+    if ($comicSeries) {
+        Comic\Upload::updateTags($torrent->group(), $comicSeries['tags'], $Viewer);
+    }
+    if ($comicUncheck) {
+        Comic\Torrent::resetChecked($torrent, $Viewer);
+        $change[] = 'checked state withdrawn';
+    }
 }
 
 $changeLog = shortenString(implode(', ', $change), 300);

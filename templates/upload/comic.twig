@@ -10,18 +10,25 @@
             Changes to the series fields and description here are ignored.</span></td>
     </tr>
 {% endif %}
+{% if series_locked and torrent.Checked %}
+    <tr>
+        <td class="label"></td>
+        <td><strong class="important_text">Staff have checked this torrent.</strong>
+            <span class="small">Changing the issue number, issue label, scanner or format returns it to UNCHECKED until staff check it again.</span></td>
+    </tr>
+{% endif %}
     <tr id="name">
         <td class="label">Series title:</td>
         <td><input type="text" id="title" name="title" size="60" value="{{ torrent.Title }}"{{ ro }}></td>
     </tr>
     <tr>
         <td class="label">Publisher:</td>
-        <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"{{ ro }}></td>
+        <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}></td>
     </tr>
     <tr>
         <td class="label">Creators:</td>
         <td>
-            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}"{{ ro }}>
+            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}>
             <span class="small">Separate multiple creators with commas.</span>
         </td>
     </tr>

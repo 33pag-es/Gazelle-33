@@ -25,6 +25,9 @@ echo $Twig->render('tgroup/edit.twig', [
             fn ($r) => !$r->isFilled()
         ) === [],
     'release_type' => $Viewer->releaseOrderLabel(new ReleaseType()->list()),
+    // COMIC-ONLY: series publisher and creators.
+    'publisher'    => Comic\Series::publisher($tgroup),
+    'creators'     => implode(', ', Comic\Series::creatorList($tgroup)),
     'tgroup'       => $tgroup,
     'viewer'       => $Viewer,
 ]);

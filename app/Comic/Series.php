@@ -93,4 +93,59 @@ final class Series extends \Gazelle\Base {
         ", CATEGORY_COMIC, $title, $year, $publisherId);
         return $id ? new TGroup((int)$id) : null;
     }
+
+    /**
+     * Escape the LIKE wildcards of a user-supplied prefix.
+     */
+    public static function likePrefix(string $prefix): string {
+        return addcslashes(trim($prefix), '\\%_');
+    }
+
+    /**
+     * Move one issue out of its series into a new series. The new series
+     * starts with the publisher, creators and tags of the old one, which
+     * staff then correct on the group edit page.
+     *
+     * @throws \InvalidArgumentException when the new series already exists
+     */
+    public static function splitFromTorrent(
+        \Gazelle\Torrent $torrent,
+        string           $title,
+        int              $year,
+        \Gazelle\User    $user,
+    ): TGroup {
+        $old         = $torrent->group();
+        $publisher   = self::publisher($old);
+        $publisherId = (int)($old->info()['PublisherID'] ?? 0);
+        if ($publisherId && self::findByTitlePublisherYear($title, $year, $publisherId)) {
+            throw new \InvalidArgumentException(
+                'That series already exists; move the issue to it instead of splitting.'
+            );
+        }
+        $creatorList = self::creatorList($old);
+        $tagList     = $old->tagNameList();
+
+        $new = new \Gazelle\Manager\TGroup()->create(
+            categoryId:  CATEGORY_COMIC,
+            name:        $title,
+            description: '',
+            year:        $year,
+            releaseType: null,
+            image:       new \Gazelle\Image(null),
+        );
+        if ($publisher !== null) {
+            self::setPublisher($new, $publisher);
+        }
+        self::setCreators($new, $creatorList);
+        $tagMan = new \Gazelle\Manager\Tag();
+        foreach ($tagList as $name) {
+            $tagMan->findByName($name)?->addTGroup($new, $user, 10);
+        }
+
+        // absorb() moves the torrent and removes the old series if it is now empty
+        $new->absorb($torrent, $user);
+        $new->logger()->group($new, $user, "split from series {$old->id}");
+        (new \Gazelle\Stats\Torrent())->flushComic();
+        return $new;
+    }
 }

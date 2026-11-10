@@ -67,6 +67,7 @@ if ($tgroup->categoryId() === CATEGORY_COMIC || $torrent->remasterYear() !== nul
         'IssueEnd'                => $torrent->issueEnd(),
         'IssueLabel'              => $torrent->issueLabel(),
         'Scanner'                 => $torrent->scanner(),
+        'Checked'                 => $torrent->isChecked(),
         'Image'                   => $tgroup->image(),
         'CategoryID'              => $tgroup->categoryId(),
         'Title'                   => $tgroup->name(),

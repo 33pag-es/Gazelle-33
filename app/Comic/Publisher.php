@@ -23,4 +23,23 @@ final class Publisher extends \Gazelle\Base {
         ", $name);
         return new self((int)self::$db->inserted_id(), $name);
     }
+
+    /**
+     * Suggest existing publishers for the upload and edit forms.
+     *
+     * @return list<array{value: string, data: int}>
+     */
+    public static function autocomplete(string $prefix): array {
+        self::$db->prepared_query("
+            SELECT Name AS value, PublisherID AS data
+            FROM publisher
+            WHERE Name LIKE concat(?, '%')
+            ORDER BY Name
+            LIMIT 10
+        ", Series::likePrefix($prefix));
+        return array_map(
+            fn (array $row) => ['value' => (string)$row['value'], 'data' => (int)$row['data']],
+            array_values(self::$db->to_array(false, MYSQLI_ASSOC)),
+        );
+    }
 }

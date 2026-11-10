@@ -102,4 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
             serviceUrl: TAGS_AUTOCOMPLETE_URL,
         });
     }
+
+    // COMIC-ONLY: publisher and creator suggestions on the comic forms.
+    if (['torrents', 'upload'].includes(url.path)) {
+        const COMIC_AUTOCOMPLETE_URL = 'torrents.php?action=autocomplete_comic';
+        $("#publisher" + SELECTOR).autocomplete({
+            deferRequestBy: 300,
+            serviceUrl: COMIC_AUTOCOMPLETE_URL + '&type=publisher'
+        });
+        $("#creators" + SELECTOR).autocomplete({
+            deferRequestBy: 300,
+            delimiter: ',',
+            serviceUrl: COMIC_AUTOCOMPLETE_URL + '&type=creator'
+        });
+    }
 });

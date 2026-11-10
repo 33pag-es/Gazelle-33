@@ -23,7 +23,12 @@ $new = $tgMan->findById((int)($_POST['groupid'] ?? 0));
 if (is_null($new)) {
     Error404::error('The destination torrent group does not exist!');
 }
-if ($new->categoryName() !== 'Music') {
+// COMIC-ONLY: an issue moves to another series; music keeps the upstream rule.
+if ($torrent->group()->categoryId() === CATEGORY_COMIC) {
+    if ($new->categoryId() !== CATEGORY_COMIC) {
+        Error400::error('The destination must be a comic series.');
+    }
+} elseif ($new->categoryName() !== 'Music') {
     Error400::error('Destination torrent group must be in the "Music" category.');
 }
 

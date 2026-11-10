@@ -1,4 +1,5 @@
-{% from 'macro/form.twig' import checked, disabled, selected %}
+{# COMIC-ONLY: series publisher, creators and merge. #}
+{% from 'macro/form.twig' import autocomplete, checked, disabled, selected %}
 {% from 'macro/torrent.twig' import freeleech %}
 {{ header('Edit torrent group "' ~ tgroup.name ~ '"') }}
 <div class="thin">
@@ -37,6 +38,18 @@
             <br>
             <input type="text" name="year" size="5" value="{{ tgroup.year }}">
         </div>
+{# COMIC-ONLY: series publisher and creators. #}
+{% if tgroup.categoryId == constant('CATEGORY_COMIC') %}
+        <div class="tbx-label">Publisher</div>
+        <div class="tbx-field">
+            <input type="text" id="publisher" name="publisher" size="50" value="{{ publisher }}"{{ autocomplete(viewer, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}>
+        </div>
+        <div class="tbx-label">Creators</div>
+        <div class="tbx-field">
+            <input type="text" id="creators" name="creators[]" size="50" value="{{ creators }}"{{ autocomplete(viewer, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}>
+            <br>Separate multiple creators with commas.
+        </div>
+{% endif %}
 {% if tgroup.categoryName == 'Music' %}
         <div class="tbx-label">Release type</div>
         <div class="tbx-field">
@@ -91,7 +104,7 @@
     </form>
     </div>
 
-{% if tgroup.categoryName == 'Music' and viewer.permitted('torrents_edit') %}
+{% if (tgroup.categoryName == 'Music' or tgroup.categoryId == constant('CATEGORY_COMIC')) and viewer.permitted('torrents_edit') %}
     <div class="box pad">
     <h4>Merge with another group</h4>
     <form class="merge_form" name="torrent_group" action="torrents.php" method="post">

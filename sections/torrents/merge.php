@@ -25,7 +25,12 @@ if (is_null($new)) {
 if ($new->id === $old->id) {
     Error400::error('Old group ID is the same as new group ID!');
 }
-if ($old->categoryName() !== 'Music') {
+// COMIC-ONLY: a series merges into another series; music keeps the upstream rule.
+if ($old->categoryId() === CATEGORY_COMIC) {
+    if ($new->categoryId() !== CATEGORY_COMIC) {
+        Error400::error('A series can only be merged into another series.');
+    }
+} elseif ($old->categoryName() !== 'Music') {
     Error400::error('Only music groups can be merged.');
 }
 
