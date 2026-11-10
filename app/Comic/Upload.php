@@ -92,6 +92,11 @@ final class Upload {
         $tagLength = $isEdit ? self::TAG_LENGTH_EDIT : self::TAG_LENGTH_UPLOAD;
         $tags = self::tagList(self::requiredString($post, 'tags', 2, $tagLength,
             "Enter at least one tag (maximum $tagLength characters)."));
+        if (!Series::tagListFits($tags)) {
+            throw new InvalidArgumentException(
+                'A series holds at most ' . Series::TAGLIST_MAX . ' characters of tags; remove some tags.'
+            );
+        }
 
         $description = self::requiredString($post, 'desc', 10, 1_000_000,
             'The description must be between 10 and 1000000 characters.');

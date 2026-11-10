@@ -95,6 +95,34 @@ final class Series extends \Gazelle\Base {
     }
 
     /**
+     * torrents_group.TagList and the search staging tables store the tags of
+     * a group as one space-separated VARCHAR(500).
+     */
+    final public const TAGLIST_MAX = 500;
+
+    /**
+     * @param string[] $nameList
+     */
+    public static function tagListFits(array $nameList): bool {
+        return mb_strlen(implode(' ', $nameList)) <= self::TAGLIST_MAX;
+    }
+
+    /**
+     * Can this tag be added without overflowing the tag list of the group?
+     * A tag the group already has takes no extra room.
+     */
+    public static function hasTagRoom(TGroup $tgroup, string $name): bool {
+        self::$db->prepared_query("
+            SELECT t.Name
+            FROM torrents_tags tt
+            INNER JOIN tags t ON (t.ID = tt.TagID)
+            WHERE tt.GroupID = ?
+        ", $tgroup->id);
+        $nameList = self::$db->collect(0);
+        return in_array($name, $nameList, true) || self::tagListFits([...$nameList, $name]);
+    }
+
+    /**
      * Escape the LIKE wildcards of a user-supplied prefix.
      */
     public static function likePrefix(string $prefix): string {

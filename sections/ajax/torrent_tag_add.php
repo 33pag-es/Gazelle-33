@@ -39,6 +39,11 @@ foreach (array_unique(explode(',', $_REQUEST['tagname'])) as $tagName) {
     if (is_null($resolved)) {
         $rejected[] = $tagName;
     } else {
+        // COMIC-ONLY: the tag list of a group is stored in 500 characters;
+        // refuse the tag instead of failing in MySQL.
+        if (!Comic\Series::hasTagRoom($tgroup, $resolved)) {
+            json_or_error('This series has as many tags as it can hold. Remove a tag before adding another.', 400);
+        }
         $tag = $tagMan->softCreate($resolved, $Viewer);
         if (is_null($tag)) {
             // Trying to add a tag that is not allowed

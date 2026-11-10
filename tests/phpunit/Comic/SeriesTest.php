@@ -90,4 +90,34 @@ final class ComicSeriesTest extends TestCase {
         $this->assertSame(2, Comic\Series::setCreators($tgroup, $creatorList), 'creator-count');
         $this->assertSame($creatorList, Comic\Series::creatorList($tgroup), 'creator-replace-order');
     }
+
+    public function testTagRoom(): void {
+        $tgroup = Helper::makeTGroupComic(
+            $this->user,
+            $this->prefix . ' series',
+            $this->prefix . ' publisher',
+            [$this->prefix . ' creator'],
+        );
+        $this->tgroupList[] = $tgroup;
+
+        // ten 49-character tags and nine separators fill 499 of the 500 characters
+        $stem   = 'pu.' . strtolower(randomString(8)) . '.';
+        $tagMan = new Manager\Tag();
+        $nameList = [];
+        for ($n = 0; $n < 10; $n++) {
+            $nameList[] = $stem . str_repeat('x', 48 - strlen($stem)) . $n;
+            $tagMan->softCreate($nameList[$n], $this->user)->addTGroup($tgroup, $this->user, 10);
+        }
+        $this->assertSame(499, strlen(implode(' ', $nameList)), 'series-tag-fixture-length');
+
+        $this->assertTrue(Comic\Series::hasTagRoom($tgroup, $nameList[3]), 'series-tag-existing-fits');
+        $this->assertFalse(Comic\Series::hasTagRoom($tgroup, 'x'), 'series-tag-no-room');
+
+        $tagMan->findByName($nameList[9])->removeTGroup($tgroup);
+        $this->assertTrue(Comic\Series::hasTagRoom($tgroup, $nameList[9]), 'series-tag-room-after-removal');
+        $this->assertFalse(Comic\Series::hasTagRoom($tgroup, $nameList[9] . 'yy'), 'series-tag-one-over');
+
+        DB::DB()->prepared_query("DELETE FROM torrents_tags WHERE GroupID = ?", $tgroup->id);
+        DB::DB()->prepared_query("DELETE FROM tags WHERE Name LIKE ?", $stem . '%');
+    }
 }

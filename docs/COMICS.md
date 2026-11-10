@@ -333,6 +333,15 @@ All repair tools require `torrents_edit`.
   `Name` index; minimum 2 characters). Wired to `#publisher` and
   `#creators` on the upload, torrent edit, and group edit forms.
 
+## Tag limit
+
+`torrents_group.TagList`, `deleted_torrents_group.TagList`,
+`sphinx_tg.tags`, and `sphinx_delta.TagList` are upstream `VARCHAR(500)`
+columns that hold the tags of a group separated by spaces. The limit is
+kept. `Comic\Series::hasTagRoom()` makes `torrents.php?action=add_tag`
+return 400 with a message when a new tag would not fit, and the staff
+edit form rejects a tag list longer than `Comic\Series::TAGLIST_MAX`.
+
 ## Browse and search
 
 `app/Search/Torrent.php` additions:
@@ -467,6 +476,7 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `README.md` | host policy, production stack, reverse proxy and client IP | `<!-- COMIC-ONLY -->` |
 | `sections/upload/upload.php` | default category, load music JS only for Music | `// COMIC-ONLY` |
 | `sections/ajax/upload.php` | category map/default | `// COMIC-ONLY` |
+| `sections/ajax/torrent_tag_add.php` | refuse a tag that overflows the tag list | `// COMIC-ONLY` |
 | `sections/upload/upload_handle.php` | comic branch | `// COMIC-ONLY` |
 | `app/Upload.php` | comic form context | `// COMIC-ONLY` |
 | `templates/upload/comic.twig` | comic fields | `{# COMIC-ONLY #}` |
