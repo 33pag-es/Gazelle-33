@@ -76,6 +76,8 @@ final class SeriesPage {
             'userMan'   => new Manager\User(),
             'viewer'    => $viewer,
         ]);
+        // close .main_column and .thin, as the upstream details page does
+        echo '</div></div>';
         View::show_footer();
     }
 }

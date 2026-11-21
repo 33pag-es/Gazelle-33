@@ -20,7 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 
 <div id="logo">
-<a href="/" style="margin-left: 0;"><img src="<?= STATIC_SERVER ?>/styles/public/images/loginlogo.png" alt="Orpheus Network" title="Orpheus Network"></a>
+<?php // COMIC-ONLY: site wordmark ?>
+<a href="/" style="margin-left: 0;"><img src="<?= STATIC_SERVER ?>/svg/site/33pages-lockup-lightmode.svg" width="320" height="80" alt="<?= SITE_NAME ?>" title="<?= SITE_NAME ?>"></a>
 </div>
 
 <?php

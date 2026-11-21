@@ -1,0 +1,376 @@
+/* ########################################################################
+   33PAGES THEME
+   ######################################################################## */
+
+// ////////////////////////////////////////////////////////////////////////////////
+// ABOUT
+
+// COMIC-ONLY: the default theme of the comics fork. A light "newsprint"
+// appearance: off-white paper, black ink and one red accent.
+// All layout code is imported from apollostage; this file only sets tokens.
+// The dark variant is ../33pages_dark.
+
+// ////////////////////////////////////////////////////////////////////////////////
+// SLUG/SETUP
+
+@use '../apollostage/_variables' as variables;
+
+// debug slugs: must be after import.
+variables.$build-slug: variables.$build-slug + " " + "33pages";
+
+// ////////////////////////////////////////////////////////////////////////////////
+// COLORS
+
+// physical_layout -> token, and token -> raw value.
+
+// Backgrounds (paper)
+variables.$back-100: #f6f3ec;
+variables.$back-200: #eeeae1;
+variables.$back-300: #e6e1d6;
+variables.$back-400: #ddd7ca;
+variables.$back-500: #d2cbbd;
+variables.$back-600: #c5bdae;
+variables.$back-700: #b6ae9e;
+variables.$back-800: #a69e8e;
+variables.$back-900: #958d7e;
+variables.$back-1000: #847c6e;
+
+$back-800-low: #a69e8e40;
+
+// Mids (the red accent)
+variables.$midtone-100: #e23744;
+variables.$midtone-200: #d62f3c;
+variables.$midtone-300: #c92835;
+variables.$midtone-400: #bc212e;
+variables.$midtone-500: #ae1b28;
+variables.$midtone-600: #9e1623;
+variables.$midtone-700: #8d121e;
+variables.$midtone-800: #7c0e19;
+variables.$midtone-900: #6a0a14;
+variables.$midtone-1000: #58070f;
+
+// Menu theme (ink)
+variables.$menutheme-100: #141312;
+variables.$menutheme-200: #181716;
+variables.$menutheme-300: #1c1b19;
+variables.$menutheme-400: #201f1d;
+variables.$menutheme-500: #242220;
+variables.$menutheme-600: #282624;
+variables.$menutheme-700: #2c2a27;
+variables.$menutheme-800: #302e2b;
+variables.$menutheme-900: #34322e;
+variables.$menutheme-1000: #383531;
+
+// Fores (ink on paper)
+variables.$fore-100: #8b857a;
+variables.$fore-200: #777166;
+variables.$fore-300: #655f55;
+variables.$fore-400: #554f46;
+variables.$fore-500: #46413a;
+variables.$fore-600: #38342e;
+variables.$fore-700: #2b2823;
+variables.$fore-800: #1f1d19;
+variables.$fore-900: #151310;
+variables.$fore-1000: #0b0a08;
+
+// Direct-Specialty
+$ds-ink: #141312;
+$ds-paper: #f6f3ec;
+$ds-white: #fff;
+$ds-orange: #c2570a;
+$ds-buff: hsl(45deg 59% 88%);
+$ds-fx-red: rgb(226 55 68 / 18%);
+variables.$ds-neutral-300: #8b857a;
+variables.$ds-neutral-400: #777166;
+variables.$ds-neutral-500: #554f46;
+variables.$ds-neutral-000: #000;
+variables.$ds-red: #b3261e;
+variables.$ds-green: #1f7a1f;
+variables.$ds-yellow: #b8860b;
+variables.$ds-fx-low: rgb(0 0 0 / 18%);
+variables.$ds-fx-mid: rgb(0 0 0 / 30%);
+variables.$ds-gray-05: #141312;
+variables.$ds-yellow-high: hsl(50deg 90% 50% / 77.7%); // for reported bubbles
+variables.$ds-black: #000;
+variables.$ds-gray-92: #eeeae1;
+variables.$ds-fx-menutheme: rgb(255 255 255 / 18%);
+variables.$back-600-mid: #c5bdae88;
+variables.$back-600-low: #c5bdae54;
+
+// ////////////////////////////////////////////////////////////////////////////////
+// DEFINE FROM LOGICAL LAYOUT TO TOKENS
+
+variables.$color-background-base: variables.$back-100;
+variables.$color-background-blockquote: $back-800-low;
+variables.$color-background-box: $back-800-low;
+variables.$color-background-form: variables.$back-200; // also boxes on frontpage
+variables.$color-background-input: $ds-white;
+variables.$color-background-input-active: $ds-white;
+variables.$color-background-poll: variables.$back-500;
+variables.$color-background-popup: variables.$back-300;
+variables.$color-background-searchbars: variables.$menutheme-400;
+variables.$color-background-searchbars-field-focus: variables.$menutheme-100;
+variables.$color-background-searchbars-surround: variables.$menutheme-100;
+variables.$color-background-table: variables.$back-200; // tables/forms without odd-even treatment
+variables.$color-background-table-discog: variables.$back-600; // navigation row ~ "jump down to.."
+variables.$color-background-table-row-th: variables.$back-500;
+variables.$color-background-table-row-odd: variables.$back-300;
+variables.$color-background-table-row-even: variables.$back-200;
+variables.$color-background-table-keyrows: variables.$back-600; // navigation row ~ "jump up to.."
+variables.$color-background-table-torrenttable: variables.$back-200; // also form field in focus
+variables.$color-background-table-details: variables.$back-300; // equal to blockquote
+variables.$color-background-table-torrents-group: variables.$back-500;
+variables.$color-background-tooltipster: variables.$back-100;
+variables.$color-background-torrent: variables.$back-500; // edition in group-list
+variables.$color-background-fx-unread: $ds-fx-red;
+variables.$color-background-highlight-non-primary: variables.$ds-yellow-high;
+
+variables.$color-text-anchor-hover: variables.$midtone-100;
+variables.$color-text-anchor: variables.$midtone-800;
+variables.$color-text-base: variables.$fore-800;
+variables.$color-text-bold: variables.$fore-1000;
+variables.$color-text-button: $ds-paper;
+variables.$color-text-footer: variables.$ds-neutral-300;
+variables.$color-text-heading-anchor: variables.$fore-1000;
+variables.$color-text-heading: variables.$fore-900;
+variables.$color-text-important-alt: variables.$ds-green;
+variables.$color-text-important: variables.$ds-red;
+variables.$color-text-input: variables.$fore-600; // for pre-populated inputs
+variables.$color-text-input-active: variables.$fore-1000;
+variables.$color-text-linkbox: variables.$midtone-800; // links in linkbox
+variables.$color-text-menu: $ds-paper;
+variables.$color-text-menu-hover: $ds-white; // during pulldown
+variables.$color-text-mono: variables.$fore-600;
+variables.$color-text-popup-anchor-hover: variables.$midtone-100;
+variables.$color-text-popup-anchor: variables.$midtone-800;
+variables.$color-text-popup: variables.$fore-800;
+variables.$color-text-ratio-greenzone: variables.$ds-green;
+variables.$color-text-ratio-redzone: variables.$ds-red;
+variables.$color-text-ratio-yellowzone: variables.$ds-yellow;
+variables.$color-text-span-blue: hsl(225deg 70% 40%);
+variables.$color-text-span-green: hsl(120deg 60% 28%);
+variables.$color-text-span-red: variables.$ds-red;
+variables.$color-text-table-discog-titles: variables.$fore-700;
+variables.$color-text-tooltipster: variables.$fore-700;
+variables.$color-text-tooltipster-anchor: variables.$midtone-800;
+variables.$color-text-tooltipster-anchor-hover: variables.$midtone-100;
+variables.$color-text-highlight-non-primary: variables.$ds-black;
+
+variables.$color-menu-1: variables.$menutheme-100; // unused (could be home)
+variables.$color-menu-2: variables.$menutheme-100; // torrents
+variables.$color-menu-3: variables.$menutheme-100; // collages
+variables.$color-menu-4: variables.$menutheme-100; // requests
+variables.$color-menu-5: variables.$menutheme-100; // forums
+variables.$color-menu-6: variables.$menutheme-100; // irc
+variables.$color-menu-7: variables.$menutheme-100; // top10
+variables.$color-menu-8: variables.$menutheme-100; // rules
+variables.$color-menu-9: variables.$menutheme-100; // wiki
+variables.$color-menu-username: variables.$menutheme-500; // username menu ~ closed
+variables.$color-menu-userinfo: variables.$menutheme-500; // VV pulldown menu ~ closed
+variables.$color-menu-hover: variables.$midtone-500;
+variables.$color-menu-username-hover: variables.$menutheme-900; // username menu ~ open
+variables.$color-menu-userinfo-hover: variables.$menutheme-900; // VV pulldown menu ~ open
+variables.$color-menu-fx-selection: variables.$ds-fx-menutheme;
+variables.$color-mobilemenu-userinfo-1: variables.$menutheme-400; // mobile pulldown menu gradient 1
+variables.$color-mobilemenu-userinfo-2: variables.$menutheme-900; // mobile pulldown menu gradient 2
+variables.$color-mobilemenu-closed: variables.$menutheme-100; // rules, also mobile menu header
+variables.$color-mobilemenu-shadow: variables.$menutheme-500; // mobile menu
+
+variables.$color-obj-button-base-1: $ds-ink;
+variables.$color-obj-button-base-2: $ds-ink;
+variables.$color-obj-poll: variables.$midtone-500; // poll active part of bargraph
+
+// Bubbles
+variables.$color-obj-tag-bubble-bg: variables.$back-400;
+variables.$color-obj-tag-bubble-fg: variables.$fore-900;
+variables.$color-obj-info-bubble-bg: variables.$ds-neutral-500;
+variables.$color-obj-info-bubble-fg: variables.$back-100;
+variables.$color-obj-reported-bubble-bg: variables.$midtone-900;
+variables.$color-obj-reported_bubble-fg: variables.$back-100;
+variables.$color-obj-warning-bubble-bg: variables.$midtone-700;
+variables.$color-obj-warning-bubble-fg: variables.$back-100;
+variables.$color-obj-approved-bubble-bg: variables.$fore-600;
+variables.$color-obj-approved-bubble-fg: variables.$back-100;
+variables.$color-obj-gratis-bubble-bg: variables.$fore-300;
+variables.$color-obj-gratis-bubble-fg: $ds-white;
+
+// Autocompletes
+variables.$color-background-autocompletes: variables.$back-100;
+variables.$color-accent-border-autocompletes: variables.$back-800;
+variables.$color-text-autocomplete: variables.$fore-700;
+variables.$color-text-autocomplete-highlight-match: variables.$midtone-500;
+variables.$ac-rich-menu-bg: variables.$back-300;
+variables.$ac-rich-menu-border: variables.$color-accent-border-autocompletes;
+variables.$ac-rich-menu-fg: variables.$color-text-base;
+variables.$ac-rich-row-bg: variables.$back-100;
+variables.$ac-rich-row-border: variables.$color-accent-border-autocompletes;
+variables.$ac-rich-row-fg: variables.$color-text-base;
+variables.$ac-rich-row-muted-fg: variables.$fore-400;
+variables.$ac-rich-row-bio-fg: variables.$ac-rich-row-muted-fg;
+variables.$ac-rich-row-advanced-fg: variables.$ac-rich-row-fg;
+variables.$ac-rich-row-link-fg: variables.$ac-rich-row-fg;
+variables.$ac-rich-row-selected-bg: $ds-ink;
+variables.$ac-rich-row-selected-border: variables.$midtone-500;
+variables.$ac-rich-row-selected-fg: $ds-paper;
+variables.$ac-rich-row-selected-muted-fg: variables.$back-400;
+variables.$ac-rich-row-selected-bio-fg: variables.$back-400;
+variables.$ac-rich-row-selected-advanced-fg: $ds-paper;
+variables.$ac-rich-row-selected-link-fg: $ds-paper;
+variables.$ac-rich-tag-bg: variables.$color-obj-tag-bubble-bg;
+variables.$ac-rich-tag-fg: variables.$color-obj-tag-bubble-fg;
+variables.$ac-rich-tag-border: variables.$color-obj-tag-bubble-bg;
+variables.$ac-rich-tag-hover-bg: variables.$ac-rich-row-bg;
+variables.$ac-rich-tag-hover-fg: variables.$ac-rich-row-fg;
+
+variables.$color-accent-border-blockquote: variables.$back-900; // Dotted
+variables.$color-accent-border-box: variables.$back-800;
+variables.$color-accent-border-input: variables.$ds-fx-mid;
+variables.$color-accent-border-input-active: variables.$midtone-500;
+variables.$color-accent-border-tooltipster: variables.$fore-600;
+variables.$color-accent-border-popup: variables.$fore-600;
+variables.$color-accent-border-tableouter: variables.$back-600-mid;
+variables.$color-accent-border-tablerows: variables.$back-600-low;
+variables.$color-accent-border-tablerows-torrent: variables.$back-600-mid;
+variables.$color-accent-shadow-menutext: initial;
+
+variables.$color-accent-cats_applications: silver;
+variables.$color-accent-cats_audiobooks: cornflowerblue;
+variables.$color-accent-cats_comedy: deepskyblue;
+variables.$color-accent-cats_comics: variables.$midtone-300;
+variables.$color-accent-cats_ebooks: chocolate;
+variables.$color-accent-cats_elearningvideos: mediumpurple;
+variables.$color-accent-cats_music: darkslategray;
+variables.$color-accent-forum-inline-last-read: $ds-orange;
+variables.$color-accent-forum-unread: $ds-orange;
+variables.$color-accent-selection-background: variables.$midtone-500;
+variables.$color-accent-selection-text: #fff;
+
+// popup notifications
+variables.$color-background-notification-gradient-1: variables.$menutheme-100;
+variables.$color-background-notification-gradient-2: variables.$menutheme-900;
+variables.$color-background-notification: #fff;
+variables.$color-text-notification-words: #fff;
+
+// alerts (light mode style)
+variables.$color-accent-border-alert: variables.$midtone-500;
+variables.$color-background-alert: $ds-buff;
+variables.$color-text-alert: variables.$ds-black;
+variables.$color-anchor-alert: variables.$midtone-800;
+
+// ////////////////////////////////////////////////////////////////////////////////
+// ICONS
+
+// black versions for a light background
+variables.$icon-message-unread: url(config('STATIC_SERVER') + "/svg/std/document-round-000.svg");
+variables.$icon-message-unread-locked: url(config('STATIC_SERVER') + "/svg/std/lock-round-000.svg");
+variables.$icon-message-unread-sticky: url(config('STATIC_SERVER') + "/svg/std/pin-round-000.svg");
+variables.$icon-message-unread-locked-sticky: url(config('STATIC_SERVER') + "/svg/std/pin-and-lock-round-000.svg");
+variables.$icon-message-read: url(config('STATIC_SERVER') + "/svg/std/document-000.svg");
+variables.$icon-message-read-locked: url(config('STATIC_SERVER') + "/svg/std/lock-000.svg");
+variables.$icon-message-read-sticky: url(config('STATIC_SERVER') + "/svg/std/pin-000.svg");
+variables.$icon-message-read-locked-sticky: url(config('STATIC_SERVER') + "/svg/std/pin-and-lock-000.svg");
+
+// Used in Header
+variables.$logo-site-lockup: url(config('STATIC_SERVER') + "/svg/site/33pages-lockup-lightmode.svg");
+variables.$logo-site-square: url(config('STATIC_SERVER') + "/svg/site/33pages-mark-onink.svg"); // on the ink mobile bar
+
+// Used on Mobile
+variables.$icon-number-snatches: url(config('STATIC_SERVER') + "/svg/std/arrow-loop-000.svg");
+variables.$icon-number-seeders: url(config('STATIC_SERVER') + "/svg/std/arrow-up-round-000.svg");
+variables.$icon-number-leechers: url(config('STATIC_SERVER') + "/svg/std/arrow-down-round-000.svg");
+
+// Used on alerts: the standard icon, not a site-specific one
+variables.$icon-warning: url(config('STATIC_SERVER') + "/svg/std/x-000.svg");
+
+// ////////////////////////////////////////////////////////////////////////////////
+// WITH ALL VARIABLES SET, NOW IMPORT THE BASE CODE
+
+@use '../apollostage/_base';
+
+// ////////////////////////////////////////////////////////////////////////////////
+// CUSTOM OVERRIDES
+
+/* Headlines are set in a serif face, like a masthead */
+h1,
+h2,
+h3,
+.box > .head,
+.colhead,
+.colhead_dark {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+/* Ink buttons with a red hover */
+button,
+input[type="button"],
+input[type="submit"],
+#popup_close {
+  background: $ds-ink;
+  border: 1px solid $ds-ink;
+  border-radius: 2px;
+  color: $ds-paper;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 2px 12px;
+}
+
+button:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+#popup_close:hover,
+button:focus,
+input[type="button"]:focus,
+input[type="submit"]:focus,
+#popup_close:focus {
+  background: variables.$midtone-500;
+  border-color: variables.$midtone-500;
+  color: $ds-white;
+}
+
+button:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+#popup_close:disabled {
+  background: rgb(0 0 0 / 8%);
+  border-color: transparent;
+  color: rgb(0 0 0 / 35%);
+  cursor: not-allowed;
+}
+
+/* The active section is marked with the red accent */
+#header #menu ul li.active a {
+  box-shadow: inset 0 -3px 0 variables.$midtone-100;
+}
+
+/* The staff link sits above the menu, on paper rather than on the ink bar */
+#menu > ul > #nav_staff {
+  background-color: transparent;
+}
+
+#menu > ul > #nav_staff > a {
+  color: variables.$color-text-anchor;
+}
+
+/* Inline actions such as [Check] read as bracket links, not as buttons */
+button.brackets,
+button.brackets:hover,
+button.brackets:focus {
+  background: none;
+  border: 0;
+  color: variables.$color-text-anchor;
+  font-weight: 400;
+  padding: 0;
+}
+
+button.brackets:hover,
+button.brackets:focus {
+  color: variables.$color-text-anchor-hover;
+}
+
+/* The base theme sets this mobile table heading in white */
+body:not(#artist) .m_th_left::before {
+  color: variables.$color-text-heading;
+}
+
+// EOF
+// ////////////////////////////////////////////////////////////////////////////////

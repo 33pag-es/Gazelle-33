@@ -342,6 +342,38 @@ kept. `Comic\Series::hasTagRoom()` makes `torrents.php?action=add_tag`
 return 400 with a message when a new tag would not fit, and the staff
 edit form rejects a tag list longer than `Comic\Series::TAGLIST_MAX`.
 
+## Branding and themes
+
+The site name comes from `SITE_NAME`; no template spells out another
+site's name.
+
+- Themes: `sass/33pages/style.scss` (light, the default) and
+  `sass/33pages_dark/style.scss`. Both are ApolloStage derivatives: they
+  set colour tokens from `sass/apollostage/_variables.scss`, then
+  `@use "../apollostage/_base"`, then add a short override block. Change
+  colours by editing tokens, not by copying layout rules. Build with
+  `make css`; lint with `make lint-css` (`misc/stylelint.json`).
+- A stylesheet named `X Y` in the `stylesheets` table loads
+  `public/static/styles/x_y/style.css` and icons from
+  `public/static/styles/x_y/images/`. The 33pages rows and the default
+  are set by `misc/my-migrations/20261121000000_comic_stylesheets.php`.
+- `STYLESHEET_HIDDEN` (`lib/config.php`) lists installed stylesheets that
+  are not offered: the ones carrying another site's name or logo.
+  ApolloStage is hidden but must stay installed, because the 33pages
+  themes import its layout. The migration moves users off hidden
+  stylesheets.
+- Logo: `public/static/svg/site/33pages-lockup-{lightmode,darkmode}.svg`
+  (header and public pages) and `33pages-mark-{lightmode,darkmode,onink}.svg`
+  (mobile bar). They are placeholders drawn as plain SVG; the wordmark
+  uses system fonts. Replace the files to rebrand.
+- Site icons in `public/`: `favicon.svg`, `favicon.ico`,
+  `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`,
+  `android-chrome-*.png`, `mstile-150x150.png`, `safari-pinned-tab.svg`,
+  `site.webmanifest`. These replace upstream files of the same name.
+- Public pages (`sass/public/style.scss`, `templates/logo.twig`,
+  `templates/index/public.twig`) use the light palette; the splash page
+  shows the logo and the entry links only.
+
 ## Browse and search
 
 `app/Search/Torrent.php` additions:
@@ -540,6 +572,16 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `sections/torrents/new_groupid.php` | move issue to another series | `// COMIC-ONLY` |
 | `sections/torrents/new_group_handle.php` | split issue into a new series | `// COMIC-ONLY` |
 | `public/static/functions/autocomplete.mjs` | publisher/creator autocomplete | `// COMIC-ONLY` |
+| `app/Manager/Stylesheet.php` | hide stylesheets listed in `STYLESHEET_HIDDEN` | `// COMIC-ONLY` |
+| `app/User/Stylesheet.php` | cache key bump for the new default | `// COMIC-ONLY` |
+| `sass/public/style.scss` | 33pages colours on public pages | `// COMIC-ONLY` |
+| `templates/logo.twig` | 33pages wordmark | `{# COMIC-ONLY #}` |
+| `templates/index/public.twig` | splash page without the upstream poem | `{# COMIC-ONLY #}` |
+| `templates/index/public-header.twig` | SVG site icon | `{# COMIC-ONLY #}` |
+| `templates/index/private-header.twig` | SVG site icon | `{# COMIC-ONLY #}` |
+| `templates/donation/index.twig`, `templates/donation/special-rank-1.twig`, `templates/seedbox/view.twig`, `templates/recovery/index.twig`, `templates/contest/intro.twig` | site name and URL from config instead of upstream's | `{# COMIC-ONLY #}` |
+| `sections/referral/index.php` | 33pages wordmark | `// COMIC-ONLY` |
+| `public/favicon.ico`, `public/favicon-*.png`, `public/apple-touch-icon.png`, `public/android-chrome-*.png`, `public/mstile-150x150.png`, `public/safari-pinned-tab.svg`, `public/site.webmanifest` | 33pages site icons | none (binary/JSON) |
 
 ## Implementation phases
 

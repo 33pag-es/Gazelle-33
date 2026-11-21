@@ -6,7 +6,7 @@ use Gazelle\Enum\UserStatus;
 use Gazelle\Util\SortableTableHeader;
 
 class Stylesheet extends \Gazelle\Base {
-    final public const CACHE_KEY = 'csslist2';
+    final public const CACHE_KEY = 'csslist3'; // COMIC-ONLY
 
     protected array $info;
 
@@ -26,14 +26,18 @@ class Stylesheet extends \Gazelle\Base {
         if (!isset($this->info)) {
             $info = self::$cache->get_value(self::CACHE_KEY);
             if ($info === false) {
+                // COMIC-ONLY: stylesheets in STYLESHEET_HIDDEN are not offered.
+                // The empty name keeps the list non-empty when nothing is hidden.
+                $hidden = [...STYLESHEET_HIDDEN, ''];
                 self::$db->prepared_query("
                     SELECT ID AS id,
                         lower(replace(Name, ' ', '_')) AS css_name,
                         Name AS name,
                         theme
                     FROM stylesheets
+                    WHERE Name NOT IN (" . placeholders($hidden) . ")
                     ORDER BY NAME ASC
-                ");
+                ", ...$hidden);
                 $info = self::$db->to_array(false, MYSQLI_ASSOC);
                 self::$cache->cache_value(self::CACHE_KEY, $info, 0);
             }
@@ -43,6 +47,8 @@ class Stylesheet extends \Gazelle\Base {
     }
 
     public function usageList(): array {
+        // COMIC-ONLY: the same stylesheets as list().
+        $hidden = [...STYLESHEET_HIDDEN, ''];
         self::$db->prepared_query("
             SELECT s.ID                       AS id,
                 s.Name                        AS name,
@@ -53,9 +59,10 @@ class Stylesheet extends \Gazelle\Base {
                 sum(if(um.Enabled = ?, 1, 0)) AS total_enabled
             FROM stylesheets s
             LEFT JOIN users_main um ON (um.stylesheet_id = s.ID)
+            WHERE s.Name NOT IN (" . placeholders($hidden) . ")
             GROUP BY s.ID, s.Name, s.Description, s.theme
             ORDER BY {$this->heading()->orderBy()} {$this->heading()->dir()}
-            ", UserStatus::enabled->value
+            ", UserStatus::enabled->value, ...$hidden
         );
         return self::$db->to_array(false, MYSQLI_ASSOC);
     }

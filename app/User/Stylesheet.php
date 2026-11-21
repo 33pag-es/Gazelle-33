@@ -4,7 +4,7 @@ namespace Gazelle\User;
 
 class Stylesheet extends \Gazelle\BaseUser {
     final public const tableName     = '';
-    protected const CACHE_KEY = 'u_ss2_%d';
+    protected const CACHE_KEY = 'u_ss3_%d'; // COMIC-ONLY: default stylesheet changed
 
     public function flush(): static {
         unset($this->info);
