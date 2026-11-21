@@ -82,6 +82,9 @@ COPY --chown=gazelle:gazelle misc ./misc
 COPY --chown=gazelle:gazelle sections ./sections
 COPY --chown=gazelle:gazelle templates ./templates
 COPY --chown=gazelle:gazelle public ./public
+# The stylesheet URLs carry ?v=<mtime of the Sass source>; without the sources
+# every release serves ?v=0 and browsers keep the previous CSS.
+COPY --chown=gazelle:gazelle sass ./sass
 COPY --from=assets --chown=gazelle:gazelle /app/public/static/styles ./public/static/styles
 COPY --from=vendor --chown=gazelle:gazelle /app/vendor ./vendor
 COPY --chown=gazelle:gazelle composer.json composer.lock gazelle.php phinx.php ./
