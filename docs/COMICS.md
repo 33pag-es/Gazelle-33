@@ -740,7 +740,7 @@ docker compose exec -T web vendor/bin/phpunit -c misc/phpunit.xml tests/phpunit/
 docker compose exec -T web vendor/bin/phpstan analyse --memory-limit=1024M --configuration=misc/phpstan.neon
 docker compose exec -T web vendor/bin/phpcs -p --parallel=4
 docker compose exec -T web sh -c 'bin/twig-parse $(find templates -type f)'
-docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
+docker compose exec -T -u manticore manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
 ```
 
 Manual UI proof: `http://localhost:7001/` after `docker compose up -d`.

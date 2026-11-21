@@ -64,8 +64,9 @@ docker compose exec -T web bin/getconf SITE_NAME
 make mysql
 make psql
 
-# Manticore reindex
-docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
+# Manticore reindex. Run it as the manticore user: files written by root
+# cannot be rotated by searchd and block the cron indexer afterwards.
+docker compose exec -T -u manticore manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all
 ```
 
 The first `docker compose up -d` bootstraps dependencies and runs all
@@ -164,7 +165,10 @@ Search:
 - Staging tables `sphinx_tg`, `sphinx_t`, `sphinx_a` are populated by the
   indexer; `sphinx_delta` is written by `TGroup::refresh()`.
 - After changing indexed columns, update the Manticore source and rebuild:
-  `docker compose exec -T manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all`.
+  `docker compose exec -T -u manticore manticore indexer -c /var/lib/manticore/manticore.conf --rotate --all`.
+  Always pass `-u manticore`; as root the new table files are unreadable
+  to searchd (“prealloc: failed to open file … Permission denied”) and
+  the table stays empty or stale.
 - If the index is stale during development, run the same command with
   `--rotate delta` for the delta index.
 - Manticore uses `table ... { type = plain }`; the delta table declares
