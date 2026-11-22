@@ -382,6 +382,41 @@ from `SITE_NAME`; no template spells out another site's name.
   `templates/index/public.twig`) use the same dark palette and typeface;
   the splash page shows the logo and the entry links only.
 
+## Seeded site content
+
+Three migrations replace upstream's music-site content. Each leaves
+anything staff have already changed alone.
+
+- Forums (`20261122010000_comic_forums.php`): the Music category becomes
+  Comics, with Comics, New This Week, Recommendations, Creators and
+  Publishers, and Scans and Editions. “Orpheus” becomes “33pages”, “Chat”
+  becomes “The Lounge”, “Games” becomes “Movies, TV and Games”. Twelve
+  unrestricted music or generic forums are removed, each only while it has
+  no thread. Staff and class-restricted forums are untouched. Forum ids
+  named in `lib/config.php` keep their meaning; Editing (34) becomes
+  staff-only. The forum list is cached: flush memcached after running the
+  migration on a live site.
+- Wiki (`20261122020000_comic_wiki.php`): rewrites the index (1), Source
+  Flags (113) and Upload Rules (127) while they still hold the text of
+  `20261108050000_comic_rules.php`. The upload rules are numbered headings
+  so the rule page's table of contents and filter work. It also creates
+  the pages the rules and header link to: Freeleech Tokens (57, public)
+  and, readable by staff only until published, Mature Content (96),
+  `invite`, `accountinactivity`, `classes`, `autofl`, `disclosurepolicy`,
+  `deletetorrent`. The staff-only pages state what the software does, with
+  numbers read from `lib/config.php` at migration time, and list what has
+  to be decided. They state no policy.
+- User menu (`20261122030000_comic_nav.php`): “Random Album” becomes
+  “Random Series”.
+
+Known gap recorded in the `classes` page: the last two automatic
+promotions in `Manager\User::promotionCriteria()` require “Perfect FLAC”
+uploads and cannot be met on this site.
+
+Phones: the 33pages theme is a fixed desktop layout. For that stylesheet
+`templates/index/private-header.twig` asks for a 1000px viewport, so a
+phone shows the whole page scaled down instead of a wrapped header.
+
 ## Browse and search
 
 `app/Search/Torrent.php` additions:
@@ -591,6 +626,13 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `templates/donation/index.twig`, `templates/donation/special-rank-1.twig`, `templates/seedbox/view.twig`, `templates/recovery/index.twig`, `templates/contest/intro.twig` | site name and URL from config instead of upstream's | `{# COMIC-ONLY #}` |
 | `sections/referral/index.php` | 33pages wordmark | `// COMIC-ONLY` |
 | `tests/phpunit/UserTest.php` | stylesheet test starts from a second installed stylesheet | `// COMIC-ONLY` |
+| `templates/user/sidebar-stats.twig`, `sections/user/user.php` | no artist, request or FLAC statistics on profiles | `{# COMIC-ONLY #}` / `// COMIC-ONLY` |
+| `templates/user/setting/display.twig`, `personal.twig`, `paranoia.twig` | series wording; request, Last.fm, FLAC and artist rows hidden but kept in the form | `{# COMIC-ONLY #}` |
+| `templates/collage/browse.twig`, `sections/bookmarks/torrents.php`, `templates/comment/list.twig` | no artist or request tabs; no music collage categories in the filter | `{# COMIC-ONLY #}` / `// COMIC-ONLY` |
+| `templates/admin/toolbox.twig` | hide the Feature Album tool | `{# COMIC-ONLY #}` (inline condition) |
+| `templates/upload/footer.twig` | no request grace-period notice | `{# COMIC-ONLY #}` |
+| `templates/rules/forum.twig`, `templates/rules/upload.twig` | comics wording, no request rule, comic filter examples | `{# COMIC-ONLY #}` |
+| `public/static/common/avatars/default.png` | default avatar without the upstream waveform | none (binary) |
 | `public/favicon.ico`, `public/favicon-*.png`, `public/apple-touch-icon.png`, `public/android-chrome-*.png`, `public/mstile-150x150.png`, `public/safari-pinned-tab.svg`, `public/site.webmanifest` | 33pages site icons | none (binary/JSON) |
 
 ## Implementation phases

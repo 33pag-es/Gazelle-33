@@ -20,12 +20,15 @@ acceptable to mention new uploads in an approved thread (<i>e.g.</i> <a
 href="forums.php?action=viewthread&amp;threadid=841">Post your first upload here
 so people snatch it</a>), but be sure to carefully read the thread's rules
 before posting. It is also acceptable to discuss releases you have uploaded when
-conversing about the music itself. Blatant attempts to advertise your uploads
+conversing about the {{ constant('SITE_FLAVOR') == 'comics' ? 'comics themselves' : 'music itself' }}. Blatant attempts to advertise your uploads
 outside of the appropriate forums or threads may result in a warning or the loss
 of forum privileges.</li>
 
+{# COMIC-ONLY: there are no requests to point to #}
+{% if constant('SITE_FLAVOR') != 'comics' %}
 <li>No posting music requests in forums. There's a request link at the top of
 the page; please use that instead.</li>
+{% endif %}
 
 <li>No flaming; be pleasant and polite. Don't use offensive language, and don't
 be confrontational for the sake of confrontation.</li>
@@ -94,7 +97,7 @@ follows: <strong>[mature=description] ...content... [/mature]</strong>, where
 inadequate descriptions will be penalized.</li>
 
 <li>Threads created for the exclusive purpose of posting mature imagery will be
-trashed. Mature content (including graphic album art) should be contextually
+trashed. Mature content (including graphic {{ constant('SITE_FLAVOR') == 'comics' ? 'cover' : 'album' }} art) should be contextually
 relevant to the thread and/or forum you're posting in. If you are in doubt as to
 whether a post is appropriate, send a <a href="staffpm.php">Staff PM to the
 Forum Moderators</a> and wait for a reply before proceeding.</li>

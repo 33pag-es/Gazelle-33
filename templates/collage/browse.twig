@@ -19,10 +19,15 @@
     </div>
 {% if is_bookmark %}
     <div class="linkbox">
+{# COMIC-ONLY: no artist or request bookmarks; no music collage categories below #}
         <a href="bookmarks.php?type=torrents" class="brackets">Torrents</a>
+{%  if constant('SITE_FLAVOR') != 'comics' %}
         <a href="bookmarks.php?type=artists" class="brackets">Artists</a>
+{%  endif %}
         <a href="bookmarks.php?type=collages" class="brackets">Collages</a>
+{%  if constant('SITE_FLAVOR') != 'comics' %}
         <a href="bookmarks.php?type=requests" class="brackets">Requests</a>
+{%  endif %}
     </div>
 {% else %}
     <div>
@@ -55,7 +60,8 @@
                 <tr id="categories">
                     <td class="label">Categories:</td>
                     <td>
-{%  for id, name in constant('COLLAGE')|sort %}
+{%  set music_only = constant('SITE_FLAVOR') == 'comics' ? ['Artists', 'Discography', 'Label'] : [] %}
+{%  for id, name in constant('COLLAGE')|sort|filter(name => name not in music_only) %}
                         <label class="cat-choice"><input type="checkbox" class="collagecat" value="1" name="cats[{{ id }}]"{{ checked(search.isSelectedCategory(id)) }}> {{ name }}</label>
 {%      if loop.index % 5 %}&nbsp;&nbsp;&nbsp;{% else %}<br>{% endif %}
 {%  endfor %}

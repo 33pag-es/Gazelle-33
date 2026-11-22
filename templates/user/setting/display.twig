@@ -98,8 +98,9 @@
         </td>
     </tr>
     <tr id="tor_cover_coll_tr">
-        <td class="label tooltip" title="This option allows you to change the number of albums to display within a single collage page.">
-            <strong>Albums per page (collages)</strong>
+{# COMIC-ONLY: series wording; request bounty defaults hidden below #}
+        <td class="label tooltip" title="This option allows you to change the number of {{ constant('SITE_FLAVOR') == 'comics' ? 'series' : 'albums' }} to display within a single collage page.">
+            <strong>{{ constant('SITE_FLAVOR') == 'comics' ? 'Series' : 'Albums' }} per page (collages)</strong>
         </td>
         <td>
             <select name="collageentries" id="collageentries">
@@ -192,7 +193,7 @@
         </td>
     </tr>
 {% endif %}
-    <tr id="req-bounty-create">
+    <tr id="req-bounty-create"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label tooltip" title="This is the default amount of bounty you offer when creating requests">
             <strong>Request creation</strong>
         </td>
@@ -205,7 +206,7 @@
             <label for="req-create">Amount of bounty to offer when creating a request. Value between 100 MiB and 2 TiB.</label>
         </td>
     </tr>
-    <tr id="req-bounty-vote">
+    <tr id="req-bounty-vote"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label tooltip" title="This is the default amount of bounty you offer when voting on requests">
             <strong>Request vote</strong>
         </td>

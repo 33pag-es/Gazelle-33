@@ -37,6 +37,8 @@ Seeding: {{ stats.seedingTotal|number_format }}
                 _self.override(visible['torrentcomments']) }}">View</a>
 {%  endif %}
         </li>
+{# COMIC-ONLY: no artist pages or requests #}
+{%  if constant('SITE_FLAVOR') != 'comics' %}
         <li id="comm_artcomm"{{ _self.class_override(visible['torrentcomments'])
             }}>Artist comments: {{ stats.commentTotal('artist')|number_format }}
 {%  if stats.commentTotal('artist') and visible['torrentcomments'] %}
@@ -45,6 +47,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
                 _self.override(visible['torrentcomments']) }}">View</a>
 {%  endif %}
         </li>
+{%  endif %}
         <li id="comm_collcomm"{{ _self.class_override(visible['torrentcomments'])
             }}>Collage comments: {{ stats.commentTotal('collages')|number_format }}
 {%  if stats.commentTotal('collages') and visible['torrentcomments'] %}
@@ -53,6 +56,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
                 _self.override(visible['torrentcomments']) }}">View</a>
 {%  endif %}
         </li>
+{%  if constant('SITE_FLAVOR') != 'comics' %}
         <li id="comm_reqcomm"{{ _self.class_override(visible['torrentcomments'])
             }}>Request comments: {{ stats.commentTotal('requests')|number_format }}
 {%  if stats.commentTotal('requests') and visible['torrentcomments'] %}
@@ -61,6 +65,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
                 _self.override(visible['torrentcomments']) }}">View</a>
 {%  endif %}
         </li>
+{%  endif %}
 {% endif %}
 
 {% if visible['collages+'] %}
@@ -79,7 +84,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
         </li>
 {% endif %}
 
-{% if visible['requestsvoted_count'] or visible['requestsvoted_bounty'] %}
+{% if constant('SITE_FLAVOR') != 'comics' and (visible['requestsvoted_count'] or visible['requestsvoted_bounty']) %}
         <li>
 {%  if visible['requestsvoted_count'] %}
             <span{{ _self.class_override(visible['requestsvoted_count']) }}>Requests created: {{ stats.requestCreatedTotal|number_format -}}
@@ -106,7 +111,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
         </li>
 {% endif %}
 
-{% if visible['requestsfilled_count'] or visible['requestsfilled_bounty'] %}
+{% if constant('SITE_FLAVOR') != 'comics' and (visible['requestsfilled_count'] or visible['requestsfilled_bounty']) %}
         <li>
 {%  if visible['requestsfilled_count'] %}
             <span{{ _self.class_override(visible['requestsfilled_count']) }}>Requests filled: {{ stats.requestBountyTotal|number_format -}}
@@ -142,7 +147,7 @@ Seeding: {{ stats.seedingTotal|number_format }}
         </li>
 {% endif %}
 
-{% if visible['perfectflacs+'] %}
+{% if constant('SITE_FLAVOR') != 'comics' and visible['perfectflacs+'] %}
         <li id="comm_perfectflac"{{ _self.class_override(visible['perfectflacs+']) }}>"Perfect" FLACs: {{ stats.perfectFlacTotal|number_format }}
 {%  if stats.perfectFlacTotal and visible['perfectflacs'] %}
             <a href="torrents.php?type=uploaded&amp;userid={{ user.id }}&amp;filter=perfectflac" class="brackets{{ _self.override(visible['perfectflacs']) }}">View</a>

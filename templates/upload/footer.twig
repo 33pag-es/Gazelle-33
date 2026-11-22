@@ -22,7 +22,7 @@
     <tr>
         <td colspan="2" style="text-align: center;">
             <p>Make sure that your torrent adheres to the <a href="rules.php?p=upload" target="_blank">rules</a>. Not doing so will result in a <strong class="important_text">warning</strong> or <strong class="important_text">worse</strong>.</p>
-{% if is_upload %}
+{% if is_upload and constant('SITE_FLAVOR') != 'comics' %}{# COMIC-ONLY: no requests to fill #}
             <p>After uploading, you have a one hour grace period in which only you can fill requests with this torrent.<br>
             Make use of this time wisely, and <a href="requests.php" target="_blank">search the list of requests</a>.</p>
 {% endif %}

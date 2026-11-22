@@ -67,9 +67,13 @@ if ($ownProfile) {
         </h2>
         <div class="linkbox">
             <a href="bookmarks.php?type=torrents" class="brackets">Torrents</a>
+<?php if (!preg_match('/^comics$/', SITE_FLAVOR)) { // COMIC-ONLY: no artist or request bookmarks ?>
             <a href="bookmarks.php?type=artists" class="brackets">Artists</a>
+<?php } ?>
             <a href="bookmarks.php?type=collages" class="brackets">Collages</a>
+<?php if (!preg_match('/^comics$/', SITE_FLAVOR)) { ?>
             <a href="bookmarks.php?type=requests" class="brackets">Requests</a>
+<?php } ?>
 <?php if ($bookmarkList !== []) { ?>
             <br><br>
             <a href="bookmarks.php?action=remove_snatched&amp;auth=<?= $Viewer->auth() ?>" class="brackets" onclick="return confirm('Are you sure you want to remove the bookmarks for all items you\'ve snatched?');">Remove snatched</a>

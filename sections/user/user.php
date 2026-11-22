@@ -154,6 +154,10 @@ $statList = [
     ['artists', 'artistsadded', 'Artists added', $numberFormatter, 'added'],
     ['votes', null, 'Release votes cast', $numberFormatter, 'votes'],
 ];
+// COMIC-ONLY: no requests or artists to rank by.
+if (preg_match('/^comics$/', SITE_FLAVOR)) {
+    $statList = array_filter($statList, fn ($stat) => !in_array($stat[0], ['requests', 'bounty', 'artists'], true));
+}
 ?>
         <div class="box box_info box_userinfo_percentile">
             <div class="head colhead_dark">Percentile Rankings (hover for values)</div>

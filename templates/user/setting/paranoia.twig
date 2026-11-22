@@ -11,9 +11,15 @@
         <td class="label">&nbsp;</td>
         <td>
             <p><strong>Select the profile elements you wish to display to other users.</strong></p>
+{# COMIC-ONLY: example and rows without FLACs, artists or requests; the hidden rows stay in the form #}
+{% if constant('SITE_FLAVOR') == 'comics' %}
+            <p>For example, if you select "Show count" for "Collages (started)", the number of collages you have started
+            will be visible. If you select "Show list", the full list of those collages will be visible.</p>
+{% else %}
             <p>For example, if you select "Show count" for "Requests (filled)", the number of requests you have filled
             will be visible. If you select "Show bounty", the amount of request bounty you have received will be
             visible. If you select "Show list", the full list of requests you have filled will be visible.</p>
+{% endif %}
             <p><span class="warning">Note: Paranoia has nothing to do with your security on this site. These settings
             only determine if others can view your site activity. Some information will remain available in the site
             log.</span></p>
@@ -86,11 +92,11 @@
         <td class="label"><strong>Unique groups uploaded</strong></td>
         <td>{{ paranoia_list(user, 'uniquegroups') }}</td>
     </tr>
-    <tr id="para_uplpflac_tr">
+    <tr id="para_uplpflac_tr"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label"><strong>"Perfect" FLACs uploaded</strong></td>
         <td>{{ paranoia_list(user, 'perfectflacs') }}</td>
     </tr>
-    <tr id="para_artistsadded_tr">
+    <tr id="para_artistsadded_tr"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label tooltip" title="This option controls the display of the artists you have added to torrent groups on the site. This number includes artists added via the torrent upload form, as well as artists added via the “Add artists” box on torrent group pages.">
             <strong>Artists added via uploads</strong>
         </td>
@@ -130,7 +136,7 @@
         <td class="label"><strong>Collages (started)</strong></td>
         <td>{{ paranoia_list(user, 'collages') }}</td>
     </tr>
-    <tr id="para_reqfill_tr">
+    <tr id="para_reqfill_tr"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label"><strong>Requests (filled)</strong></td>
         <td>
             <label><input type="checkbox" name="p_count_requestsfilled" class="paranoia-setting"{{ checked(not user.isParanoid('requestsfilled_count')) }}> Show count</label>&nbsp;&nbsp;
@@ -138,7 +144,7 @@
             <label><input type="checkbox" name="p_bounty_requestsfilled" class="paranoia-setting"{{ checked(not user.isParanoid('requestsfilled_bounty')) }}> Show bounty received</label>
         </td>
     </tr>
-    <tr id="para_reqvote_tr">
+    <tr id="para_reqvote_tr"{% if constant('SITE_FLAVOR') == 'comics' %} class="hidden"{% endif %}>
         <td class="label"><strong>Requests (voted for)</strong></td>
         <td>
             <label><input type="checkbox" name="p_count_requestsvoted" class="paranoia-setting"{{ checked(not user.isParanoid('requestsvoted_count')) }}> Show count</label>&nbsp;&nbsp;

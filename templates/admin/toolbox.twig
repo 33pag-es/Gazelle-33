@@ -1,3 +1,4 @@
+{# COMIC-ONLY: the Feature Album tool is not offered #}
 {% macro item(title, url, allowed) %}
     {%- if allowed %}
 <tr><td><a href="{{ url }}">{{ title }}</a></td></tr>
@@ -36,7 +37,7 @@
 
 {{ _self.category('Announcements', [
     ['Change log',          '?action=change_log',          true],
-    ['Feature Album',       '?action=featured_album',      viewer.permitted('admin_freeleech')],
+    ['Feature Album',       '?action=featured_album',      viewer.permitted('admin_freeleech') and constant('SITE_FLAVOR') != 'comics'],
     ['Global notification', '?action=global_notification', viewer.permitted('admin_global_notification')],
     ['Mass PM',             '?action=mass_pm',             viewer.permitted('admin_global_notification')],
     ['News post',           '?action=news',                viewer.permitted('admin_manage_news')],

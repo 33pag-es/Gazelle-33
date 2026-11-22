@@ -3,9 +3,12 @@
     <div class="header">
         <h2>{{ user.id|user_url }} › {{ search.title }}</h2>
         <div class="linkbox">
+{# COMIC-ONLY: no artist or request comments #}
 {% for other in other_type %}
+{%  if constant('SITE_FLAVOR') != 'comics' or other.value not in ['artist', 'requests'] %}
             <a href="?action={{ other.value }}" class="brackets">{{
                 other.value|trim('s')|capitalize }} comments</a>
+{%  endif %}
 {% endfor %}
 {% for a in search.linkList %}
 {%  if loop.first %}

@@ -1765,3 +1765,10 @@ button.brackets:focus {
   background: #86c232;
   color: #1a1a1a;
 }
+
+/* The layout is a fixed desktop one. On a narrow screen keep it whole (the
+   page header asks the browser for a 1000px viewport) rather than letting
+   the header and menu wrap over each other. */
+body {
+  min-width: 980px;
+}

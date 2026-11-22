@@ -4,7 +4,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+{# COMIC-ONLY: the 33pages theme is a fixed desktop layout; phones show it whole, scaled down #}
+{% if viewer.stylesheet.cssName == '33pages' and not viewer.stylesheet.styleUrl %}
+<meta name="viewport" content="width=1000">
+{% else %}
 <meta name="viewport" content="width=device-width">
+{% endif %}
 <meta name="referrer" content="same-origin">
 <title>{{ page_title }} ⠶ {{ constant('SITE_NAME') }}</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
