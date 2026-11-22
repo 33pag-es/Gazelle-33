@@ -21,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <div id="logo">
 <?php // COMIC-ONLY: site wordmark ?>
-<a href="/" style="margin-left: 0;"><img src="<?= STATIC_SERVER ?>/svg/site/33pages-lockup-tagline.svg" width="420" height="130" alt="<?= SITE_NAME ?>" title="<?= SITE_NAME ?>"></a>
+<a href="/" style="margin-left: 0;"><img src="<?= STATIC_SERVER ?>/svg/site/33pages-lockup.svg" width="385" height="78" alt="<?= SITE_NAME ?>" title="<?= SITE_NAME ?>"></a>
 </div>
 
 <?php
