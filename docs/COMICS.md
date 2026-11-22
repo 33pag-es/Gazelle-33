@@ -371,7 +371,9 @@ from `SITE_NAME`; no template spells out another site's name.
   Sass sources stay, dormant. A member's external stylesheet URL is kept
   and still works; the settings page shows only that field.
 - Logo, in `public/static/svg/site/`: `33pages-lockup.svg` (header),
-  `33pages-lockup-tagline.svg` (public pages, with “THE NEXT PAGE”), and
+  `33pages-lockup-tagline.svg` (login and other public pages, with “THE
+  NEXT PAGE”), `33pages-lockup-33p.svg` (splash page: `33P` and “THE NEXT
+  PAGE”), and
   `33pages-mark.svg` (page icon). The letters are Lato Black converted to
   outlines, so the files render the same everywhere and need no font.
 - Site icons in `public/`: `favicon.svg`, `favicon.ico`,
@@ -380,7 +382,10 @@ from `SITE_NAME`; no template spells out another site's name.
   `site.webmanifest`. These replace upstream files of the same name.
 - Public pages (`sass/public/style.scss`, `templates/logo.twig`,
   `templates/index/public.twig`) use the same dark palette and typeface;
-  the splash page shows the logo and the entry links only.
+  the splash page shows only the `33P` mark, one line (“There was never
+  supposed to be a page 33.”, in `templates/index/public.twig`) and the
+  entry links. The line is meant for people who know that a comic runs 32
+  pages and what 32P was; it explains nothing to anyone else, on purpose.
 
 ## Seeded site content
 

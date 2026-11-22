@@ -233,6 +233,21 @@ a:hover {
   height: 150px;
 }
 
+/* Splash page: the short mark and one line */
+#logo.splash-logo {
+  height: 190px;
+  margin-top: 90px;
+}
+
+.splash-line {
+  color: #9a9a9a;
+  font-size: 11pt;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  margin: 4px 0 30px;
+  text-align: center;
+}
+
 .auth label {
   color: #f7f7f7;
 }
