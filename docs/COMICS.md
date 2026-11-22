@@ -370,9 +370,9 @@ from `SITE_NAME`; no template spells out another site's name.
   the default, and move every user to it. The upstream stylesheet rows and
   Sass sources stay, dormant. A member's external stylesheet URL is kept
   and still works; the settings page shows only that field.
-- Logo, in `public/static/svg/site/`: `33pages-lockup.svg` (header),
-  login and other public pages), `33pages-lockup-33p.svg` (splash page:
-  `33P` alone), and
+- Logo, in `public/static/svg/site/`: `33pages-lockup.svg` (header, login
+  and other public pages), `33pages-lockup-33p.svg` (splash page: `33P`
+  alone), and
   `33pages-mark.svg` (page icon). The letters are Lato Black converted to
   outlines, so the files render the same everywhere and need no font.
 - Site icons in `public/`: `favicon.svg`, `favicon.ico`,
