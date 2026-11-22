@@ -394,6 +394,15 @@ class UserTest extends TestCase {
         $url   = STATIC_SERVER . '/bogus.css';
         $stylesheet = $this->user->stylesheet();
         $this->assertNull($stylesheet->styleUrl(), 'stylesheet-no-external-url');
+        // COMIC-ONLY: one stylesheet is offered and new users start on it,
+        // so begin from another installed stylesheet for the change below.
+        DB::DB()->prepared_query("
+            UPDATE users_main SET
+                stylesheet_id = (SELECT ID FROM stylesheets WHERE ID != ? ORDER BY ID LIMIT 1)
+            WHERE ID = ?
+            ", $sheet['id'], $this->user->id
+        );
+        $stylesheet->flush();
         $this->assertSame(1, $stylesheet->modifyInfo($sheet['id'], null), 'stylesheet-modify');
         $this->assertSame($sheet['css_name'], $stylesheet->cssName(), 'stylesheet-css-name');
         $this->assertStringContainsString("/static/styles/{$sheet['css_name']}/style.css?v=", $stylesheet->cssUrl(), 'stylesheet-css-url');

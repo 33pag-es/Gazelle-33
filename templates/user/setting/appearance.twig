@@ -1,4 +1,6 @@
+{# COMIC-ONLY: with a single stylesheet on offer, the chooser is not shown. #}
 {% from 'macro/form.twig' import checked, selected %}
+{% set single_style = stylesheets|length == 1 %}
 <div id="site-appearance">
 <table cellpadding="6" cellspacing="1" border="0" width="100%" class="layout border user_options" id="site_appearance_settings">
     <tr class="colhead_dark">
@@ -11,6 +13,11 @@
             <strong>Stylesheet</strong>
         </td>
         <td>
+{% if single_style %}
+            {{ stylesheets[0].name }}
+            <span class="small">&nbsp;To restyle the site for yourself, enter an external stylesheet URL below.</span>
+{% endif %}
+            <span{% if single_style %} class="hidden"{% endif %}>
             <select name="stylesheet" id="stylesheet">
 {% for sheet in stylesheets %}
                 <option value="{{ sheet.id }}"{{ selected(sheet.id == stylesheet.styleId) }}>{{ sheet.name }}</option>
@@ -31,6 +38,7 @@
                 </div>
 {% endfor %}
             </div>
+            </span>
         </td>
     </tr>
     <tr id="site_extstyle_tr">

@@ -1,4 +1,5 @@
-// COMIC-ONLY: 33pages newsprint colours for the public pages.
+// COMIC-ONLY: 33pages colours and typeface for the public pages; see the
+// "33PAGES ADDITIONS" block at the end.
 #head {
   height: 3%;
   min-height: 10px;
@@ -30,8 +31,8 @@
 }
 
 #referral-code {
-  background-color: #141312;
-  color: #f6f3ec;
+  background-color: #262626;
+  color: #f7f7f7;
   padding: 10px;
   text-align: center;
 }
@@ -56,18 +57,18 @@ input[type="password"]:invalid {
 }
 
 body {
-  background-color: #f6f3ec;
-  font-family: "Bitstream Vera Sans", Tahoma, sans-serif;
-  color: #1f1d19;
+  background-color: #1a1a1a;
+  font-family: Lato, "Bitstream Vera Sans", Tahoma, sans-serif;
+  color: #9a9a9a;
 }
 
 a {
-  color: #7c0e19;
+  color: #86c232;
   text-decoration: none;
 }
 
 a:hover {
-  color: #e23744;
+  color: #f7f7f7;
   text-decoration: underline;
 }
 
@@ -206,4 +207,88 @@ a:hover {
 
 #login-buttons a {
   margin: 10px 0;
+}
+
+/* ########################################################################
+   33PAGES ADDITIONS
+   ######################################################################## */
+
+@font-face {
+  font-family: Lato;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../33pages/fonts/lato-400-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Lato;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../33pages/fonts/lato-700-latin.woff2") format("woff2");
+}
+
+#logo {
+  height: 150px;
+}
+
+.auth label {
+  color: #f7f7f7;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
+  background-color: #262626;
+  border: 1px solid #444;
+  color: #f7f7f7;
+  font-family: Lato, sans-serif;
+  box-sizing: border-box;
+  font-size: 10pt;
+  padding: 4px 6px;
+  width: 240px;
+}
+
+input[type="text"]:valid,
+input[type="password"]:valid {
+  border: 1px solid #444;
+}
+
+input[type="text"]:invalid,
+input[type="password"]:invalid {
+  border-color: #444 #444 #b00d0d;
+  border-style: solid;
+  border-width: 1px 1px 2px;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+  border-color: #86c232;
+  outline: none;
+}
+
+input[type="submit"],
+button {
+  background-color: #86c232;
+  border: 0;
+  color: #1a1a1a;
+  cursor: pointer;
+  font-family: Lato, sans-serif;
+  font-size: 10pt;
+  font-weight: 700;
+  padding: 6px 18px;
+}
+
+input[type="submit"]:hover,
+button:hover {
+  background-color: #f7f7f7;
+}
+
+::selection {
+  background: #86c232;
+  color: #1a1a1a;
 }

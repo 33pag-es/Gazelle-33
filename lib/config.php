@@ -1066,18 +1066,10 @@ defined('CATEGORY_COMIC') or define('CATEGORY_COMIC', 7);
 defined('COMIC_FORMAT') or define('COMIC_FORMAT', ['CBZ', 'CBR', 'PDF', 'CB7']);
 defined('COMIC_PRIMARY_EXT_REGEXP') or define('COMIC_PRIMARY_EXT_REGEXP', '(?:cb[rz7]|pdf|jpe?g|png|gif)');
 
-// COMIC-ONLY: stylesheets that stay installed but are not offered to users,
-// because they carry the name or logo of another site. ApolloStage must stay
-// installed: the 33pages themes import its layout code.
-defined('STYLESHEET_HIDDEN') or define('STYLESHEET_HIDDEN', [
-    'ApolloStage',
-    'ApolloStage Coffee',
-    'ApolloStage Sunset',
-    'Orpheus Haze',
-    'Orpheus Paper',
-    'Proton',
-    'Xanax cake',
-]);
+// COMIC-ONLY: the stylesheets offered to users. The other installed
+// stylesheets stay in the tree and in the database but cannot be selected.
+// Members who want another look supply an external stylesheet URL.
+defined('STYLESHEET_OFFERED') or define('STYLESHEET_OFFERED', ['33pages']);
 
 // Icons of upload categories.
 defined('CATEGORY_ICON') or define('CATEGORY_ICON', [

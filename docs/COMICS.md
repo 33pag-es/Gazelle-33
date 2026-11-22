@@ -344,35 +344,43 @@ edit form rejects a tag list longer than `Comic\Series::TAGLIST_MAX`.
 
 ## Branding and themes
 
-The site name comes from `SITE_NAME`; no template spells out another
-site's name.
+The site is 33pages, the successor to 32pages (32P), which closed in
+October 2020. The wordmark keeps the shape of the 32P one: the number in
+the accent colour, `PAGES` in white. The site name itself always comes
+from `SITE_NAME`; no template spells out another site's name.
 
-- Themes: `sass/33pages/style.scss` (light, the default) and
-  `sass/33pages_dark/style.scss`. Both are ApolloStage derivatives: they
-  set colour tokens from `sass/apollostage/_variables.scss`, then
-  `@use "../apollostage/_base"`, then add a short override block. Change
-  colours by editing tokens, not by copying layout rules. Build with
-  `make css`; lint with `make lint-css` (`misc/stylelint.json`).
+- Theme: `sass/33pages/style.scss`, the only stylesheet offered
+  (`STYLESHEET_OFFERED` in `lib/config.php`). It is a fork of
+  `sass/post_office/style.scss` with the same layout. The header comment
+  of the file lists the four differences: self-hosted Lato, the 33pages
+  logo, the green accent `#86c232`, and the `33PAGES ADDITIONS` block at
+  the end. Put new theme rules in that block. To pick up a later Post
+  Office change, diff the two files. Build with `make css`; lint with
+  `make lint-css` (`misc/stylelint.json`).
+- No third-party requests: the upstream Post Office theme loads Lato from
+  `fonts.googleapis.com`, which tells Google which member loaded which
+  page. The fork serves the font from
+  `public/static/styles/33pages/fonts/` (latin and latin-ext subsets, SIL
+  OFL, licence in `OFL.txt` beside them).
 - A stylesheet named `X Y` in the `stylesheets` table loads
   `public/static/styles/x_y/style.css` and icons from
-  `public/static/styles/x_y/images/`. The 33pages rows and the default
-  are set by `misc/my-migrations/20261121000000_comic_stylesheets.php`.
-- `STYLESHEET_HIDDEN` (`lib/config.php`) lists installed stylesheets that
-  are not offered: the ones carrying another site's name or logo.
-  ApolloStage is hidden but must stay installed, because the 33pages
-  themes import its layout. The migration moves users off hidden
-  stylesheets.
-- Logo: `public/static/svg/site/33pages-lockup-{lightmode,darkmode}.svg`
-  (header and public pages) and `33pages-mark-{lightmode,darkmode,onink}.svg`
-  (mobile bar). They are placeholders drawn as plain SVG; the wordmark
-  uses system fonts. Replace the files to rebrand.
+  `public/static/styles/x_y/images/`. Migrations
+  `20261121000000_comic_stylesheets.php` and
+  `20261122000000_comic_single_stylesheet.php` register 33pages, make it
+  the default, and move every user to it. The upstream stylesheet rows and
+  Sass sources stay, dormant. A member's external stylesheet URL is kept
+  and still works; the settings page shows only that field.
+- Logo, in `public/static/svg/site/`: `33pages-lockup.svg` (header),
+  `33pages-lockup-tagline.svg` (public pages, with “THE NEXT PAGE”), and
+  `33pages-mark.svg` (page icon). The letters are Lato Black converted to
+  outlines, so the files render the same everywhere and need no font.
 - Site icons in `public/`: `favicon.svg`, `favicon.ico`,
   `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`,
   `android-chrome-*.png`, `mstile-150x150.png`, `safari-pinned-tab.svg`,
   `site.webmanifest`. These replace upstream files of the same name.
 - Public pages (`sass/public/style.scss`, `templates/logo.twig`,
-  `templates/index/public.twig`) use the light palette; the splash page
-  shows the logo and the entry links only.
+  `templates/index/public.twig`) use the same dark palette and typeface;
+  the splash page shows the logo and the entry links only.
 
 ## Browse and search
 
@@ -572,15 +580,17 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `sections/torrents/new_groupid.php` | move issue to another series | `// COMIC-ONLY` |
 | `sections/torrents/new_group_handle.php` | split issue into a new series | `// COMIC-ONLY` |
 | `public/static/functions/autocomplete.mjs` | publisher/creator autocomplete | `// COMIC-ONLY` |
-| `app/Manager/Stylesheet.php` | hide stylesheets listed in `STYLESHEET_HIDDEN` | `// COMIC-ONLY` |
+| `app/Manager/Stylesheet.php` | offer only the stylesheets in `STYLESHEET_OFFERED` | `// COMIC-ONLY` |
 | `app/User/Stylesheet.php` | cache key bump for the new default | `// COMIC-ONLY` |
-| `sass/public/style.scss` | 33pages colours on public pages | `// COMIC-ONLY` |
+| `sass/public/style.scss` | 33pages colours and typeface on public pages | `// COMIC-ONLY` |
+| `templates/user/setting/appearance.twig` | hide the stylesheet chooser when one stylesheet is offered | `{# COMIC-ONLY #}` |
 | `templates/logo.twig` | 33pages wordmark | `{# COMIC-ONLY #}` |
 | `templates/index/public.twig` | splash page without the upstream poem | `{# COMIC-ONLY #}` |
 | `templates/index/public-header.twig` | SVG site icon | `{# COMIC-ONLY #}` |
 | `templates/index/private-header.twig` | SVG site icon | `{# COMIC-ONLY #}` |
 | `templates/donation/index.twig`, `templates/donation/special-rank-1.twig`, `templates/seedbox/view.twig`, `templates/recovery/index.twig`, `templates/contest/intro.twig` | site name and URL from config instead of upstream's | `{# COMIC-ONLY #}` |
 | `sections/referral/index.php` | 33pages wordmark | `// COMIC-ONLY` |
+| `tests/phpunit/UserTest.php` | stylesheet test starts from a second installed stylesheet | `// COMIC-ONLY` |
 | `public/favicon.ico`, `public/favicon-*.png`, `public/apple-touch-icon.png`, `public/android-chrome-*.png`, `public/mstile-150x150.png`, `public/safari-pinned-tab.svg`, `public/site.webmanifest` | 33pages site icons | none (binary/JSON) |
 
 ## Implementation phases
