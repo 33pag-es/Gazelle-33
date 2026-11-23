@@ -489,6 +489,12 @@ anything staff have already changed alone.
   to be decided. They state no policy.
 - User menu (`20261122030000_comic_nav.php`): “Random Album” becomes
   “Random Series”.
+- Series organisation (`20261123010000_comic_wiki_standard.php`): brings
+  the wiki index (1) and the Upload Rules (127) in line with § Series
+  organisation: series types, collected editions and annuals as their own
+  series, issue numbers as printed, source, release date, collected
+  issues. It replaces passage by passage, and only passages that still
+  read as the wiki migration wrote them.
 
 Known gap recorded in the `classes` page: the last two automatic
 promotions in `Manager\User::promotionCriteria()` require “Perfect FLAC”
