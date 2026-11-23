@@ -40,6 +40,11 @@ class TGroup extends \Gazelle\Json {
             'tags'            => array_values($tgroup->tagNameList()),
             'publisher'       => \Gazelle\Comic\Series::publisher($tgroup),
             'creators'        => \Gazelle\Comic\Series::creatorList($tgroup),
+            'creatorRoles'    => \Gazelle\Comic\Series::creatorRoleList($tgroup),
+            'seriesType'      => \Gazelle\Comic\Series::type($tgroup)?->value,
+            'seriesStatus'    => \Gazelle\Comic\Series::status($tgroup)?->value,
+            'imprint'         => \Gazelle\Comic\Series::imprint($tgroup),
+            'language'        => \Gazelle\Comic\Series::language($tgroup),
             'musicInfo'       => $musicInfo,
         ];
     }

@@ -6,6 +6,8 @@
     <tr class="colhead_dark">
         <td class="m_th_left" width="30%"><strong>Name</strong></td>
         <td><strong>Issue</strong></td>
+        <td><strong>Released</strong></td>
+        <td><strong>Source</strong></td>
         <td><strong>Scanner</strong></td>
         <td><strong>Format</strong></td>
         <td><strong>Checked</strong></td>
@@ -18,6 +20,11 @@
         <td class="m_th_right sign leechers"><img src="{{ url_stem }}leechers.svg" class="tooltip" alt="Leechers" title="Leechers"></td>
     </tr>
 {% for torrent in torrent_list %}
-{%  include 'comic/torrent-row.twig' with {'torrent': torrent, 'tgroup': tgroup, 'viewer': viewer} only %}
+{%  include 'comic/torrent-row.twig' with {
+    'collect_list': collect_list[torrent.id] ?? [],
+    'torrent':      torrent,
+    'tgroup':       tgroup,
+    'viewer':       viewer,
+} only %}
 {% endfor %}
 </table>

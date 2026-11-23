@@ -176,6 +176,9 @@ foreach ($Results as $Key => $GroupID) {
 <?php if ($isComic) { ?>
                 <div class="comic_group_meta">
                     <?= html_escape((string)$tgroup->year()) ?>
+<?php   if (\Gazelle\Comic\Series::type($tgroup)) { ?>
+                    · <?= html_escape(\Gazelle\Comic\Series::type($tgroup)->label()) ?>
+<?php   } ?>
                     · <?= html_escape(\Gazelle\Comic\Series::publisher($tgroup) ?? 'Unknown publisher') ?>
                     · <?= html_escape(implode(', ', \Gazelle\Comic\Series::creatorList($tgroup))) ?>
                     · <?= count($torrentList) ?> issue<?= count($torrentList) === 1 ? '' : 's' ?>

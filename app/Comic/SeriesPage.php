@@ -45,15 +45,21 @@ final class SeriesPage {
             'viewer'        => $viewer,
         ]);
         echo $twig->render('comic/series-header.twig', [
-            'collage_list' => $collageList,
-            'creator_list' => Series::creatorList($tgroup),
-            'publisher'    => Series::publisher($tgroup),
-            'tag_undo'     => $tagUndo,
-            'tgroup'       => $tgroup,
-            'viewer'       => $viewer,
+            'collage_list'      => $collageList,
+            'collected_in'      => Collect::collectedIn($tgroup),
+            'creator_role_list' => Series::creatorRoleList($tgroup),
+            'imprint'           => Series::imprint($tgroup),
+            'language'          => Series::languageName($tgroup),
+            'publisher'         => Series::publisher($tgroup),
+            'series_status'     => Series::status($tgroup),
+            'series_type'       => Series::type($tgroup),
+            'tag_undo'          => $tagUndo,
+            'tgroup'            => $tgroup,
+            'viewer'            => $viewer,
         ]);
         echo '</div><div class="main_column">';
         echo $twig->render('comic/series-torrents.twig', [
+            'collect_list' => Collect::byTorrent($tgroup),
             'flash'        => isset($_GET['checked'])
                 ? ((int)$_GET['checked'] ? 'Torrent marked checked.' : 'Torrent marked unchecked.')
                 : null,

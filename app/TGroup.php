@@ -12,7 +12,7 @@ use Gazelle\Intf\CollageEntry;
 
 class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, CollageEntry {
     final public const tableName            = 'torrents_group';
-    final public const CACHE_KEY            = 'tg_v4_%d'; // COMIC-ONLY
+    final public const CACHE_KEY            = 'tg_v5_%d'; // COMIC-ONLY
     final public const CACHE_TLIST_KEY      = 'tlist_%d';
     final public const USER_RECENT_UPLOAD   = 'u_recent_up_%d';
     final public const CACHE_REQUEST_TGROUP = 'req_tg_%d';
@@ -83,7 +83,8 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                         SELECT t.ID
                         FROM torrents t
                         WHERE t.GroupID = ?
-                        ORDER BY (t.RemasterYear IS NOT NULL) DESC, t.RemasterYear, t.RemasterTitle,
+                        ORDER BY (t.issue_sort IS NULL), t.issue_sort, t.issue_number, t.IssueLabel, /* COMIC-ONLY */
+                            (t.RemasterYear IS NOT NULL) DESC, t.RemasterYear, t.RemasterTitle,
                             t.RemasterRecordLabel, t.RemasterCatalogueNumber, t.Media, t.Format, t.Encoding, t.ID
                         ", $this->id
                     );
@@ -105,6 +106,10 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 tg.Name,
                 tg.Year,
                 tg.PublisherID, /* COMIC-ONLY */
+                tg.series_type,
+                tg.series_status,
+                tg.imprint_id,
+                tg.language,
                 tg.ReleaseType,
                 tg.CategoryID,
                 tg.Time,
@@ -174,7 +179,8 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
             SELECT t.ID
             FROM torrents t
             WHERE t.GroupID = ?
-            ORDER BY (t.RemasterYear IS NOT NULL) DESC, t.RemasterYear, t.RemasterTitle,
+            ORDER BY (t.issue_sort IS NULL), t.issue_sort, t.issue_number, t.IssueLabel, /* COMIC-ONLY */
+                (t.RemasterYear IS NOT NULL) DESC, t.RemasterYear, t.RemasterTitle,
                 t.RemasterRecordLabel, t.RemasterCatalogueNumber, t.Media, t.Format, t.Encoding, t.ID
             ", $this->id
         );
@@ -362,6 +368,10 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
             $text = $this->name();
             if ($this->year()) {
                 $text .= " ({$this->year()})";
+            }
+            $type = Comic\Series::type($this);
+            if ($type && $type !== Enum\SeriesType::singleIssue) {
+                $text .= " [{$type->label()}]";
             }
             $publisher = Comic\Series::publisher($this);
             return $publisher ? "$text – $publisher" : $text;
@@ -579,6 +589,7 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 HasCue, FreeTorrent, Media, Format, Encoding, Description, RemasterYear, RemasterTitle,
                 RemasterRecordLabel, RemasterCatalogueNumber, FileList, TagList,
                 Publisher, Creators, issue_start, issue_end, issue_label, scanner, pack, checked,
+                series_type, series_status, language, imprint, issue_number, comic_source,
                 VoteScore, ArtistName)
             SELECT
                 t.ID, g.ID, g.Name, g.Year, g.CategoryID, t.created, g.ReleaseType,
@@ -589,17 +600,21 @@ class TGroup extends BaseAttrObject implements Bookmarked, CategoryHasArtist, Co
                 replace(replace(t.FileList, '_', ' '), '/', ' ') AS FileList,
                 replace(group_concat(coalesce(t2.Name, '') SEPARATOR ' '), '.', '_'),
                 coalesce(max(p.Name), ''),
-                coalesce((SELECT group_concat(c.Name SEPARATOR ' ')
+                coalesce((SELECT group_concat(DISTINCT c.Name SEPARATOR ' ')
                     FROM series_creator sc
                     INNER JOIN creator c ON (c.CreatorID = sc.CreatorID)
                     WHERE sc.GroupID = g.ID), ''),
                 coalesce(t.IssueStart, 0), coalesce(t.IssueEnd, 0),
                 coalesce(t.IssueLabel, ''), coalesce(t.Scanner, ''),
-                cast(t.Pack AS CHAR), cast(t.Checked AS CHAR), ?, ?
+                cast(t.Pack AS CHAR), cast(t.Checked AS CHAR),
+                coalesce(g.series_type + 0, 0), coalesce(g.series_status + 0, 0), g.language,
+                coalesce(max(i.name), ''), concat_ws(' ', t.issue_number, t.issue_number_end),
+                coalesce(t.comic_source + 0, 0), ?, ?
             FROM torrents t
             INNER JOIN torrents_leech_stats tls ON (tls.TorrentID = t.ID)
             INNER JOIN torrents_group g ON (g.ID = t.GroupID)
             LEFT JOIN publisher p ON (p.PublisherID = g.PublisherID)
+            LEFT JOIN imprint i ON (i.imprint_id = g.imprint_id)
             LEFT JOIN torrents_tags tt ON (tt.GroupID = g.ID)
             LEFT JOIN tags t2 ON (t2.ID = tt.TagID)
             WHERE g.ID = ?

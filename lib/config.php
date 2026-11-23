@@ -1065,6 +1065,23 @@ defined('CATEGORY_DEFAULT') or define('CATEGORY_DEFAULT', 'Comics');
 defined('CATEGORY_COMIC') or define('CATEGORY_COMIC', 7);
 defined('COMIC_FORMAT') or define('COMIC_FORMAT', ['CBZ', 'CBR', 'PDF', 'CB7']);
 defined('COMIC_PRIMARY_EXT_REGEXP') or define('COMIC_PRIMARY_EXT_REGEXP', '(?:cb[rz7]|pdf|jpe?g|png|gif)');
+// COMIC-ONLY: the languages a series can be published in, by ISO 639-1 code.
+defined('COMIC_LANGUAGE') or define('COMIC_LANGUAGE', [
+    'en' => 'English',
+    'zh' => 'Chinese',
+    'nl' => 'Dutch',
+    'fr' => 'French',
+    'de' => 'German',
+    'it' => 'Italian',
+    'ja' => 'Japanese',
+    'ko' => 'Korean',
+    'pl' => 'Polish',
+    'pt' => 'Portuguese',
+    'ru' => 'Russian',
+    'es' => 'Spanish',
+    'sv' => 'Swedish',
+]);
+defined('COMIC_LANGUAGE_DEFAULT') or define('COMIC_LANGUAGE_DEFAULT', 'en');
 
 // COMIC-ONLY: the stylesheets offered to users. The other installed
 // stylesheets stay in the tree and in the database but cannot be selected.
@@ -1198,6 +1215,7 @@ defined('COLLAGE') or define('COLLAGE', [
     7 => 'Artists',
     8 => 'Awards',
     9 => 'Series',
+    10 => 'Story Arc', // COMIC-ONLY
 ]);
 defined('COLLAGE_PERSONAL_ID') or define('COLLAGE_PERSONAL_ID', 0);
 defined('COLLAGE_ARTISTS_ID') or define('COLLAGE_ARTISTS_ID', 7);

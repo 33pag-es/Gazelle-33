@@ -43,9 +43,8 @@ if (!isset($Properties)) {
                 $Properties['RequestID'] = $requestId;
             }
             if ($tgroup->categoryId() === CATEGORY_COMIC) {
-                // COMIC-ONLY: the comic form requires the series publisher and creators.
-                $Properties['Publisher'] = Comic\Series::publisher($tgroup);
-                $Properties['Creators']  = implode(', ', Comic\Series::creatorList($tgroup));
+                // COMIC-ONLY: the comic form shows the details of the series.
+                $Properties = [...$Properties, ...Comic\Upload::seriesFormValues($tgroup)];
             }
         }
     } elseif ($requestId) {

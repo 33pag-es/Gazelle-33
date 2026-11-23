@@ -61,6 +61,8 @@ final class ComicEditTest extends TestCase {
             'issue_start' => '2',
             'scanner'     => 'After',
             'format'      => 'CBR',
+            'comic_source' => 'scan',
+            'series_type' => 'limited-series',
             'tags'        => 'phpunit.comic.edit',
             'desc'        => 'A replaced series description.',
         ];
@@ -103,10 +105,11 @@ final class ComicEditTest extends TestCase {
             'issue_start' => '7',
             'issue_end'   => '9',
             'format'      => 'pdf',
+            'comic_source' => 'digital',
         ];
         $issue = Comic\Upload::issueProperties($post);
-        $this->assertSame(7, $issue['issue_start'], 'edit-issue-start');
-        $this->assertSame(9, $issue['issue_end'], 'edit-issue-end');
+        $this->assertSame('7', $issue['issue_start'], 'edit-issue-start');
+        $this->assertSame('9', $issue['issue_end'], 'edit-issue-end');
         $this->assertTrue($issue['pack'], 'edit-issue-pack');
         $this->assertSame('PDF', $issue['format'], 'edit-issue-format');
     }

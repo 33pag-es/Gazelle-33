@@ -70,7 +70,13 @@ final class ComicCheckedTest extends TestCase {
         );
         $this->tgroupList[] = $tgroup;
         $torrent = Helper::makeTorrentComic($tgroup, $this->user, issueStart: 4, scanner: 'Zone-Empire', format: 'CBZ');
-        $same    = ['issue_start' => '4', 'scanner' => 'Zone-Empire', 'format' => 'CBZ', 'release_desc' => 'new notes'];
+        $same    = [
+            'issue_start'  => '4',
+            'scanner'      => 'Zone-Empire',
+            'format'       => 'CBZ',
+            'comic_source' => 'digital',
+            'release_desc' => 'new notes',
+        ];
         $changed = [...$same, 'issue_start' => '5'];
 
         $this->assertFalse(

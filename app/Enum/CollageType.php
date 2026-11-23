@@ -13,6 +13,7 @@ enum CollageType: int {
     case artist      = 7;
     case award       = 8;
     case series      = 9;
+    case storyArc    = 10; // COMIC-ONLY
 
     public function label(): string {
         return match ($this) {
@@ -25,6 +26,7 @@ enum CollageType: int {
             self::personal    => 'Personal',
             self::series      => 'Series',
             self::staffPick   => 'Staff picks',
+            self::storyArc    => 'Story Arc',
             self::theme       => 'Theme',
         };
     }

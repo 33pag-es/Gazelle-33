@@ -1,9 +1,7 @@
 {# COMIC-ONLY: one comic issue row. #}
 {% set issue = torrent.issueLabel ?: (
-    torrent.issueStart is not null
-        ? (torrent.issueEnd is not null and torrent.issueEnd > torrent.issueStart
-            ? torrent.issueStart ~ '–' ~ torrent.issueEnd
-            : torrent.issueStart)
+    torrent.issueNumber is not null
+        ? (torrent.isPack ? torrent.issueNumber ~ '–' ~ torrent.issueNumberEnd : torrent.issueNumber)
         : '–'
 ) %}
     <tr class="torrent_row groupid_{{ tgroup.id }}" id="torrent{{ torrent.id }}">
@@ -25,8 +23,17 @@
                 <button class="brackets" type="submit">{{ torrent.isChecked ? 'Uncheck' : 'Check' }}</button>
             </form>
 {% endif %}
+{% for entry in collect_list %}
+{%  if loop.first %}
+            <br><span class="small">Collects
+{%  endif %}
+                <a href="{{ entry.tgroup.location }}">{{ entry.tgroup.name }}</a> {{ entry.range }}{% if not loop.last %}, {% else %}</span>{% endif %}
+
+{% endfor %}
         </td>
         <td>{{ issue }}</td>
+        <td class="nobr">{{ torrent.releaseDate ?: '–' }}</td>
+        <td>{{ torrent.comicSource ? torrent.comicSource.label : '–' }}</td>
         <td>{{ torrent.scanner ?: '–' }}</td>
         <td>{{ torrent.format ?: '–' }}</td>
         <td>{% if torrent.isChecked %}<strong class="important_text">CHECKED</strong>{% else %}<span class="min_padding">UNCHECKED</span>{% endif %}</td>

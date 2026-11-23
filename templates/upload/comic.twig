@@ -1,5 +1,5 @@
 {# COMIC-ONLY #}
-{% from 'macro/form.twig' import autocomplete, selected %}
+{% from 'macro/form.twig' import autocomplete, checked, disabled, selected %}
 {% set ro = series_locked ? ' readonly' : '' %}
 <table id="form-comic-upload" cellpadding="3" cellspacing="1" border="0" class="layout border slice" width="100%">
 {% include 'upload/alert.twig' %}
@@ -22,37 +22,111 @@
         <td><input type="text" id="title" name="title" size="60" value="{{ torrent.Title }}"{{ ro }}></td>
     </tr>
     <tr>
+        <td class="label">Series type:</td>
+        <td>
+{% if series_locked %}
+            <input type="hidden" name="series_type" value="{{ torrent.SeriesType }}">
+{% endif %}
+            <select id="series_type" name="series_type"{{ disabled(series_locked) }}>
+                <option value="">---</option>
+{% for type in enum_cases('Gazelle\\Enum\\SeriesType') %}
+                <option value="{{ type.value }}"{{ selected(type.value == torrent.SeriesType) }}>{{ type.label }}</option>
+{% endfor %}
+            </select>
+            <span class="small">Monthly comics are Single Issue. A line of trade paperbacks, hardcovers or omnibuses is its own series, separate from the issues it collects. Annuals are their own series too.</span>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">Status:</td>
+        <td>
+{% if series_locked %}
+            <input type="hidden" name="series_status" value="{{ torrent.SeriesStatus }}">
+{% endif %}
+            <select id="series_status" name="series_status"{{ disabled(series_locked) }}>
+                <option value="">Unknown</option>
+{% for status in enum_cases('Gazelle\\Enum\\SeriesStatus') %}
+                <option value="{{ status.value }}"{{ selected(status.value == torrent.SeriesStatus) }}>{{ status.label }}</option>
+{% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
         <td class="label">Publisher:</td>
         <td><input type="text" id="publisher" name="publisher" size="60" value="{{ torrent.Publisher }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}></td>
     </tr>
     <tr>
-        <td class="label">Creators:</td>
+        <td class="label">Imprint (optional):</td>
+        <td><input type="text" id="imprint" name="imprint" size="60" value="{{ torrent.Imprint }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}>
+            <span class="small">The publishing line, such as Vertigo at DC.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Language:</td>
         <td>
-            <input type="text" id="creators" name="creators[]" size="60" value="{{ torrent.Creators }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}>
-            <span class="small">Separate multiple creators with commas.</span>
+{% if series_locked %}
+            <input type="hidden" name="language" value="{{ torrent.Language }}">
+{% endif %}
+            <select id="language" name="language"{{ disabled(series_locked) }}>
+{% for code, name in constant('COMIC_LANGUAGE') %}
+                <option value="{{ code }}"{{ selected(code == (torrent.Language ?? constant('COMIC_LANGUAGE_DEFAULT'))) }}>{{ name }}</option>
+{% endfor %}
+            </select>
         </td>
+    </tr>
+{% for role in enum_cases('Gazelle\\Enum\\CreatorRole') %}
+{%  if role.value != 'creator' or torrent.CreatorRoles.creator is defined %}
+    <tr>
+        <td class="label">{{ role.value == 'creator' ? 'Creators (no role given)' : role.label }}:</td>
+        <td><input type="text" class="comic_creator" name="creators[{{ role.value }}]" size="60" value="{{ torrent.CreatorRoles[role.value] ?? '' }}"{{ ro }}{% if not series_locked %}{{ autocomplete(user, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}{% endif %}></td>
+    </tr>
+{%  endif %}
+{% endfor %}
+    <tr>
+        <td class="label"></td>
+        <td><span class="small">Enter at least one creator. Separate several names with commas. Use Artist when one person drew the book and the pencils and inks are not credited separately.</span></td>
     </tr>
     <tr>
         <td class="label">Year:</td>
-        <td><input type="number" id="year" name="year" size="5" max="{{ 'now'|date('Y') + 1 }}" value="{{ torrent.Year }}"{{ ro }}></td>
+        <td><input type="number" id="year" name="year" size="5" max="{{ 'now'|date('Y') + 1 }}" value="{{ torrent.Year }}"{{ ro }}>
+            <span class="small">The year the series began.</span></td>
     </tr>
     <tr>
-        <td class="label">Issue start:</td>
-        <td><input type="number" id="issue_start" name="issue_start" size="8" min="0" max="100000" value="{{ torrent.IssueStart }}"></td>
+        <td class="label">Issue:</td>
+        <td><input type="text" id="issue_start" name="issue_start" size="8" maxlength="16" value="{{ torrent.IssueStart }}">
+            <span class="small">The number as printed: 1, 0, -1, ½, 1.MU. For a collected edition, the volume number.</span></td>
     </tr>
     <tr>
-        <td class="label">Issue end:</td>
-        <td><input type="number" id="issue_end" name="issue_end" size="8" min="0" max="100000" value="{{ torrent.IssueEnd }}">
-            <span class="small">Leave empty for a single issue.</span></td>
+        <td class="label">Through issue:</td>
+        <td><input type="text" id="issue_end" name="issue_end" size="8" maxlength="16" value="{{ torrent.IssueEnd }}">
+            <span class="small">Only for a pack of several issues: the last issue in it.</span></td>
     </tr>
     <tr>
         <td class="label">Issue label:</td>
         <td><input type="text" id="issue_label" name="issue_label" size="32" value="{{ torrent.IssueLabel }}">
-            <span class="small">Use for specials, annuals, or any issue without a number.</span></td>
+            <span class="small">Shown instead of the number. Use it for an issue that has no number.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Release date (optional):</td>
+        <td><input type="date" id="release_date" name="release_date" value="{{ torrent.ReleaseDate }}">
+            <span class="small">The day the issue went on sale.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Source:</td>
+        <td>
+{% for source in enum_cases('Gazelle\\Enum\\ComicSource') %}
+            <label><input type="radio" name="comic_source" value="{{ source.value }}"{{ checked(source.value == torrent.Source) }}> {{ source.label }}</label>&nbsp;&nbsp;
+{% endfor %}
+            <span class="small">Digital is a file sold by the publisher or a store. Scan is made from a printed copy.</span>
+        </td>
     </tr>
     <tr>
         <td class="label">Scanner:</td>
-        <td><input type="text" id="scanner" name="scanner" size="40" value="{{ torrent.Scanner }}"></td>
+        <td><input type="text" id="scanner" name="scanner" size="40" value="{{ torrent.Scanner }}">
+            <span class="small">The person or group who made the files.</span></td>
+    </tr>
+    <tr>
+        <td class="label">Collects (optional):</td>
+        <td><textarea id="collects" name="collects" cols="60" rows="3">{{ torrent.Collects }}</textarea>
+            <br><span class="small">For a collected edition: the issues it reprints, one series per line. Write the series link or id, then the issues: <code>1234 1-6</code>.</span></td>
     </tr>
     <tr>
         <td class="label">Format:</td>

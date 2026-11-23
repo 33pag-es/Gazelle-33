@@ -34,6 +34,7 @@ class Torrent extends AbstractAPI {
             'DisplayArtists' => $tgroup->artistRole()?->text() ?? '',
             'Publisher'      => \Gazelle\Comic\Series::publisher($tgroup),
             'Creators'       => \Gazelle\Comic\Series::creatorList($tgroup),
+            ...$this->seriesPayload($tgroup),
             'Media'          => $torrent->media(),
             'Format'         => $torrent->format(),
             'IssueStart'     => $torrent->issueStart(),
@@ -42,6 +43,18 @@ class Torrent extends AbstractAPI {
             'Pack'           => $torrent->isPack(),
             'Scanner'        => $torrent->scanner(),
             'Checked'        => $torrent->isChecked(),
+            'IssueNumber'    => $torrent->issueNumber(),
+            'IssueNumberEnd' => $torrent->issueNumberEnd(),
+            'ReleaseDate'    => $torrent->releaseDate(),
+            'ComicSource'    => $torrent->comicSource()?->value,
+            'Collects'       => array_map(
+                fn (array $range) => [
+                    'GroupID'    => $range['tgroup_id'],
+                    'IssueStart' => $range['issue_start'],
+                    'IssueEnd'   => $range['issue_end'],
+                ],
+                \Gazelle\Comic\Collect::rangeList($torrent),
+            ),
             'HasLog'         => $torrent->hasLog(),
             'HasLogDB'       => $torrent->hasLogDb(),
             'LogScore'       => $torrent->logScore(),
@@ -66,6 +79,18 @@ class Torrent extends AbstractAPI {
             'DisplayArtists' => $tgroup->artistRole()?->text() ?? '',
             'Publisher'      => \Gazelle\Comic\Series::publisher($tgroup),
             'Creators'       => \Gazelle\Comic\Series::creatorList($tgroup),
+            ...$this->seriesPayload($tgroup),
+        ];
+    }
+
+    // COMIC-ONLY: how the series is classified.
+    protected function seriesPayload(\Gazelle\TGroup $tgroup): array {
+        return [
+            'SeriesType'   => \Gazelle\Comic\Series::type($tgroup)?->value,
+            'SeriesStatus' => \Gazelle\Comic\Series::status($tgroup)?->value,
+            'Imprint'      => \Gazelle\Comic\Series::imprint($tgroup),
+            'Language'     => \Gazelle\Comic\Series::language($tgroup),
+            'CreatorRoles' => \Gazelle\Comic\Series::creatorRoleList($tgroup),
         ];
     }
 }

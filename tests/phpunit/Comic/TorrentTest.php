@@ -48,7 +48,6 @@ final class ComicTorrentTest extends TestCase {
             issueEnd:   10,
             scanner:    'Zone-Empire',
             format:     'CBZ',
-            pack:       true,
         );
         $torrent = new Manager\Torrent()->findById($torrent->id);
 
@@ -107,7 +106,7 @@ final class ComicTorrentTest extends TestCase {
         $torrent = new Manager\Torrent()->findById($torrent->id);
 
         $this->assertSame(
-            '&lt;b&gt;Annual&lt;/b&gt; / &lt;img src=x onerror=alert(1)&gt; / CBZ',
+            '&lt;b&gt;Annual&lt;/b&gt; / Digital / &lt;img src=x onerror=alert(1)&gt; / CBZ',
             $torrent->shortLabel(),
             'label-escaped',
         );

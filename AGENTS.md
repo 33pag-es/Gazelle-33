@@ -221,22 +221,35 @@ Never hardcode `'Comics'` or `7` in shared code; use the constants.
 Schema is additive; music columns stay:
 
 - `torrents_group.PublisherID` -> `publisher.PublisherID`
+- `torrents_group.series_type`, `series_status`, `imprint_id`, `language`
 - `publisher(PublisherID, Name, Created)`
+- `imprint(imprint_id, publisher_id, name, created)`
 - `creator(CreatorID, Name, Created)`
-- `series_creator(GroupID, CreatorID, Sequence)`
+- `series_creator(GroupID, CreatorID, role, Sequence)`
 - `torrents.IssueStart`, `IssueEnd`, `IssueLabel`, `Scanner`, `Pack`,
-  `Checked`, `CheckedBy`, `CheckedAt`
-- `deleted_torrents` mirrors the comic torrent columns
+  `Checked`, `CheckedBy`, `CheckedAt`, `issue_number`,
+  `issue_number_end`, `issue_sort`, `release_date`, `comic_source`
+- `torrent_collect(torrent_collect_id, torrent_id, tgroup_id,
+  issue_start, issue_end, created)`
+- `deleted_torrents` and `deleted_torrents_group` mirror the comic columns
+
+New tables and columns follow `docs/CodingStandards.txt`: singular table
+names, `<table>_id` keys, lower-case column names, ENUMs with descriptive
+values backed by a PHP enum in `app/Enum/`.
 
 Semantics:
 
-- Group title = series title; `Year` = series start year.
-- Issue identity: `IssueLabel` if present; otherwise `IssueStart`, plus
-  `IssueEnd` when the torrent is a pack.
-- `Pack = (IssueEnd IS NOT NULL AND IssueEnd > IssueStart)`.
+- Group title = series title; `Year` = series start year. A series is one
+  run in one format: identity is title + year + publisher + series type
+  (`docs/COMICS.md` § Series organisation).
+- Issue identity: `IssueLabel` if present; otherwise `issue_number`, plus
+  `issue_number_end` when the torrent is a pack. Issue numbers are text
+  as printed; `IssueStart`/`IssueEnd`/`Pack`/`issue_sort` are derived by
+  `Comic\Torrent::setIssue()`. Never write them directly.
+- `Pack = (issue_number_end sorts after issue_number)`.
 - `Checked` is staff-only. Toggling requires `torrents_edit`; write an
   audit entry with `Torrent::logger()->torrent()`.
-- Torrent label: `issue (scanner) [format]`, with `/ Pack` when pack.
+- Torrent label: `issue / source / scanner / format`, with `Pack` when pack.
 - Torrent filename: `series - issue (scanner) [format]`.
 - Music fields (`Media`, `Encoding`, `Remaster*`, `Scene`, `HasLog`,
   `HasCue`, `LogScore`) remain nullable and unused. Do not reuse them for

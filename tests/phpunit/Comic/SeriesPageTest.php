@@ -54,9 +54,14 @@ final class ComicSeriesPageTest extends TestCase {
         $twig = Util\Twig::factory(new Manager\User());
 
         $header = $twig->render('comic/series-header.twig', [
-            'collage_list' => [],
-            'creator_list' => [$creatorName],
-            'publisher'    => $publisherName,
+            'collage_list'      => [],
+            'collected_in'      => [],
+            'creator_role_list' => Comic\Series::creatorRoleList($tgroup),
+            'imprint'           => null,
+            'language'          => 'English',
+            'publisher'         => $publisherName,
+            'series_status'     => null,
+            'series_type'       => null,
             'tag_undo'     => null,
             'tgroup'       => $tgroup,
             'viewer'       => $this->user,
@@ -68,6 +73,7 @@ final class ComicSeriesPageTest extends TestCase {
         $row = $twig->render('comic/torrent-row.twig', [
             'torrent' => $torrent,
             'tgroup'  => $tgroup,
+            'collect_list' => [],
             'viewer'  => $this->user,
         ]);
         $this->assertStringContainsString('Zone-Empire', $row, 'series-page-scanner');

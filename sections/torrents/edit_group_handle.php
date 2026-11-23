@@ -173,25 +173,13 @@ if ($tgroup->dirty()) {
     }
 }
 
-// COMIC-ONLY: publisher and creators live outside torrents_group, so they
-// are written and logged after the group fields.
+// COMIC-ONLY: publisher, imprint, type, status, language and creators are
+// written and logged after the group fields.
 if ($tgroup->categoryId() === CATEGORY_COMIC && isset($_POST['publisher'])) {
     try {
-        $publisher   = Comic\Upload::publisherName($_POST['publisher']);
-        $creatorList = Comic\Upload::creatorList($_POST['creators'] ?? []);
+        $seriesLog = Comic\Upload::editSeries($tgroup, $_POST);
     } catch (\InvalidArgumentException $e) {
         Error400::error($e->getMessage());
-    }
-    $seriesLog   = [];
-    $oldPublisher = Comic\Series::publisher($tgroup);
-    if ($publisher !== $oldPublisher) {
-        Comic\Series::setPublisher($tgroup, $publisher);
-        $seriesLog[] = "publisher “{$oldPublisher}” → “{$publisher}”";
-    }
-    $oldCreatorList = Comic\Series::creatorList($tgroup);
-    if ($creatorList !== $oldCreatorList) {
-        Comic\Series::setCreators($tgroup, $creatorList);
-        $seriesLog[] = 'creators “' . implode(', ', $oldCreatorList) . '” → “' . implode(', ', $creatorList) . '”';
     }
     if ($seriesLog) {
         $tgroup->refresh();

@@ -17,6 +17,7 @@ echo json_encode([
     'suggestions' => match ($_GET['type'] ?? '') {
         'publisher' => Comic\Publisher::autocomplete($query),
         'creator'   => Comic\Creator::autocomplete($query),
+        'imprint'   => Comic\Imprint::autocomplete($query),
         default     => [],
     },
 ]);

@@ -77,6 +77,18 @@ class Torrent extends \Gazelle\Json {
                 'scanner'       => $torrent->scanner(),
                 'pack'          => $torrent->isPack(),
                 'checked'       => $torrent->isChecked(),
+                'issueNumber'   => $torrent->issueNumber(),
+                'issueNumberEnd' => $torrent->issueNumberEnd(),
+                'releaseDate'   => $torrent->releaseDate(),
+                'comicSource'   => $torrent->comicSource()?->value,
+                'collects'      => array_map(
+                    fn (array $range) => [
+                        'groupId'    => $range['tgroup_id'],
+                        'issueStart' => $range['issue_start'],
+                        'issueEnd'   => $range['issue_end'],
+                    ],
+                    \Gazelle\Comic\Collect::rangeList($torrent),
+                ),
             ]
         );
     }

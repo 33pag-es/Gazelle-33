@@ -222,12 +222,13 @@ class Helper {
     public static function makeTorrentComic(
         TGroup  $tgroup,
         User    $user,
-        ?int    $issueStart = 1,
-        ?int    $issueEnd   = null,
+        int|string|null $issueStart = 1,
+        int|string|null $issueEnd   = null,
         ?string $issueLabel = null,
         ?string $scanner    = 'Zone-Empire',
         string  $format     = 'CBZ',
-        bool    $pack       = false,
+        ?\Gazelle\Enum\ComicSource $source = \Gazelle\Enum\ComicSource::digital,
+        ?string $releaseDate = null,
     ): Torrent {
         $torrent = new \Gazelle\Manager\Torrent()->create(
             tgroup:                  $tgroup,
@@ -246,7 +247,15 @@ class Helper {
             remasterRecordLabel:     '',
             remasterCatalogueNumber: '',
         );
-        \Gazelle\Comic\Torrent::setIssue($torrent, $issueStart, $issueEnd, $issueLabel, $scanner, $pack);
+        \Gazelle\Comic\Torrent::setIssue(
+            $torrent,
+            $issueStart === null ? null : (string)$issueStart,
+            $issueEnd === null ? null : (string)$issueEnd,
+            $issueLabel,
+            $scanner,
+            $releaseDate,
+            $source,
+        );
         return $torrent;
     }
 

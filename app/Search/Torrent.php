@@ -64,7 +64,10 @@ class Torrent {
         'checked' => false,
         'pack' => false,
         'issue_start' => false,
-        'issue_end' => false];
+        'issue_end' => false,
+        'series_type' => false,
+        'series_status' => false,
+        'comic_source' => false];
 
     /**
      * List of fields that can be used for fulltext searches
@@ -78,7 +81,9 @@ class Torrent {
         'filelist' => 1,
         'format' => 1,
         'groupname' => 1,
+        'imprintname' => 1,
         'issue' => 1,
+        'language' => 1,
         'media' => 1,
         'publishername' => 1,
         'recordlabel' => 1,
@@ -478,6 +483,24 @@ class Torrent {
                 $this->UsedTorrentAttrs[$Attribute] = (int)$Value;
                 break;
 
+            case 'series_type':
+            case 'series_status':
+            case 'comic_source':
+                // COMIC-ONLY: the index stores the position of the value in the MySQL ENUM
+                $case = is_string($Value) ? match ($Attribute) {
+                    'series_type'   => \Gazelle\Enum\SeriesType::tryFrom($Value),
+                    'series_status' => \Gazelle\Enum\SeriesStatus::tryFrom($Value),
+                    'comic_source'  => \Gazelle\Enum\ComicSource::tryFrom($Value),
+                } : null;
+                if ($case === null) {
+                    return;
+                }
+                $this->SphQL->where($Attribute, $case->index());
+                if ($Attribute === 'comic_source') {
+                    $this->UsedTorrentAttrs[$Attribute] = $case;
+                }
+                break;
+
             default:
                 if (is_string($Value) && self::$Attributes[$Attribute] !== false) {
                     // Check if the submitted value can be converted to a valid one
@@ -514,10 +537,13 @@ class Torrent {
             $this->search_filelist($Term);
         } elseif ($Field === 'taglist') {
             $this->search_taglist($Term);
-        } elseif ($Field === 'issue' && preg_match('/^\d+$/', $Term)) {
-            // COMIC-ONLY: numeric issues are attributes; single-digit values
-            // are below Sphinx min_word_len and would never match the field.
-            $this->process_attribute('issue_start', (int)$Term);
+        } elseif ($Field === 'issue' && ($issue = \Gazelle\Comic\Torrent::searchNumber($Term))) {
+            // COMIC-ONLY: issue numbers are matched on the whole-number
+            // attribute, then exactly on the number as printed; single
+            // characters and ½ would never match the full-text field.
+            $this->process_attribute('issue_start', $issue['start']);
+            unset($this->UsedTorrentAttrs['issue_start']);
+            $this->UsedTorrentAttrs['issue_number'] = $issue['number'];
         } else {
             $this->add_field($Field, $Term);
         }
@@ -830,6 +856,18 @@ class Torrent {
         if (
             isset($this->UsedTorrentAttrs['issue_end'])
             && (int)$this->UsedTorrentAttrs['issue_end'] !== $torrent->issueEnd()
+        ) {
+            return false;
+        }
+        if (
+            isset($this->UsedTorrentAttrs['issue_number'])
+            && $this->UsedTorrentAttrs['issue_number'] !== $torrent->issueNumber()
+        ) {
+            return false;
+        }
+        if (
+            isset($this->UsedTorrentAttrs['comic_source'])
+            && $this->UsedTorrentAttrs['comic_source'] !== $torrent->comicSource()
         ) {
             return false;
         }

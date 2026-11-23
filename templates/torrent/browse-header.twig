@@ -50,6 +50,52 @@
                 <input type="search" spellcheck="false" size="40" name="publishername" class="inputtext smaller" value="{{ input.publishername }}">
             </td>
         </tr>
+        <tr id="comic_imprint">
+            <td class="label">Imprint:</td>
+            <td colspan="3" class="ft_imprintname">
+                <input type="search" spellcheck="false" size="40" name="imprintname" class="inputtext smaller" value="{{ input.imprintname }}">
+            </td>
+        </tr>
+        <tr id="comic_series_type">
+            <td class="label">Series type:</td>
+            <td class="ft_series_type">
+                <select name="series_type">
+                    <option value="">Series type</option>
+{%  for type in enum_cases('Gazelle\\Enum\\SeriesType') %}
+                    <option value="{{ type.value }}"{{ selected(type.value == input.series_type) }}>{{ type.label }}</option>
+{%  endfor %}
+                </select>
+            </td>
+            <td class="label">Status:</td>
+            <td class="ft_series_status">
+                <select name="series_status">
+                    <option value="">Status</option>
+{%  for status in enum_cases('Gazelle\\Enum\\SeriesStatus') %}
+                    <option value="{{ status.value }}"{{ selected(status.value == input.series_status) }}>{{ status.label }}</option>
+{%  endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr id="comic_language">
+            <td class="label">Language:</td>
+            <td class="ft_language">
+                <select name="language">
+                    <option value="">Language</option>
+{%  for code, name in constant('COMIC_LANGUAGE') %}
+                    <option value="{{ code }}"{{ selected(code == input.language) }}>{{ name }}</option>
+{%  endfor %}
+                </select>
+            </td>
+            <td class="label">Source:</td>
+            <td class="ft_comic_source">
+                <select name="comic_source">
+                    <option value="">Source</option>
+{%  for source in enum_cases('Gazelle\\Enum\\ComicSource') %}
+                    <option value="{{ source.value }}"{{ selected(source.value == input.comic_source) }}>{{ source.label }}</option>
+{%  endfor %}
+                </select>
+            </td>
+        </tr>
         <tr id="comic_issue">
             <td class="label">Issue:</td>
             <td class="ft_issue">

@@ -492,7 +492,7 @@ if ($isComicUpload) {
     if (is_null($tgroup)) {
         $publisher = Comic\Publisher::softCreate($comic['publisher']);
         $tgroup = Comic\Series::findByTitlePublisherYear(
-            $comic['title'], $comic['year'], $publisher->id
+            $comic['title'], $comic['year'], $publisher->id, $comic['series_type']
         );
     }
 }

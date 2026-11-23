@@ -46,6 +46,10 @@ if (!isset($_POST['confirm'])) {
 
 authorize();
 
+if ($old->categoryId() === CATEGORY_COMIC) {
+    // COMIC-ONLY: collected editions that reprint the old series now reprint the target
+    Comic\Collect::moveSeries($old, $new);
+}
 $tgMan->merge($old, $new, $Viewer);
 
 header("Location: {$new->location()}");

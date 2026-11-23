@@ -8,7 +8,7 @@ use OrpheusNET\BencodeTorrent\BencodeTorrent;
 
 class Torrent extends TorrentAbstract {
     final public const tableName               = 'torrents';
-    final public const CACHE_KEY               = 't_v4_%d'; // COMIC-ONLY
+    final public const CACHE_KEY               = 't_v5_%d'; // COMIC-ONLY
     final public const CACHE_FOLDERNAME        = 'foldername_%s';
     final public const CACHE_KEY_PEERLIST_PAGE = 'peerlist_page_%d_%d';
     final public const USER_RECENT_UPLOAD      = 'u_recent_up_%d';
@@ -40,6 +40,11 @@ class Torrent extends TorrentAbstract {
                 t.Checked,
                 t.CheckedBy,
                 t.CheckedAt,
+                t.issue_number,
+                t.issue_number_end,
+                t.issue_sort,
+                t.release_date,
+                t.comic_source,
                 t.Encoding,
                 t.RemasterYear,
                 t.RemasterTitle,
@@ -436,6 +441,11 @@ class Torrent extends TorrentAbstract {
         );
         self::$db->prepared_query("
             DELETE FROM ratelimit_torrent WHERE torrent_id = ?
+            ", $this->id
+        );
+        // COMIC-ONLY: constraints are relaxed here, so the cascade does not run
+        self::$db->prepared_query("
+            DELETE FROM torrent_collect WHERE torrent_id = ?
             ", $this->id
         );
 

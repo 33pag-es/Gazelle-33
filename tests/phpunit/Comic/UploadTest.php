@@ -12,15 +12,17 @@ final class ComicUploadTest extends TestCase {
      */
     private function validPost(): array {
         return [
-            'title'       => 'Batman',
-            'publisher'   => 'DC',
-            'creators'    => ['Tom King', 'Mitch Gerads'],
-            'year'        => '2024',
-            'issue_start' => '1',
-            'issue_end'   => '10',
-            'issue_label' => '',
-            'scanner'     => 'Zone-Empire',
-            'format'      => 'cbz',
+            'title'        => 'Batman',
+            'publisher'    => 'DC',
+            'series_type'  => 'single-issue',
+            'creators'     => ['Tom King', 'Mitch Gerads'],
+            'year'         => '2024',
+            'issue_start'  => '1',
+            'issue_end'    => '10',
+            'issue_label'  => '',
+            'scanner'      => 'Zone-Empire',
+            'comic_source' => 'digital',
+            'format'       => 'cbz',
             'tags'        => 'superhero, batman',
             'desc'        => 'A comic series description.',
             'release_desc' => 'A release description.',
@@ -34,8 +36,8 @@ final class ComicUploadTest extends TestCase {
         $this->assertSame('DC', $properties['publisher'], 'upload-publisher');
         $this->assertSame(['Tom King', 'Mitch Gerads'], $properties['creators'], 'upload-creators');
         $this->assertSame(2024, $properties['year'], 'upload-year');
-        $this->assertSame(1, $properties['issue_start'], 'upload-issue-start');
-        $this->assertSame(10, $properties['issue_end'], 'upload-issue-end');
+        $this->assertSame('1', $properties['issue_start'], 'upload-issue-start');
+        $this->assertSame('10', $properties['issue_end'], 'upload-issue-end');
         $this->assertNull($properties['issue_label'], 'upload-issue-label');
         $this->assertSame('Zone-Empire', $properties['scanner'], 'upload-scanner');
         $this->assertTrue($properties['pack'], 'upload-pack');
@@ -70,7 +72,7 @@ final class ComicUploadTest extends TestCase {
         $post['issue_end']   = '0';
 
         $properties = Comic\Upload::properties($post);
-        $this->assertSame(0, $properties['issue_start'], 'upload-issue-zero');
+        $this->assertSame('0', $properties['issue_start'], 'upload-issue-zero');
         $this->assertFalse($properties['pack'], 'upload-issue-zero-pack');
     }
 

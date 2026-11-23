@@ -178,13 +178,20 @@ Fields:
 | Field | POST key | Required | Validation | Storage |
 |---|---|---|---|---|
 | Series title | `title` | yes | 2-200 chars | `torrents_group.Name` |
+| Series type | `series_type` | yes for a new series | a `Gazelle\Enum\SeriesType` value | `torrents_group.series_type` |
+| Status | `series_status` | no | a `Gazelle\Enum\SeriesStatus` value | `torrents_group.series_status` |
 | Publisher | `publisher` | yes | 2-255 chars; autocomplete existing or create | `publisher.Name`, `torrents_group.PublisherID` |
-| Creators | `creators[]` | yes, at least 1 | 1-255 chars each; dedupe; max 20 | `creator.Name`, `series_creator` |
+| Imprint | `imprint` | no | 2-255 chars; belongs to the publisher | `imprint.name`, `torrents_group.imprint_id` |
+| Language | `language` | no, default `en` | a key of `COMIC_LANGUAGE` | `torrents_group.language` |
+| Creators | `creators[<role>]` | yes, at least 1 in any role | role is a `Gazelle\Enum\CreatorRole` value; comma-separated names, 1-255 chars each; dedupe; max 20 per role. `creators[]` without a role is stored as role `creator` | `creator.Name`, `series_creator` |
 | Year | `year` | yes | 1900..current year+1 | `torrents_group.Year` |
-| Issue start | `issue_start` | yes unless `issue_label` | integer 0..100000 | `torrents.IssueStart` |
-| Issue end | `issue_end` | no | integer >= `issue_start`, or empty | `torrents.IssueEnd` |
+| Issue | `issue_start` | yes unless `issue_label` | the number as printed, § Series organisation | `torrents.issue_number` |
+| Through issue | `issue_end` | no | an issue number that sorts at or after `issue_start` | `torrents.issue_number_end` |
 | Issue label | `issue_label` | no | 1-32 chars | `torrents.IssueLabel` |
+| Release date | `release_date` | no | `YYYY-MM-DD`, 1900..next year | `torrents.release_date` |
+| Source | `comic_source` | yes | `digital` or `scan` | `torrents.comic_source` |
 | Scanner | `scanner` | no | 1-100 chars | `torrents.Scanner` |
+| Collects | `collects` | no | one line per run: series link or id, then `1-6` or `7`; max 50 lines | `torrent_collect` |
 | Format | `format` | yes | one of `FORMAT` | `torrents.Format` |
 | Tags | `tags` | yes | existing tag rules, 2-200 chars | `torrents_tags` |
 | Cover | `image` | no | `Image::fromUntrusted()` | `torrents_group.WikiImage` |
@@ -194,7 +201,9 @@ Fields:
 
 Derived values:
 
-- `Pack = (issue_end is present and issue_end > issue_start)`.
+- `Pack = (issue_end sorts after issue_start)`.
+- `IssueStart`, `IssueEnd` = the whole-number part of the two issue
+  numbers; `issue_sort` = where `issue_start` sorts.
 - `Checked = 0`, `CheckedBy = NULL`, `CheckedAt = NULL`.
 - `Media = ''`, `Encoding = ''`, `Scene = 0`, `HasLog = 0`,
   `HasCue = 0`, `HasLogDB = 0`, `LogScore = 0`, `LogChecksum = 0`,
@@ -249,14 +258,14 @@ Route: `torrents.php?id=<groupid>`.
 `sections/torrents/details.php` branches when
 `$tgroup->categoryName() === 'Comics'` and renders:
 
-- `templates/comic/series-header.twig`: cover, series title, year,
-  publisher, creator links, tags, bookmark, subscribe, collage add.
+- `templates/comic/series-header.twig`: series title, type, year, status,
+  publisher, imprint, language, creators by role, “Collected in”, tags,
+  collage add.
 - `templates/comic/series-torrents.twig`: table columns
-  `Name | Issue | Scanner | Format | Checked | Files | Size | Snatches |
-  Seeders | Leechers`.
-- `templates/comic/torrent-row.twig`: label
-  `issue (scanner) [format]` plus `/ Pack`; `CHECKED`/`UNCHECKED` badge;
-  download/report/edit links.
+  `Name | Issue | Released | Source | Scanner | Format | Checked | Files |
+  Size | Snatches | Seeders | Leechers`, issues in number order.
+- `templates/comic/torrent-row.twig`: `CHECKED`/`UNCHECKED` badge;
+  download/report/edit links; what a collected edition collects.
 - `templates/comic/series-description.twig` and the existing comment
   thread.
 
@@ -328,10 +337,78 @@ All repair tools require `torrents_edit`.
   `Comic\Series::splitFromTorrent()` creates a comic series that starts
   with the publisher, creators, and tags of the old one, and refuses a
   title/year/publisher that already exists.
-- Autocomplete: `torrents.php?action=autocomplete_comic&type=publisher|creator&query=`
-  returns up to 10 names by prefix (`Name LIKE 'query%'` on the unique
-  `Name` index; minimum 2 characters). Wired to `#publisher` and
-  `#creators` on the upload, torrent edit, and group edit forms.
+- Autocomplete: `torrents.php?action=autocomplete_comic&type=publisher|creator|imprint&query=`
+  returns up to 10 names by prefix (`Name LIKE 'query%'` on an index;
+  minimum 2 characters). Wired to `#publisher`, `#imprint` and the
+  `.comic_creator` role fields on the upload, torrent edit, and group edit
+  forms.
+
+## Series organisation
+
+The site follows the conventions of the comic databases (Metron, Comic
+Vine, the `ComicInfo.xml` schema). Added by
+`20261123000000_comic_standard.php`; new tables and columns follow
+`docs/CodingStandards.txt` (singular table, `<table>_id`, lower-case
+column names, descriptive ENUM values).
+
+- **A series is one run of a title in one format.** Its identity is title
+  + start year + publisher + type. The monthly issues, the trade
+  paperbacks, the hardcovers, the omnibuses and the annuals of one title
+  are separate series. `Comic\Series::findByTitlePublisherYear()` treats a
+  series whose type is not set as matching any type.
+- **Series type** (`torrents_group.series_type`, `Enum\SeriesType`):
+  `single-issue` (the monthly comic), `limited-series`, `one-shot`,
+  `annual`, `digital-chapters`, `graphic-novel`, `trade-paperback`,
+  `hardcover`, `omnibus`. `TGroup::text()` shows the type after the title
+  unless it is `single-issue`.
+- **Status** (`series_status`, `Enum\SeriesStatus`): `ongoing`,
+  `complete`, `cancelled`, `hiatus`, or not set.
+- **Imprint** (`imprint` table, `torrents_group.imprint_id`): a publishing
+  line of one publisher. Unique per publisher.
+- **Language** (`torrents_group.language`): ISO 639-1 code from
+  `COMIC_LANGUAGE`; default `COMIC_LANGUAGE_DEFAULT`.
+- **Creator roles** (`series_creator.role`, `Enum\CreatorRole`): `writer`,
+  `artist`, `penciller`, `inker`, `colorist`, `letterer`, `cover-artist`,
+  `editor`, and `creator` for a name with no stated role (every creator
+  entered before this migration). The key is series + creator + role.
+  `Series::creatorList()` names each creator once;
+  `Series::creatorRoleList()` groups them by role.
+- **Issue numbers are text** (`torrents.issue_number`,
+  `issue_number_end`): `1`, `0`, `-1`, `½`, `1.MU`, `23.1`. At most 16
+  characters, beginning with a digit (`Comic\Torrent::ISSUE_NUMBER_REGEXP`);
+  leading zeroes of a plain number are dropped. For a collected edition
+  the number is the volume. `issue_sort` (DECIMAL) is the leading number
+  of the text (`Comic\Torrent::issueSort()`), so `1.MU` sorts with `1` and
+  `½` between `0` and `1`. The torrent list of a group is ordered by
+  `issue_sort`, then `issue_number`, then `IssueLabel`; torrents with only
+  a label come last. `IssueStart`/`IssueEnd`/`Pack` are derived and kept
+  for the search attributes and the existing API keys.
+- **Release date** (`torrents.release_date`): the on-sale date of the
+  issue, optional.
+- **Source** (`torrents.comic_source`, `Enum\ComicSource`): `digital` or
+  `scan`; required on upload and edit, empty on torrents uploaded before.
+  It is part of the torrent label, and an uploader changing it withdraws
+  the checked state.
+- **Collects** (`torrent_collect`): a torrent of a collected edition lists
+  the runs of issues it reprints (`tgroup_id`, `issue_start`,
+  `issue_end`). The series page shows them under the torrent, and the
+  collected series shows “Collected in”. `Comic\Collect::moveSeries()`
+  keeps the links when a series is merged; removing a torrent removes its
+  rows.
+- **Story arcs and events**: collage category 10, “Story Arc”
+  (`COLLAGE`, `Enum\CollageType::storyArc`).
+
+The ENUM values of the four columns are the cases of the PHP enums in the
+same order, and the search index stores the position (`column + 0`).
+Append new values; never insert or reorder
+(`ComicStandardTest::testEnumMatchesColumn`).
+
+Access paths: the series page reads one group by primary key, its
+torrents by `GroupID`, `torrent_collect` by `torrent_id` (through the
+group's torrents) and by `tgroup_id` (both indexed), and `imprint` by
+primary key. Browse filters go through Manticore, not MySQL, so the new
+series columns carry no MySQL index. Imprint autocomplete is a prefix
+match on `imprint_name_idx`.
 
 ## Tag limit
 
@@ -426,10 +503,14 @@ phone shows the whole page scaled down instead of a wrapped header.
 `app/Search/Torrent.php` additions:
 
 - Fields: `series` (maps to `groupname`), `creatorname`, `publishername`,
-  `issue`, `scanner`, `format`, `taglist`, `description`, `filelist`.
-  `issue` uses `IssueLabel` when set, otherwise the numeric
-  `IssueStart`/`IssueEnd` range.
-- Attributes: `checked` (0/1), `pack` (0/1), `issue_start`, `issue_end`.
+  `imprintname`, `language`, `issue`, `scanner`, `format`, `taglist`,
+  `description`, `filelist`. `issue` holds the issue label and the issue
+  numbers as printed; a search for a plain number uses the `issue_start`
+  attribute instead.
+- Attributes: `checked` (0/1), `pack` (0/1), `issue_start`, `issue_end`,
+  `series_type`, `series_status`, `comic_source`. The last three are
+  filtered by enum value in the URL (`series_type=omnibus`) and stored as
+  the position of the value in the MySQL ENUM.
 - `searchstr` expands to `(groupname,publishername,creatorname,yearfulltext)`.
 - Keep the music fields and attributes in the class so upstream patches
   still apply; hide them in the comic UI.
@@ -487,7 +568,7 @@ Gate with `constant('SITE_FLAVOR') === 'comics'` or a dedicated
 | Music stats | `app/Stats/Torrent.php` | leave methods; do not call from comic templates |
 | Music contests | `sections/contest/*` | hide contest types that are music-only |
 | Featured album | `app/FeaturedAlbum.php` | hide for comics |
-| Collage artist/label/discography types | collage create/edit templates | hide those type options; keep Personal, Theme, Genre, Staff picks, Charts, Awards, Series |
+| Collage artist/label/discography types | collage create/edit templates | hide those type options; keep Personal, Theme, Genre, Staff picks, Charts, Awards, Series, Story Arc |
 | Music rules prose | `templates/rules/*.twig` | rewrite upload/tag/request/collage/forum sections for comics |
 | Rules wiki article | `wiki_articles` id `RULES_WIKI_PAGE_ID` (127), `INDEX_WIKI_PAGE_ID` (1), `SOURCE_FLAG_WIKI_PAGE_ID` (113) | seed comic rules via a new migration or admin edit; templates alone do not replace DB content |
 | Top 10 Last.fm / format | `sections/top10/*`, `templates/top10/*` | hide Last.fm and music format dropdown |
@@ -573,6 +654,7 @@ when a new upstream file is touched. Keep each diff minimal and marked.
 | `app/View.php` | hide music nav items, rename random group link | `// COMIC-ONLY` |
 | `app/Torrent.php` | comic filename | `// COMIC-ONLY` |
 | `app/TorrentDeleted.php` | comic deleted-torrent columns | `// COMIC-ONLY` |
+| `app/Enum/CollageType.php` | Story Arc collage category | `// COMIC-ONLY` |
 | `app/TorrentAbstract.php` | comic primary extensions, label/perfect-flac guards | `// COMIC-ONLY` |
 | `tests/helper.php` | comic test factories | `// COMIC-ONLY` |
 | `app/Manager/Tag.php` | comic category for tag suggestions | `// COMIC-ONLY` |

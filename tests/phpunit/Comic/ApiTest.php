@@ -46,7 +46,6 @@ final class ComicApiTest extends TestCase {
             issueEnd:   12,
             scanner:    'Zone-Empire',
             format:     'CBZ',
-            pack:       true,
         );
 
         $group = new Json\TGroup($tgroup, $this->user)->tgroupPayload();

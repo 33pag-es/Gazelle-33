@@ -110,7 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
             deferRequestBy: 300,
             serviceUrl: COMIC_AUTOCOMPLETE_URL + '&type=publisher'
         });
-        $("#creators" + SELECTOR).autocomplete({
+        $("#imprint" + SELECTOR).autocomplete({
+            deferRequestBy: 300,
+            serviceUrl: COMIC_AUTOCOMPLETE_URL + '&type=imprint'
+        });
+        $(".comic_creator" + SELECTOR).autocomplete({
             deferRequestBy: 300,
             delimiter: ',',
             serviceUrl: COMIC_AUTOCOMPLETE_URL + '&type=creator'

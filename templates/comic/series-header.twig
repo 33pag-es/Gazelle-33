@@ -2,19 +2,41 @@
 <div class="box">
     <div class="head"><strong>{{ tgroup.name }}</strong></div>
     <ul class="stats nobullet">
+{% if series_type %}
+        <li>Type: <a href="torrents.php?series_type={{ series_type.value }}">{{ series_type.label }}</a></li>
+{% endif %}
         <li>Year: {{ tgroup.year }}</li>
+{% if series_status %}
+        <li>Status: {{ series_status.label }}</li>
+{% endif %}
 {% if publisher %}
         <li>Publisher: <a href="torrents.php?publishername={{ publisher|url_encode }}">{{ publisher }}</a></li>
 {% endif %}
-{% if creator_list %}
-        <li>Creators:
-{%  for creator in creator_list %}
-            <a href="torrents.php?creatorname={{ creator|url_encode }}">{{ creator }}</a>{% if not loop.last %}, {% endif %}
-{%  endfor %}
-        </li>
+{% if imprint %}
+        <li>Imprint: <a href="torrents.php?imprintname={{ imprint|url_encode }}">{{ imprint }}</a></li>
 {% endif %}
+        <li>Language: {{ language }}</li>
+{% for role in enum_cases('Gazelle\\Enum\\CreatorRole') %}
+{%  if creator_role_list[role.value] is defined %}
+        <li>{{ role.label }}:
+{%   for creator in creator_role_list[role.value] %}
+            <a href="torrents.php?creatorname={{ creator|url_encode }}">{{ creator }}</a>{% if not loop.last %}, {% endif %}
+{%   endfor %}
+        </li>
+{%  endif %}
+{% endfor %}
     </ul>
 </div>
+{% if collected_in %}
+<div class="box">
+    <div class="head"><strong>Collected in</strong></div>
+    <ul class="stats nobullet">
+{%  for entry in collected_in %}
+        <li>{{ entry.range }}: <a href="{{ entry.tgroup.location }}&amp;torrentid={{ entry.torrent_id }}#torrent{{ entry.torrent_id }}">{{ entry.title }}</a></li>
+{%  endfor %}
+    </ul>
+</div>
+{% endif %}
 {% include 'torrent/collage-add.twig' with {
     'collage_list' : collage_list,
     'tgroup_id'    : tgroup.id,

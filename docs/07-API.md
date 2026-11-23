@@ -980,7 +980,12 @@ Artists:
 ### Torrent Group
 
 <!-- COMIC-ONLY: additive comic response fields. -->
-Comic series responses also include `publisher` (string or null) and `creators` (array of names).
+Comic series responses also include `publisher` (string or null), `creators` (array of names, each once),
+`creatorRoles` (object: role => array of names; roles are `creator`, `writer`, `artist`, `penciller`, `inker`,
+`colorist`, `letterer`, `cover-artist`, `editor`), `seriesType` (`single-issue`, `limited-series`, `one-shot`,
+`annual`, `digital-chapters`, `graphic-novel`, `trade-paperback`, `hardcover`, `omnibus`, or null),
+`seriesStatus` (`ongoing`, `complete`, `cancelled`, `hiatus`, or null), `imprint` (string or null) and
+`language` (ISO 639-1 code).
 
 **URL:**
 `ajax.php?action=torrentgroup&id=<Torrent Group Id>`
@@ -1101,6 +1106,11 @@ empty string '' previously) if there is no image.
 ### Torrent
 
 Comic torrent responses also include `issueStart`, `issueEnd`, `issueLabel`, `scanner`, `pack`, and `checked`. The group payload includes `publisher` and `creators`.
+
+`issueNumber` and `issueNumberEnd` are the issue numbers as printed (strings such as `1`, `½`, `1.MU`, or null);
+`issueStart` and `issueEnd` are their whole-number part. `releaseDate` is `YYYY-MM-DD` or null. `comicSource` is
+`digital`, `scan` or null. `collects` is an array of `{groupId, issueStart, issueEnd}`: the issues of another
+series that a collected edition reprints.
 
 **URL:**
 `ajax.php?action=torrent&id=<Torrent Id>`
@@ -1284,6 +1294,35 @@ __NOTE__: If using `groupid`, may leave group details (e.g. `title`, `year`, etc
 `desc` - (str) Description for non-music torrents
 
 `requestid` - (int) requestID being filled
+
+<!-- COMIC-ONLY: comic upload fields. -->
+Comic uploads (`type` 6) use these fields instead of the music ones:
+
+`title`, `year`, `publisher`, `tags`, `desc`, `image`, `release_desc`, `format` (CBZ, CBR, PDF, CB7) - as above
+
+`series_type` - (str) required when the upload creates a series: `single-issue`, `limited-series`, `one-shot`, `annual`, `digital-chapters`, `graphic-novel`, `trade-paperback`, `hardcover`, `omnibus`. A series is found by title, year, publisher and type.
+
+`series_status` - (str) optional: `ongoing`, `complete`, `cancelled`, `hiatus`
+
+`imprint` - (str) optional publishing line of the publisher
+
+`language` - (str) optional ISO 639-1 code, default `en`
+
+`creators[<role>]` - (str) comma separated names for a role: `writer`, `artist`, `penciller`, `inker`, `colorist`, `letterer`, `cover-artist`, `editor`. At least one creator is required. `creators[]` is still accepted and stores the names without a role.
+
+`issue_start` - (str) issue number as printed (`1`, `0`, `-1`, `½`, `1.MU`); required unless `issue_label` is given
+
+`issue_end` - (str) last issue of a pack
+
+`issue_label` - (str) shown instead of the number
+
+`release_date` - (str) optional on-sale date, `YYYY-MM-DD`
+
+`comic_source` - (str) required: `digital` or `scan`
+
+`scanner` - (str) optional
+
+`collects` - (str) optional, for collected editions: one line per run of issues, the series id followed by the issues, e.g. `1234 1-6`
 
 **Response format:**
 

@@ -1,0 +1,47 @@
+{# COMIC-ONLY: series fields of the group edit form. #}
+{% from 'macro/form.twig' import autocomplete, selected %}
+        <div class="tbx-label">Publisher</div>
+        <div class="tbx-field">
+            <input type="text" id="publisher" name="publisher" size="50" value="{{ series.Publisher }}"{{ autocomplete(viewer, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}>
+        </div>
+        <div class="tbx-label">Imprint</div>
+        <div class="tbx-field">
+            <input type="text" id="imprint" name="imprint" size="50" value="{{ series.Imprint }}"{{ autocomplete(viewer, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}>
+            <br>The publishing line, if the publisher has one for this series (Vertigo at DC). Leave empty otherwise.
+        </div>
+        <div class="tbx-label">Series type</div>
+        <div class="tbx-field">
+            <select id="series_type" name="series_type">
+                <option value="">---</option>
+{% for type in enum_cases('Gazelle\\Enum\\SeriesType') %}
+                <option value="{{ type.value }}"{{ selected(type.value == series.SeriesType) }}>{{ type.label }}</option>
+{% endfor %}
+            </select>
+        </div>
+        <div class="tbx-label">Status</div>
+        <div class="tbx-field">
+            <select id="series_status" name="series_status">
+                <option value="">Unknown</option>
+{% for status in enum_cases('Gazelle\\Enum\\SeriesStatus') %}
+                <option value="{{ status.value }}"{{ selected(status.value == series.SeriesStatus) }}>{{ status.label }}</option>
+{% endfor %}
+            </select>
+        </div>
+        <div class="tbx-label">Language</div>
+        <div class="tbx-field">
+            <select id="language" name="language">
+{% for code, name in constant('COMIC_LANGUAGE') %}
+                <option value="{{ code }}"{{ selected(code == series.Language) }}>{{ name }}</option>
+{% endfor %}
+            </select>
+        </div>
+{% for role in enum_cases('Gazelle\\Enum\\CreatorRole') %}
+{%  if role.value != 'creator' or series.CreatorRoles.creator is defined %}
+        <div class="tbx-label">{{ role.value == 'creator' ? 'Creators (no role given)' : role.label }}</div>
+        <div class="tbx-field">
+            <input type="text" class="comic_creator" name="creators[{{ role.value }}]" size="50" value="{{ series.CreatorRoles[role.value] ?? '' }}"{{ autocomplete(viewer, enum('Gazelle\\Enum\\Autocomplete').everywhere) }}>
+        </div>
+{%  endif %}
+{% endfor %}
+        <div class="tbx-label"></div>
+        <div class="tbx-field">Separate several names with commas. Enter at least one creator.</div>

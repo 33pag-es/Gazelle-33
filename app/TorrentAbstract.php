@@ -374,6 +374,22 @@ abstract class TorrentAbstract extends BaseAttrObject {
         return $value === null ? null : (string)$value;
     }
 
+    public function issueNumber(): ?string {
+        return $this->info()['issue_number'];
+    }
+
+    public function issueNumberEnd(): ?string {
+        return $this->info()['issue_number_end'];
+    }
+
+    public function releaseDate(): ?string {
+        return $this->info()['release_date'];
+    }
+
+    public function comicSource(): ?Enum\ComicSource {
+        return Enum\ComicSource::tryFrom((string)$this->info()['comic_source']);
+    }
+
     /**
      * Does it have a .cue file?
      */
@@ -728,6 +744,7 @@ abstract class TorrentAbstract extends BaseAttrObject {
             // The label is rendered as HTML, so escape the user-supplied parts.
             return array_map(html_escape(...), array_values(array_filter([
                 Comic\Torrent::issueLabel($this),
+                $this->comicSource()?->label(),
                 $this->scanner(),
                 $this->format(),
                 $this->isPack() ? 'Pack' : null,
